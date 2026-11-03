@@ -33,16 +33,16 @@ export default function Header() {
                 <button type="button" className="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#mainNav" aria-label="Close menu"></button>
               </div>
               <div className="offcanvas-body flex-grow-1">
-              <ul className="navbar-nav mx-xl-auto align-items-xl-center">
-                <li className="nav-item"><Link className={`nav-link${pathname === "/" ? " active" : ""}`} href="/" onClick={closeDrawer}>Home</Link></li>
-                <li className="nav-item"><Link className={`nav-link${onAbout ? " active" : ""}`} href="/about-us" onClick={closeDrawer}>About Us</Link></li>
-                <li className="nav-item"><Link className={`nav-link${onBlog ? " active" : ""}`} href="/blog" onClick={closeDrawer}>Blog</Link></li>
-                <li className="nav-item"><Link className={`nav-link${onContact ? " active" : ""}`} href="/contact" onClick={closeDrawer}>Contact</Link></li>
-              </ul>
-              <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3 mt-3 mt-xl-0">
-                <Link href="/login" className="lb-signin" onClick={closeDrawer}><i className="bi bi-person-circle me-2"></i>Sign In</Link>
-                <a href="#" className="btn lb-btn-primary"><i className="bi bi-plus-circle me-2"></i>Post Your Ad</a>
-              </div>
+                <ul className="navbar-nav mx-xl-auto align-items-xl-center gap-lg-3 gap-0">
+                  <li className="nav-item"><Link className={`nav-link${pathname === "/" ? " active" : ""}`} href="/" onClick={closeDrawer}>Home</Link></li>
+                  <li className="nav-item"><Link className={`nav-link${onAbout ? " active" : ""}`} href="/about-us" onClick={closeDrawer}>About Us</Link></li>
+                  <li className="nav-item"><Link className={`nav-link${onBlog ? " active" : ""}`} href="/blog" onClick={closeDrawer}>Blog</Link></li>
+                  <li className="nav-item"><Link className={`nav-link${onContact ? " active" : ""}`} href="/contact" onClick={closeDrawer}>Contact</Link></li>
+                </ul>
+                <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3 mt-3 mt-xl-0">
+                  <Link href="/login" className="lb-signin" onClick={closeDrawer}><i className="bi bi-person-circle me-2"></i>Sign In</Link>
+                  <a href="#" className="btn lb-btn-primary"><i className="bi bi-plus-circle me-2"></i>Post Your Add</a>
+                </div>
               </div>
             </div>
           </div>
