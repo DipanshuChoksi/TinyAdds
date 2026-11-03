@@ -1,36 +1,16 @@
-# Tinyadds – Next.js + TypeScript (App Router)
+# TinyAdds (Next.js + TypeScript)
 
-## Setup
 ```bash
 npm install
-npm run typecheck   # optional: tsc --noEmit
-# copy original images -> public/assets/img   (see public/assets/README.txt)
-npm run dev
+npm run dev     # http://localhost:3000
+npm run build && npm start
 ```
 
-## Routes (old HTML -> Next route)
-| Old file | Route |
-|---|---|
-| index.html | `/` |
-| Category1.html | `/category/[slug]` |
-| EmotionListing.html | `/emotion/[slug]` |
-| CategoryDetail.html | `/listing/[id]` |
-| Blogs.html / BlogDetail.html | `/blogs`, `/blogs/[slug]` |
-| AdvertiseWithUs.html | `/advertise-with-us` |
-| Login.html / Registration.html | `/login`, `/register` |
-| Profile.html / EditProfile.html | `/profile`, `/profile/edit` |
-| MyListings.html / AddListing.html | `/my-listings`, `/add-listing` |
-| VendorProfile.html | `/vendor/[id]` |
+- `app/globals.css` – all site styles (same design as the HTML version)
+- `components/` – one component per section; `CategoryMarquee` is the scrolling category pills
+- `BootstrapClient` loads Bootstrap JS so dropdowns, tabs and the mobile menu work
 
-## Structure
-- `src/app/(site)` – pages with Header/Footer, `(auth)` – login/register layout, `(account)` – sidebar layout
-- `src/components` – layout, ui, home, listing, forms, account
-- `src/hooks` – useDisclosure, useClickOutside, useScrolledPast, useLocalStorage, usePagination, useListingFilters, useForm, useImagePreview, useInterval
-- `src/context/AuthContext.tsx` – demo auth (localStorage)
-- `src/lib/api.ts` – data layer; replace with real API calls
-- `src/types/index.ts` – shared interfaces (Listing, User, BlogPost…)
-- `src/data/site.ts` – all static content
-
-## TODO for production
-- Real auth + route protection (middleware) for `(account)` routes
-- Connect forms to backend; connect HeroSearch city to listing query
+## Notes
+- `PopularCategories.tsx` holds the carousel data. For photo cards, put images in `public/categories/` and set `image: "/categories/x.jpg"` on an item.
+- Mobile menu is a Bootstrap offcanvas drawer (`offcanvas-end`); use `offcanvas-start` in `Header.tsx` for a left drawer.
+- `ScrollToTop.tsx` is the pill-shaped back-to-top button (right edge, vertically centred).
