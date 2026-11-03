@@ -90,26 +90,24 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
       {/* Header */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-          <span
-            className="badge rounded-pill text-uppercase fw-semibold mb-2"
-            style={{ backgroundColor: 'var(--ta-primary-light)', color: 'var(--ta-primary)' }}
-          >
+          <span className="lb-badge mb-2">
             Monetization & Plans
           </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--ta-secondary)' }}>
+          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
             Manage Subscription Packages
           </h1>
-          <p className="text-muted small mb-0">
+          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
             Configure vendor subscription tiers, listing quotas, search boost benefits, and pricing.
           </p>
         </div>
         <div>
           <button
             type="button"
-            className="btn btn-primary rounded-3 px-3 py-2"
+            className="btn lb-btn-primary d-inline-flex align-items-center gap-2"
             onClick={openCreateModal}
           >
-            <i className="bi bi-plus-lg me-1" /> Add New Package
+            <i className="bi bi-plus-lg" />
+            <span>Add New Package</span>
           </button>
         </div>
       </div>
@@ -119,65 +117,78 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
         {packages.map((pkg) => (
           <div key={pkg.id} className="col-12 col-md-6 col-xl-4">
             <div
-              className={`card border-0 shadow-sm rounded-4 h-100 p-4 position-relative ${
-                pkg.isPopular ? 'border-2 border-primary' : ''
-              } bg-white`}
+              className="admin-card h-100 p-4 position-relative d-flex flex-column"
+              style={{
+                borderColor: pkg.isPopular ? 'var(--lb-primary)' : 'var(--lb-line)',
+                boxShadow: pkg.isPopular ? '0 1rem 2.5rem rgba(212, 87, 43, 0.12)' : undefined,
+              }}
             >
               {pkg.isPopular && (
                 <span
                   className="position-absolute top-0 end-0 m-3 badge rounded-pill px-3 py-2"
-                  style={{ backgroundColor: 'var(--ta-primary)', color: '#fff' }}
+                  style={{ backgroundColor: 'var(--lb-primary)', color: '#fff', fontWeight: 700, fontSize: '0.75rem' }}
                 >
                   Most Popular
                 </span>
               )}
               <div className="d-flex align-items-center justify-content-between mb-3">
                 <span
-                  className={`badge ${
+                  className={
                     pkg.status === 'active'
-                      ? 'bg-success-subtle text-success'
-                      : 'bg-secondary-subtle text-secondary'
-                  }`}
+                      ? 'admin-badge-active'
+                      : 'admin-badge-inactive'
+                  }
                 >
                   {pkg.status.toUpperCase()}
                 </span>
               </div>
-              <h3 className="h5 fw-bold mb-1" style={{ color: 'var(--ta-secondary)' }}>
+              <h3 className="h5 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
                 {pkg.name}
               </h3>
               <div className="d-flex align-items-baseline gap-1 my-3">
-                <span className="fs-1 fw-bold" style={{ color: 'var(--ta-primary)' }}>
+                <span className="fs-1 fw-bold" style={{ color: 'var(--lb-primary)', lineHeight: 1 }}>
                   ₹{pkg.price}
                 </span>
-                <span className="text-muted small">/{pkg.period}</span>
+                <span className="small fw-semibold" style={{ color: 'var(--lb-text)' }}>/{pkg.period}</span>
               </div>
-              <div className="small text-muted mb-3">
-                <strong>{pkg.listingLimit}</strong> ad listings included
+              <div className="small mb-3" style={{ color: 'var(--lb-text)' }}>
+                <strong style={{ color: 'var(--lb-ink)' }}>{pkg.listingLimit}</strong> ad listings included
               </div>
 
-              <div className="border-top pt-3 mb-4">
-                <div className="small fw-semibold text-muted text-uppercase mb-2">Package Benefits:</div>
+              <div
+                className="pt-3 mb-4 flex-grow-1"
+                style={{ borderTop: '1px solid var(--lb-line)' }}
+              >
+                <div
+                  className="small fw-bold text-uppercase mb-2"
+                  style={{ color: 'var(--lb-text)', fontSize: '0.75rem', letterSpacing: '0.05em' }}
+                >
+                  Package Benefits:
+                </div>
                 <ul className="list-unstyled mb-0 d-flex flex-column gap-2 small">
                   {pkg.features.map((feat, idx) => (
-                    <li key={idx} className="d-flex align-items-center gap-2">
-                      <i className="bi bi-check2 text-success fw-bold" />
+                    <li key={idx} className="d-flex align-items-center gap-2" style={{ color: 'var(--lb-ink)' }}>
+                      <i className="bi bi-check-circle-fill text-success" />
                       <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="mt-auto pt-3 border-top d-flex gap-2">
+              <div
+                className="mt-auto pt-3 d-flex gap-2"
+                style={{ borderTop: '1px solid var(--lb-line)' }}
+              >
                 <button
                   type="button"
-                  className="btn btn-sm btn-outline-secondary flex-grow-1 rounded-3"
+                  className="btn lb-btn-soft admin-pill-btn flex-grow-1"
                   onClick={() => openEditModal(pkg)}
                 >
                   <i className="bi bi-pencil me-1" /> Edit
                 </button>
                 <button
                   type="button"
-                  className={`btn btn-sm rounded-3 ${
+                  className={`btn admin-pill-btn ${
                     pkg.status === 'active' ? 'btn-outline-danger' : 'btn-outline-success'
                   }`}
                   onClick={() => toggleStatus(pkg.id)}
@@ -195,13 +206,16 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(59, 36, 24, 0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 rounded-4 shadow-lg">
+            <div className="modal-content admin-card border-0 shadow-lg p-0 overflow-hidden">
               <form onSubmit={handleSave}>
-                <div className="modal-header border-0 pb-0">
-                  <h5 className="modal-title fw-bold" style={{ color: 'var(--ta-secondary)' }}>
+                <div
+                  className="modal-header border-0 p-4 pb-2 d-flex justify-content-between align-items-center"
+                  style={{ borderBottom: '1px solid var(--lb-line)' }}
+                >
+                  <h5 className="modal-title fw-bold mb-0" style={{ color: 'var(--lb-ink)' }}>
                     {editingPkg ? 'Edit Package' : 'Create Package'}
                   </h5>
                   <button
@@ -210,12 +224,13 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                     onClick={() => setShowModal(false)}
                   />
                 </div>
-                <div className="modal-body py-3">
+                <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Package Name</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Package Name</label>
                     <input
                       type="text"
-                      className="form-control rounded-3"
+                      className="form-control rounded-4 p-3"
+                      style={{ border: '1px solid var(--lb-line)' }}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
@@ -223,20 +238,22 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                   </div>
                   <div className="row g-2 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-semibold text-muted">Price (INR)</label>
+                      <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Price (INR)</label>
                       <input
                         type="number"
-                        className="form-control rounded-3"
+                        className="form-control rounded-4 p-3"
+                        style={{ border: '1px solid var(--lb-line)' }}
                         value={price}
                         onChange={(e) => setPrice(Number(e.target.value))}
                         required
                       />
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-semibold text-muted">Listing Limit</label>
+                      <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Listing Limit</label>
                       <input
                         type="number"
-                        className="form-control rounded-3"
+                        className="form-control rounded-4 p-3"
+                        style={{ border: '1px solid var(--lb-line)' }}
                         value={listingLimit}
                         onChange={(e) => setListingLimit(Number(e.target.value))}
                         required
@@ -244,9 +261,10 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Features (one per line)</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Features (one per line)</label>
                     <textarea
-                      className="form-control rounded-3"
+                      className="form-control rounded-4 p-3"
+                      style={{ border: '1px solid var(--lb-line)' }}
                       rows={4}
                       value={featuresText}
                       onChange={(e) => setFeaturesText(e.target.value)}
@@ -261,20 +279,23 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                       checked={isPopular}
                       onChange={(e) => setIsPopular(e.target.checked)}
                     />
-                    <label className="form-check-label small" htmlFor="isPopularCheck">
-                      Mark as &quot;Most Popular&quot; badge
+                    <label className="form-check-label small fw-semibold" htmlFor="isPopularCheck" style={{ color: 'var(--lb-ink)' }}>
+                      Mark as &quot;Most Popular&quot; featured card
                     </label>
                   </div>
                 </div>
-                <div className="modal-footer border-0 pt-0">
+                <div
+                  className="modal-footer border-0 p-3 px-4 d-flex justify-content-end gap-2"
+                  style={{ backgroundColor: 'var(--lb-soft)' }}
+                >
                   <button
                     type="button"
-                    className="btn btn-light rounded-3"
+                    className="btn lb-btn-soft admin-pill-btn"
                     onClick={() => setShowModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary rounded-3">
+                  <button type="submit" className="btn lb-btn-primary admin-pill-btn">
                     Save Changes
                   </button>
                 </div>

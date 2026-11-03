@@ -339,3 +339,186 @@ html.lb-loading { overflow: hidden; }
 .lb-wave::before { content: "Loading"; }
 @keyframes lb-wave { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
 @media (max-width: 575.98px) { .lb-loader-logo { font-size: 2rem; } .lb-wave { font-size: 32px; } }
+
+/* ===== TinyAdds Admin Theme (DESIGN.md Alignment) ===== */
+.admin-shell {
+  min-height: 100vh;
+  background-color: var(--lb-soft);
+  color: var(--lb-text);
+  font-family: var(--bs-body-font-family);
+}
+
+.admin-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  min-height: 100vh;
+  background-color: #ffffff;
+  border-right: 1px solid var(--lb-line);
+  box-shadow: 0 0 2rem rgba(59, 36, 24, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  color: var(--lb-ink);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.admin-nav-link:hover {
+  background-color: var(--lb-soft);
+  color: var(--lb-primary);
+  transform: translateX(2px);
+}
+
+.admin-nav-link.active {
+  background-color: var(--lb-primary);
+  color: #ffffff !important;
+  box-shadow: 0 0.5rem 1.25rem rgba(212, 87, 43, 0.25);
+}
+
+.admin-nav-link.active i {
+  color: #ffffff !important;
+}
+
+.admin-header {
+  height: 70px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--lb-line);
+  position: sticky;
+  top: 0;
+  z-index: 1010;
+}
+
+.admin-card {
+  background-color: #ffffff;
+  border: 1px solid var(--lb-line);
+  border-radius: 1.25rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-card:hover {
+  box-shadow: 0 1rem 2rem rgba(59, 36, 24, 0.06);
+}
+
+.admin-stat-card {
+  background-color: #ffffff;
+  border: 1px solid var(--lb-line);
+  border-radius: 1.25rem;
+  padding: 1.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(212, 87, 43, 0.3);
+  box-shadow: 0 1rem 2rem rgba(59, 36, 24, 0.08);
+}
+
+.admin-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--lb-soft);
+  color: var(--lb-primary);
+  font-size: 1.35rem;
+}
+
+.admin-table {
+  --bs-table-bg: transparent;
+  margin-bottom: 0;
+}
+
+.admin-table thead th {
+  background-color: var(--lb-soft);
+  color: var(--lb-ink);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--lb-line);
+}
+
+.admin-table tbody td {
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--lb-line);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:hover td {
+  background-color: rgba(255, 241, 232, 0.4);
+}
+
+.admin-badge-pending {
+  background-color: #fef3c7;
+  color: #b45309;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+.admin-badge-approved,
+.admin-badge-resolved,
+.admin-badge-active {
+  background-color: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+.admin-badge-rejected,
+.admin-badge-inactive {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+.admin-badge-progress {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+.admin-search-input {
+  border-radius: 999px;
+  border: 1px solid var(--lb-line);
+  background-color: #ffffff;
+  padding: 0.55rem 1.1rem;
+  color: var(--lb-ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-search-input:focus {
+  border-color: var(--lb-primary);
+  box-shadow: 0 0 0 3px rgba(212, 87, 43, 0.15);
+  background-color: #ffffff;
+}
+
+.admin-pill-btn {
+  border-radius: 999px;
+  padding: 0.45rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+

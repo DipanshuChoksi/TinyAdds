@@ -25,32 +25,28 @@ export default async function AdminDashboardPage() {
     {
       title: 'Pending Inquiries',
       value: pendingInquiries,
-      icon: 'bi-envelope-paper',
-      color: '#FF6B35',
+      icon: 'bi-envelope-paper-fill',
       href: '/admin/inquire',
-      label: 'Needs response',
+      label: 'Needs direct response',
     },
     {
       title: 'Pending Approvals',
       value: pendingApprovals,
       icon: 'bi-check2-circle',
-      color: '#00B894',
       href: '/admin/post-approval',
       label: 'Awaiting moderation',
     },
     {
       title: 'Active Packages',
       value: packages.length,
-      icon: 'bi-box-seam',
-      color: '#6c5ce7',
+      icon: 'bi-box-seam-fill',
       href: '/admin/manage-package',
       label: 'Live monetization plans',
     },
     {
       title: 'Published Blogs',
       value: blogs.length,
-      icon: 'bi-journal-text',
-      color: '#0984e3',
+      icon: 'bi-journal-richtext',
       href: '/admin/manage-blogs',
       label: 'Content articles',
     },
@@ -61,52 +57,53 @@ export default async function AdminDashboardPage() {
       {/* Top Banner */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-          <span
-            className="badge rounded-pill text-uppercase fw-semibold mb-2"
-            style={{ backgroundColor: 'var(--ta-primary-light)', color: 'var(--ta-primary)' }}
-          >
+          {/* <span className="lb-badge mb-2">
             System Overview
-          </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--ta-secondary)' }}>
+          </span> */}
+          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
             Admin Dashboard
           </h1>
-          <p className="text-muted small mb-0">
+          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
             Monitor real-time contractor inquiries, post approvals, active monetization packages, and search trends.
           </p>
         </div>
         <div className="d-flex gap-2">
-          <Link href="/admin/post-approval" className="btn btn-primary rounded-3 px-3 py-2">
-            <i className="bi bi-shield-check me-2" />
-            Review Posts ({pendingApprovals})
+          <Link href="/admin/post-approval" className="btn lb-btn-primary d-inline-flex align-items-center gap-2">
+            <i className="bi bi-shield-check" />
+            <span>Review Posts ({pendingApprovals})</span>
           </Link>
         </div>
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="row g-3 mb-4">
+      <div className="row g-3 g-xl-4 mb-4">
         {STATS.map((s) => (
           <div key={s.title} className="col-12 col-sm-6 col-xl-3">
-            <div className="card admin-stat-card border-0 h-100 p-3 p-xl-4">
-              <div className="d-flex align-items-center justify-content-between mb-2">
-                <span className="small text-muted fw-medium">{s.title}</span>
-                <div
-                  className="rounded-circle d-flex align-items-center justify-content-center"
-                  style={{ width: 40, height: 40, backgroundColor: 'var(--ta-gray-50)', color: s.color }}
-                >
-                  <i className={`bi ${s.icon} fs-5`} />
+            <div className="admin-stat-card h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span className="small fw-bold" style={{ color: 'var(--lb-text)' }}>
+                    {s.title}
+                  </span>
+                  <div className="admin-stat-icon">
+                    <i className={`bi ${s.icon}`} />
+                  </div>
+                </div>
+                <div className="fs-1 fw-bold mb-1" style={{ color: 'var(--lb-ink)', lineHeight: 1.1 }}>
+                  {s.value}
                 </div>
               </div>
-              <div className="fs-2 fw-bold mb-1" style={{ color: 'var(--ta-secondary)' }}>
-                {s.value}
-              </div>
-              <div className="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
-                <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+              <div
+                className="d-flex align-items-center justify-content-between mt-3 pt-2"
+                style={{ borderTop: '1px solid var(--lb-line)' }}
+              >
+                <span style={{ fontSize: '0.78rem', color: 'var(--lb-text)' }}>
                   {s.label}
                 </span>
                 <Link
                   href={s.href}
-                  className="small text-decoration-none fw-semibold"
-                  style={{ color: 'var(--ta-primary)' }}
+                  className="small fw-bold d-inline-flex align-items-center gap-1 text-decoration-none"
+                  style={{ color: 'var(--lb-primary)' }}
                 >
                   Manage <i className="bi bi-arrow-right" />
                 </Link>
@@ -120,95 +117,128 @@ export default async function AdminDashboardPage() {
       <div className="row g-4 mb-4">
         {/* Recent Inquiries Quick Table */}
         <div className="col-12 col-lg-7">
-          <div className="card border-0 shadow-sm rounded-4 h-100">
-            <div className="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+          <div className="admin-card h-100 p-0 overflow-hidden">
+            <div
+              className="p-4 d-flex justify-content-between align-items-center"
+              style={{ borderBottom: '1px solid var(--lb-line)' }}
+            >
               <div>
-                <h2 className="h6 fw-bold mb-0" style={{ color: 'var(--ta-secondary)' }}>
+                <h2 className="h6 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
                   Recent Inquiries
                 </h2>
-                <small className="text-muted">Latest direct user requests for contractors</small>
+                <small style={{ color: 'var(--lb-text)' }}>Latest direct user requests for contractors</small>
               </div>
-              <Link href="/admin/inquire" className="small fw-semibold text-decoration-none" style={{ color: 'var(--ta-primary)' }}>
+              <Link
+                href="/admin/inquire"
+                className="btn lb-btn-soft admin-pill-btn"
+              >
                 View All ({inquiries.length})
               </Link>
             </div>
-            <div className="card-body px-4">
-              <div className="table-responsive">
-                <table className="table align-middle table-hover mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th className="small text-muted fw-semibold">Requester</th>
-                      <th className="small text-muted fw-semibold">Service</th>
-                      <th className="small text-muted fw-semibold">Status</th>
-                      <th className="small text-muted fw-semibold text-end">Action</th>
+            <div className="table-responsive">
+              <table className="table admin-table align-middle">
+                <thead>
+                  <tr>
+                    <th>Requester</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th className="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inquiries.slice(0, 4).map((inq) => (
+                    <tr key={inq.id}>
+                      <td>
+                        <div className="fw-bold small" style={{ color: 'var(--lb-ink)' }}>
+                          {inq.name}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--lb-text)' }}>
+                          {inq.phone}
+                        </div>
+                      </td>
+                      <td className="small fw-semibold" style={{ color: 'var(--lb-text)' }}>
+                        {inq.service}
+                      </td>
+                      <td>
+                        <span
+                          className={
+                            inq.status === 'pending'
+                              ? 'admin-badge-pending'
+                              : inq.status === 'in_progress'
+                              ? 'admin-badge-progress'
+                              : 'admin-badge-resolved'
+                          }
+                        >
+                          {inq.status === 'in_progress' ? 'In Progress' : inq.status.charAt(0).toUpperCase() + inq.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="text-end">
+                        <Link
+                          href="/admin/inquire"
+                          className="btn lb-btn-soft admin-pill-btn py-1 px-3"
+                          style={{ fontSize: '0.78rem' }}
+                        >
+                          Details
+                        </Link>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {inquiries.slice(0, 4).map((inq) => (
-                      <tr key={inq.id}>
-                        <td>
-                          <div className="fw-semibold small">{inq.name}</div>
-                          <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                            {inq.phone}
-                          </div>
-                        </td>
-                        <td className="small">{inq.service}</td>
-                        <td>
-                          <span
-                            className={`badge rounded-pill ${
-                              inq.status === 'pending'
-                                ? 'bg-warning-subtle text-warning-emphasis'
-                                : inq.status === 'in_progress'
-                                ? 'bg-info-subtle text-info-emphasis'
-                                : 'bg-success-subtle text-success-emphasis'
-                            }`}
-                          >
-                            {inq.status}
-                          </span>
-                        </td>
-                        <td className="text-end">
-                          <Link href="/admin/inquire" className="btn btn-sm btn-outline-secondary py-1 px-2 rounded-2">
-                            Details
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
         {/* Quick Search Analytics & Master items */}
         <div className="col-12 col-lg-5">
-          <div className="card border-0 shadow-sm rounded-4 h-100">
-            <div className="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
+          <div className="admin-card h-100 p-4 d-flex flex-column">
+            <div
+              className="d-flex justify-content-between align-items-center pb-3 mb-3"
+              style={{ borderBottom: '1px solid var(--lb-line)' }}
+            >
               <div>
-                <h2 className="h6 fw-bold mb-0" style={{ color: 'var(--ta-secondary)' }}>
+                <h2 className="h6 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
                   Top Search Queries
                 </h2>
-                <small className="text-muted">Most popular queries across Gujarat</small>
+                <small style={{ color: 'var(--lb-text)' }}>Most popular queries across Gujarat</small>
               </div>
-              <Link href="/admin/manage-search" className="small fw-semibold text-decoration-none" style={{ color: 'var(--ta-primary)' }}>
+              <Link
+                href="/admin/manage-search"
+                className="btn lb-btn-soft admin-pill-btn"
+              >
                 Analytics
               </Link>
             </div>
-            <div className="card-body px-4">
-              <ul className="list-group list-group-flush">
+
+            <div className="flex-grow-1">
+              <div className="d-flex flex-column gap-2">
                 {searchTerms.slice(0, 5).map((st) => (
-                  <li
+                  <div
                     key={st.id}
-                    className="list-group-item px-0 d-flex justify-content-between align-items-center border-bottom-dashed"
+                    className="p-2 px-3 rounded-3 d-flex justify-content-between align-items-center"
+                    style={{ backgroundColor: 'var(--lb-soft)', border: '1px solid var(--lb-line)' }}
                   >
                     <div>
-                      <div className="fw-semibold small">{st.term}</div>
-                      <small className="text-muted">
+                      <div className="fw-bold small" style={{ color: 'var(--lb-ink)' }}>
+                        {st.term}
+                      </div>
+                      <small style={{ color: 'var(--lb-text)', fontSize: '0.75rem' }}>
                         {st.city} • {st.category}
                       </small>
                     </div>
-                    <div className="text-end">
-                      <span className="badge bg-light text-dark border me-1">{st.count} searches</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <span
+                        className="badge rounded-pill"
+                        style={{
+                          backgroundColor: '#ffffff',
+                          color: 'var(--lb-ink)',
+                          border: '1px solid var(--lb-line)',
+                          fontWeight: 600,
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {st.count} searches
+                      </span>
                       <i
                         className={`bi ${
                           st.trend === 'up'
@@ -216,18 +246,27 @@ export default async function AdminDashboardPage() {
                             : st.trend === 'down'
                             ? 'bi-arrow-down-right text-danger'
                             : 'bi-dash text-secondary'
-                        }`}
+                        } fs-6`}
                       />
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
-              <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                <span className="small text-muted">Configured Master Items: {masterItems.length}</span>
-                <Link href="/admin/master-item" className="btn btn-sm btn-outline-primary rounded-3">
-                  Open Master Items
-                </Link>
               </div>
+            </div>
+
+            <div
+              className="mt-4 pt-3 d-flex justify-content-between align-items-center"
+              style={{ borderTop: '1px solid var(--lb-line)' }}
+            >
+              <span className="small" style={{ color: 'var(--lb-text)' }}>
+                Configured Master Items: <strong>{masterItems.length}</strong>
+              </span>
+              <Link
+                href="/admin/master-item"
+                className="btn lb-btn-soft admin-pill-btn"
+              >
+                Open Master Items
+              </Link>
             </div>
           </div>
         </div>

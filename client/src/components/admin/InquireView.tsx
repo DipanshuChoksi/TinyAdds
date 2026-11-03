@@ -37,136 +37,152 @@ export default function InquireView({ initialInquiries }: InquireViewProps) {
       {/* Header */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-          <span
-            className="badge rounded-pill text-uppercase fw-semibold mb-2"
-            style={{ backgroundColor: 'var(--ta-primary-light)', color: 'var(--ta-primary)' }}
-          >
+          <span className="lb-badge mb-2">
             Leads & Inquiries
           </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--ta-secondary)' }}>
+          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
             Customer Inquiries
           </h1>
-          <p className="text-muted small mb-0">
+          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
             View customer requests, contractor quotation queries, and update ticket statuses.
           </p>
         </div>
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+      <div className="admin-card mb-4 p-3">
         <div className="row g-3 align-items-center">
           <div className="col-12 col-md-5">
-            <div className="input-group">
-              <span className="input-group-text bg-light border-0">
-                <i className="bi bi-search text-muted" />
-              </span>
+            <div className="position-relative">
+              <i
+                className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                style={{ color: 'var(--lb-text)' }}
+              />
               <input
                 type="text"
-                className="form-control bg-light border-0"
+                className="form-control admin-search-input ps-5"
                 placeholder="Search by name, service, phone or keyword..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
-                <button className="btn btn-light border-0" onClick={() => setSearchTerm('')}>
-                  <i className="bi bi-x" />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
+                  style={{ color: 'var(--lb-text)' }}
+                  onClick={() => setSearchTerm('')}
+                >
+                  <i className="bi bi-x-circle-fill" />
                 </button>
               )}
             </div>
           </div>
           <div className="col-12 col-md-7 d-flex justify-content-md-end gap-2 flex-wrap">
-            {(['all', 'pending', 'in_progress', 'resolved'] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`btn btn-sm rounded-3 px-3 ${
-                  filter === tab ? 'btn-primary' : 'btn-outline-secondary'
-                }`}
-                onClick={() => setFilter(tab)}
-              >
-                {tab === 'all' ? 'All Inquiries' : tab.replace('_', ' ')}
-                <span className="ms-1 badge bg-light text-dark">
-                  {tab === 'all'
-                    ? inquiries.length
-                    : inquiries.filter((i) => i.status === tab).length}
-                </span>
-              </button>
-            ))}
+            {(['all', 'pending', 'in_progress', 'resolved'] as const).map((tab) => {
+              const active = filter === tab;
+              const count = tab === 'all' ? inquiries.length : inquiries.filter((i) => i.status === tab).length;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`btn admin-pill-btn d-inline-flex align-items-center gap-2 ${
+                    active ? 'lb-btn-primary' : 'lb-btn-soft'
+                  }`}
+                  onClick={() => setFilter(tab)}
+                >
+                  <span>{tab === 'all' ? 'All Inquiries' : tab === 'in_progress' ? 'In Progress' : tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+                  <span
+                    className="badge rounded-pill"
+                    style={{
+                      backgroundColor: active ? 'rgba(255, 255, 255, 0.25)' : '#ffffff',
+                      color: active ? '#ffffff' : 'var(--lb-primary)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+      <div className="admin-card overflow-hidden p-0 mb-4">
         <div className="table-responsive">
-          <table className="table align-middle table-hover mb-0">
-            <thead className="table-light">
+          <table className="table admin-table align-middle">
+            <thead>
               <tr>
-                <th className="px-4 py-3 small text-muted fw-semibold">Requester</th>
-                <th className="py-3 small text-muted fw-semibold">Service Needed</th>
-                <th className="py-3 small text-muted fw-semibold">Date</th>
-                <th className="py-3 small text-muted fw-semibold">Status</th>
-                <th className="px-4 py-3 small text-muted fw-semibold text-end">Action</th>
+                <th>Requester</th>
+                <th>Service Needed</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th className="text-end">Action</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-5 text-muted">
-                    <i className="bi bi-inbox fs-2 d-block mb-2 text-secondary" />
-                    No customer inquiries found matching your filter.
+                  <td colSpan={5} className="text-center py-5" style={{ color: 'var(--lb-text)' }}>
+                    <i className="bi bi-inbox fs-1 d-block mb-2" style={{ color: 'var(--lb-primary)' }} />
+                    No customer inquiries found matching your search.
                   </td>
                 </tr>
               ) : (
                 filtered.map((item) => (
                   <tr key={item.id}>
-                    <td className="px-4">
-                      <div className="fw-semibold text-dark">{item.name}</div>
-                      <small className="text-muted d-block">{item.email}</small>
-                      <small className="text-muted">{item.phone}</small>
+                    <td>
+                      <div className="fw-bold" style={{ color: 'var(--lb-ink)' }}>{item.name}</div>
+                      <small className="d-block" style={{ color: 'var(--lb-text)' }}>{item.email}</small>
+                      <small style={{ color: 'var(--lb-text)' }}>{item.phone}</small>
                     </td>
                     <td>
-                      <span className="badge bg-light text-dark border px-2 py-1">
+                      <span className="badge rounded-pill" style={{ backgroundColor: 'var(--lb-soft)', color: 'var(--lb-ink)', border: '1px solid var(--lb-line)' }}>
                         {item.service}
                       </span>
                       <p
-                        className="text-muted small mb-0 mt-1 text-truncate"
-                        style={{ maxWidth: 300 }}
+                        className="small mb-0 mt-1 text-truncate"
+                        style={{ maxWidth: 300, color: 'var(--lb-text)' }}
                       >
                         {item.message}
                       </p>
                     </td>
-                    <td className="small text-muted">{item.date}</td>
+                    <td className="small" style={{ color: 'var(--lb-text)' }}>{item.date}</td>
                     <td>
                       <span
-                        className={`badge rounded-pill ${
+                        className={
                           item.status === 'pending'
-                            ? 'bg-warning-subtle text-warning-emphasis'
+                            ? 'admin-badge-pending'
                             : item.status === 'in_progress'
-                            ? 'bg-info-subtle text-info-emphasis'
-                            : 'bg-success-subtle text-success-emphasis'
-                        }`}
+                            ? 'admin-badge-progress'
+                            : 'admin-badge-resolved'
+                        }
                       >
-                        {item.status.replace('_', ' ')}
+                        {item.status === 'in_progress' ? 'In Progress' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                       </span>
                     </td>
-                    <td className="px-4 text-end">
-                      <div className="btn-group btn-group-sm">
+                    <td className="text-end">
+                      <div className="d-inline-flex gap-2">
                         <button
                           type="button"
-                          className="btn btn-outline-secondary"
+                          className="btn lb-btn-soft admin-pill-btn py-1 px-3"
+                          style={{ fontSize: '0.8rem' }}
                           onClick={() => setSelectedInquiry(item)}
                         >
                           <i className="bi bi-eye me-1" /> View
                         </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-success"
-                          title="Mark Resolved"
-                          onClick={() => updateStatus(item.id, 'resolved')}
-                        >
-                          <i className="bi bi-check-lg" />
-                        </button>
+                        {item.status !== 'resolved' && (
+                          <button
+                            type="button"
+                            className="btn btn-sm rounded-pill text-white"
+                            style={{ backgroundColor: 'var(--lb-verified)' }}
+                            title="Mark Resolved"
+                            onClick={() => updateStatus(item.id, 'resolved')}
+                          >
+                            <i className="bi bi-check-lg" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -182,53 +198,69 @@ export default function InquireView({ initialInquiries }: InquireViewProps) {
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(59, 36, 24, 0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 rounded-4 shadow-lg">
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold" style={{ color: 'var(--ta-secondary)' }}>
-                  Inquiry Details
-                </h5>
+            <div className="modal-content admin-card border-0 shadow-lg p-0 overflow-hidden">
+              <div
+                className="modal-header border-0 p-4 pb-2 d-flex justify-content-between align-items-center"
+                style={{ borderBottom: '1px solid var(--lb-line)' }}
+              >
+                <div className="d-flex align-items-center gap-2">
+                  <span className="lb-badge" style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}>Ticket #{selectedInquiry.id}</span>
+                  <h5 className="modal-title fw-bold mb-0" style={{ color: 'var(--lb-ink)' }}>
+                    Inquiry Details
+                  </h5>
+                </div>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setSelectedInquiry(null)}
                 />
               </div>
-              <div className="modal-body py-3">
-                <div className="p-3 rounded-3 bg-light mb-3">
-                  <div className="fw-bold fs-6">{selectedInquiry.name}</div>
-                  <div className="small text-muted mb-1">{selectedInquiry.email}</div>
-                  <div className="small text-muted">{selectedInquiry.phone}</div>
+              <div className="modal-body p-4">
+                <div
+                  className="p-3 rounded-4 mb-3"
+                  style={{ backgroundColor: 'var(--lb-soft)', border: '1px solid var(--lb-line)' }}
+                >
+                  <div className="fw-bold fs-6" style={{ color: 'var(--lb-ink)' }}>{selectedInquiry.name}</div>
+                  <div className="small mb-1" style={{ color: 'var(--lb-text)' }}>
+                    <i className="bi bi-envelope me-1" /> {selectedInquiry.email}
+                  </div>
+                  <div className="small" style={{ color: 'var(--lb-text)' }}>
+                    <i className="bi bi-telephone me-1" /> {selectedInquiry.phone}
+                  </div>
                 </div>
 
                 <div className="mb-3">
-                  <label className="small text-uppercase text-muted fw-semibold d-block mb-1">
+                  <label className="small text-uppercase fw-bold d-block mb-1" style={{ color: 'var(--lb-text)', fontSize: '0.75rem' }}>
                     Requested Service
                   </label>
-                  <div className="fw-semibold">{selectedInquiry.service}</div>
+                  <div className="fw-bold" style={{ color: 'var(--lb-ink)' }}>{selectedInquiry.service}</div>
                 </div>
 
                 <div className="mb-3">
-                  <label className="small text-uppercase text-muted fw-semibold d-block mb-1">
+                  <label className="small text-uppercase fw-bold d-block mb-1" style={{ color: 'var(--lb-text)', fontSize: '0.75rem' }}>
                     Message / Requirements
                   </label>
-                  <div className="p-3 border rounded-3 bg-white text-secondary small">
+                  <div
+                    className="p-3 rounded-3"
+                    style={{ backgroundColor: '#ffffff', border: '1px solid var(--lb-line)', color: 'var(--lb-ink)', fontSize: '0.9rem' }}
+                  >
                     {selectedInquiry.message}
                   </div>
                 </div>
 
                 <div className="mb-3">
-                  <label className="small text-uppercase text-muted fw-semibold d-block mb-2">
+                  <label className="small text-uppercase fw-bold d-block mb-2" style={{ color: 'var(--lb-text)', fontSize: '0.75rem' }}>
                     Update Ticket Status
                   </label>
-                  <div className="btn-group w-100">
+                  <div className="d-flex gap-2">
                     <button
                       type="button"
-                      className={`btn btn-sm ${
+                      className={`btn admin-pill-btn flex-grow-1 ${
                         selectedInquiry.status === 'pending'
-                          ? 'btn-warning'
+                          ? 'btn-warning text-dark fw-bold'
                           : 'btn-outline-secondary'
                       }`}
                       onClick={() => updateStatus(selectedInquiry.id, 'pending')}
@@ -237,9 +269,9 @@ export default function InquireView({ initialInquiries }: InquireViewProps) {
                     </button>
                     <button
                       type="button"
-                      className={`btn btn-sm ${
+                      className={`btn admin-pill-btn flex-grow-1 ${
                         selectedInquiry.status === 'in_progress'
-                          ? 'btn-info text-white'
+                          ? 'btn-info text-white fw-bold'
                           : 'btn-outline-secondary'
                       }`}
                       onClick={() => updateStatus(selectedInquiry.id, 'in_progress')}
@@ -248,9 +280,9 @@ export default function InquireView({ initialInquiries }: InquireViewProps) {
                     </button>
                     <button
                       type="button"
-                      className={`btn btn-sm ${
+                      className={`btn admin-pill-btn flex-grow-1 ${
                         selectedInquiry.status === 'resolved'
-                          ? 'btn-success'
+                          ? 'btn-success text-white fw-bold'
                           : 'btn-outline-secondary'
                       }`}
                       onClick={() => updateStatus(selectedInquiry.id, 'resolved')}
@@ -260,13 +292,16 @@ export default function InquireView({ initialInquiries }: InquireViewProps) {
                   </div>
                 </div>
               </div>
-              <div className="modal-footer border-0 pt-0">
+              <div
+                className="modal-footer border-0 p-3 px-4 d-flex justify-content-end"
+                style={{ backgroundColor: 'var(--lb-soft)' }}
+              >
                 <button
                   type="button"
-                  className="btn btn-secondary rounded-3"
+                  className="btn lb-btn-primary admin-pill-btn"
                   onClick={() => setSelectedInquiry(null)}
                 >
-                  Close
+                  Done
                 </button>
               </div>
             </div>

@@ -54,51 +54,53 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
       {/* Header */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-          <span
-            className="badge rounded-pill text-uppercase fw-semibold mb-2"
-            style={{ backgroundColor: 'var(--ta-primary-light)', color: 'var(--ta-primary)' }}
-          >
-            Search Analytics & Synonyms
+          <span className="lb-badge mb-2">
+            Search Analytics & Trends
           </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--ta-secondary)' }}>
+          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
             Manage Search
           </h1>
-          <p className="text-muted small mb-0">
+          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
             Track user search trends, query volume, geographical intent, and configure promoted search terms.
           </p>
         </div>
         <div>
           <button
             type="button"
-            className="btn btn-primary rounded-3 px-3 py-2"
+            className="btn lb-btn-primary d-inline-flex align-items-center gap-2"
             onClick={() => setShowAddModal(true)}
           >
-            <i className="bi bi-plus-lg me-1" /> Add Tracked Search
+            <i className="bi bi-plus-lg" />
+            <span>Add Tracked Search</span>
           </button>
         </div>
       </div>
 
       {/* Filter / Search Bar */}
-      <div className="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+      <div className="admin-card mb-4 p-3">
         <div className="row g-3 align-items-center">
           <div className="col-12 col-md-6">
-            <div className="input-group">
-              <span className="input-group-text bg-light border-0">
-                <i className="bi bi-search text-muted" />
-              </span>
+            <div className="position-relative">
+              <i
+                className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                style={{ color: 'var(--lb-text)' }}
+              />
               <input
                 type="text"
-                className="form-control bg-light border-0"
+                className="form-control admin-search-input ps-5"
                 placeholder="Search queries or categories..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
           </div>
-          <div className="col-12 col-md-6 d-flex justify-content-md-end gap-2 flex-wrap">
-            <label className="small text-muted align-self-center me-1">City Filter:</label>
+          <div className="col-12 col-md-6 d-flex justify-content-md-end gap-2 align-items-center flex-wrap">
+            <label className="small fw-bold me-1" style={{ color: 'var(--lb-text)', fontSize: '0.8rem' }}>
+              Filter by City:
+            </label>
             <select
-              className="form-select form-select-sm w-auto rounded-3"
+              className="form-select form-select-sm w-auto rounded-pill px-3 py-2"
+              style={{ border: '1px solid var(--lb-line)', color: 'var(--lb-ink)', backgroundColor: '#ffffff', fontWeight: 600 }}
               value={filterCity}
               onChange={(e) => setFilterCity(e.target.value)}
             >
@@ -113,63 +115,71 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
       </div>
 
       {/* Terms Table */}
-      <div className="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+      <div className="admin-card overflow-hidden p-0 mb-4">
         <div className="table-responsive">
-          <table className="table align-middle table-hover mb-0">
-            <thead className="table-light">
+          <table className="table admin-table align-middle">
+            <thead>
               <tr>
-                <th className="px-4 py-3 small text-muted fw-semibold">Search Keyword / Query</th>
-                <th className="py-3 small text-muted fw-semibold">Target Category</th>
-                <th className="py-3 small text-muted fw-semibold">City</th>
-                <th className="py-3 small text-muted fw-semibold">Volume (30d)</th>
-                <th className="py-3 small text-muted fw-semibold">Trend</th>
-                <th className="py-3 small text-muted fw-semibold">Last Query</th>
-                <th className="px-4 py-3 small text-muted fw-semibold text-end">Action</th>
+                <th>Search Keyword / Query</th>
+                <th>Target Category</th>
+                <th>City</th>
+                <th>Volume (30d)</th>
+                <th>Trend</th>
+                <th>Last Query</th>
+                <th className="text-end">Action</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-5 text-muted">
+                  <td colSpan={7} className="text-center py-5" style={{ color: 'var(--lb-text)' }}>
+                    <i className="bi bi-search fs-1 d-block mb-2" style={{ color: 'var(--lb-primary)' }} />
                     No search terms found matching filters.
                   </td>
                 </tr>
               ) : (
                 filtered.map((item) => (
                   <tr key={item.id}>
-                    <td className="px-4 fw-semibold text-dark">
-                      <i className="bi bi-search text-muted me-2 small" />
-                      {item.term}
+                    <td>
+                      <div className="d-flex align-items-center gap-2 fw-bold" style={{ color: 'var(--lb-ink)' }}>
+                        <i className="bi bi-search" style={{ color: 'var(--lb-primary)', fontSize: '0.85rem' }} />
+                        <span>{item.term}</span>
+                      </div>
                     </td>
                     <td>
-                      <span className="badge bg-light text-secondary border">{item.category}</span>
+                      <span
+                        className="badge rounded-pill"
+                        style={{ backgroundColor: 'var(--lb-soft)', color: 'var(--lb-primary)', border: '1px solid var(--lb-line)' }}
+                      >
+                        {item.category}
+                      </span>
                     </td>
-                    <td className="small">{item.city}</td>
+                    <td className="small fw-semibold" style={{ color: 'var(--lb-text)' }}>{item.city}</td>
                     <td>
-                      <span className="fw-bold">{item.count.toLocaleString()}</span>
+                      <span className="fw-bold" style={{ color: 'var(--lb-ink)' }}>{item.count.toLocaleString()}</span>
                     </td>
                     <td>
                       {item.trend === 'up' && (
-                        <span className="badge bg-success-subtle text-success">
-                          <i className="bi bi-graph-up-arrow me-1" /> Trending
+                        <span className="admin-badge-approved d-inline-flex align-items-center gap-1">
+                          <i className="bi bi-graph-up-arrow" /> Trending
                         </span>
                       )}
                       {item.trend === 'down' && (
-                        <span className="badge bg-danger-subtle text-danger">
-                          <i className="bi bi-graph-down-arrow me-1" /> Declining
+                        <span className="admin-badge-rejected d-inline-flex align-items-center gap-1">
+                          <i className="bi bi-graph-down-arrow" /> Declining
                         </span>
                       )}
                       {item.trend === 'stable' && (
-                        <span className="badge bg-secondary-subtle text-secondary">
-                          <i className="bi bi-dash me-1" /> Steady
+                        <span className="badge rounded-pill bg-light text-secondary border d-inline-flex align-items-center gap-1">
+                          <i className="bi bi-dash" /> Steady
                         </span>
                       )}
                     </td>
-                    <td className="small text-muted">{item.lastSearched}</td>
-                    <td className="px-4 text-end">
+                    <td className="small" style={{ color: 'var(--lb-text)' }}>{item.lastSearched}</td>
+                    <td className="text-end">
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-danger rounded-3"
+                        className="btn btn-sm btn-outline-danger rounded-pill px-3"
                         onClick={() => handleDelete(item.id)}
                       >
                         <i className="bi bi-trash" />
@@ -188,13 +198,16 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(59, 36, 24, 0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-0 rounded-4 shadow-lg">
+            <div className="modal-content admin-card border-0 shadow-lg p-0 overflow-hidden">
               <form onSubmit={handleAddTracked}>
-                <div className="modal-header border-0 pb-0">
-                  <h5 className="modal-title fw-bold" style={{ color: 'var(--ta-secondary)' }}>
+                <div
+                  className="modal-header border-0 p-4 pb-2 d-flex justify-content-between align-items-center"
+                  style={{ borderBottom: '1px solid var(--lb-line)' }}
+                >
+                  <h5 className="modal-title fw-bold mb-0" style={{ color: 'var(--lb-ink)' }}>
                     Add Search Keyword to Monitor
                   </h5>
                   <button
@@ -203,12 +216,13 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
                     onClick={() => setShowAddModal(false)}
                   />
                 </div>
-                <div className="modal-body py-3">
+                <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Keyword or Phrase</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Keyword or Phrase</label>
                     <input
                       type="text"
-                      className="form-control rounded-3"
+                      className="form-control rounded-4 p-3"
+                      style={{ border: '1px solid var(--lb-line)' }}
                       placeholder="e.g. CCTV camera installation"
                       value={newKeyword}
                       onChange={(e) => setNewKeyword(e.target.value)}
@@ -216,35 +230,40 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Category</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Category</label>
                     <input
                       type="text"
-                      className="form-control rounded-3"
+                      className="form-control rounded-4 p-3"
+                      style={{ border: '1px solid var(--lb-line)' }}
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">City</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>City</label>
                     <input
                       type="text"
-                      className="form-control rounded-3"
+                      className="form-control rounded-4 p-3"
+                      style={{ border: '1px solid var(--lb-line)' }}
                       value={newCity}
                       onChange={(e) => setNewCity(e.target.value)}
                       required
                     />
                   </div>
                 </div>
-                <div className="modal-footer border-0 pt-0">
+                <div
+                  className="modal-footer border-0 p-3 px-4 d-flex justify-content-end gap-2"
+                  style={{ backgroundColor: 'var(--lb-soft)' }}
+                >
                   <button
                     type="button"
-                    className="btn btn-light rounded-3"
+                    className="btn lb-btn-soft admin-pill-btn"
                     onClick={() => setShowAddModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary rounded-3">
+                  <button type="submit" className="btn lb-btn-primary admin-pill-btn">
                     Add Keyword
                   </button>
                 </div>

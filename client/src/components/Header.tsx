@@ -14,6 +14,11 @@ export default function Header() {
   const onPages = pathname === "/about-us";
   const onContact = pathname === "/contact";
 
+  // Do not render public header on admin portal routes
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <>
       <header className="lb-header sticky-top">
