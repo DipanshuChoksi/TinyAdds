@@ -1,28 +1,147 @@
 'use client';
 
 import { useState } from 'react';
-import type { AdminMasterItem } from '@/src/types';
+import type { AdminMasterItem, MasterEntityType } from '@/src/types';
+
+export interface MasterCategoryMeta {
+  label: string;
+  singular: string;
+  description: string;
+  placeholder: string;
+  icon?: string;
+}
+
+export const MASTER_CATEGORY_META: Record<MasterEntityType, MasterCategoryMeta> = {
+  category: {
+    label: 'Categories',
+    singular: 'Category',
+    description: 'Manage listing industries and categories across the platform.',
+    placeholder: 'e.g. Automotive, Healthcare, Education...',
+    icon: 'bi-grid',
+  },
+  emotion: {
+    label: 'Emotions',
+    singular: 'Emotion',
+    description: 'Manage emotional vibe and theme tags assigned to ads and listings.',
+    placeholder: 'e.g. Happy, Exciting, Corporate, Surprise...',
+    icon: 'bi-emoji-smile',
+  },
+  employee: {
+    label: 'Employee',
+    singular: 'Employee',
+    description: 'Manage internal staff, operations managers, and admin employees.',
+    placeholder: 'e.g. Rajesh Sharma, Priya Patel...',
+    icon: 'bi-person-badge',
+  },
+  'manage-cms': {
+    label: 'Manage CMS',
+    singular: 'CMS Page',
+    description: 'Manage static CMS pages, policies, terms, and custom portal content.',
+    placeholder: 'e.g. Terms of Service, Privacy Policy...',
+    icon: 'bi-file-earmark-richtext',
+  },
+  'manage-marquee': {
+    label: 'Manage Marquee',
+    singular: 'Marquee Notice',
+    description: 'Manage ticker notices, announcements, and scrolling banner alerts.',
+    placeholder: 'e.g. Diwali Offer 20% Off on Pro Plans...',
+    icon: 'bi-broadcast',
+  },
+  'tax-master': {
+    label: 'TaxMaster',
+    singular: 'Tax Rate',
+    description: 'Configure GST slabs, service taxes, and invoice tax rates.',
+    placeholder: 'e.g. GST 18%, GST 5%, Exemption 0%...',
+    icon: 'bi-receipt',
+  },
+  'success-stories': {
+    label: 'Success Stories',
+    singular: 'Success Story',
+    description: 'Manage featured client reviews, case studies, and business success stories.',
+    placeholder: 'e.g. Shree Sai Motors 300% Growth Story...',
+    icon: 'bi-trophy',
+  },
+  user: {
+    label: 'User',
+    singular: 'User Account',
+    description: 'Manage registered user classifications, vendor profiles, and portal accounts.',
+    placeholder: 'e.g. Kishan Dave, Neha Joshi...',
+    icon: 'bi-people',
+  },
+  country: {
+    label: 'Country',
+    singular: 'Country',
+    description: 'Manage active geographic countries eligible for listings and services.',
+    placeholder: 'e.g. India, United Arab Emirates, United States...',
+    icon: 'bi-globe-americas',
+  },
+  state: {
+    label: 'State',
+    singular: 'State',
+    description: 'Manage state and province subdivisions for locations.',
+    placeholder: 'e.g. Gujarat, Maharashtra, Rajasthan...',
+    icon: 'bi-map',
+  },
+  city: {
+    label: 'City',
+    singular: 'City',
+    description: 'Manage operational cities and districts for local listings.',
+    placeholder: 'e.g. Vadodara, Ahmedabad, Surat...',
+    icon: 'bi-buildings',
+  },
+  area: {
+    label: 'Area',
+    singular: 'Area',
+    description: 'Manage sub-localities, pincode clusters, and delivery zones.',
+    placeholder: 'e.g. Alkapuri, Gotri Road, Adajan...',
+    icon: 'bi-geo-alt',
+  },
+  'inquire-contact-us': {
+    label: 'Inquire Contact Us',
+    singular: 'Contact Inquire Channel',
+    description: 'Manage contact inquiry departments, routing subjects, and support channels.',
+    placeholder: 'e.g. General Inquiries, Portal Technical Support...',
+    icon: 'bi-envelope-at',
+  },
+  tag: {
+    label: 'Special Tags',
+    singular: 'Tag',
+    description: 'Manage special badges, vendor tags, and promotional highlights.',
+    placeholder: 'e.g. Verified Vendor, Emergency 24x7...',
+    icon: 'bi-tags',
+  },
+};
 
 interface MasterItemViewProps {
   initialMasterItems: AdminMasterItem[];
+  defaultCategory: MasterEntityType;
+  pageTitle?: string;
+  pageDescription?: string;
 }
 
-export default function MasterItemView({ initialMasterItems }: MasterItemViewProps) {
+export default function MasterItemView({
+  initialMasterItems,
+  defaultCategory,
+  pageTitle,
+  pageDescription,
+}: MasterItemViewProps) {
   const [items, setItems] = useState<AdminMasterItem[]>(initialMasterItems);
-  const [tabType, setTabType] = useState<'all' | 'category' | 'emotion' | 'city' | 'tag'>('all');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
-  const [type, setType] = useState<'category' | 'emotion' | 'city' | 'tag'>('category');
+
+  const meta = MASTER_CATEGORY_META[defaultCategory] || MASTER_CATEGORY_META.category;
+  const title = pageTitle ?? meta.label;
+  const description = pageDescription ?? meta.description;
 
   const filtered = items.filter((item) => {
-    const matchesTab = tabType === 'all' || item.type === tabType;
+    const matchesCategory = item.type === defaultCategory;
     const matchesSearch =
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       item.slug.toLowerCase().includes(search.toLowerCase());
-    return matchesTab && matchesSearch;
+    return matchesCategory && matchesSearch;
   });
 
   const toggleStatus = (id: string) => {
@@ -47,7 +166,7 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
       id: `mi-${Date.now()}`,
       name: name.trim(),
       slug,
-      type,
+      type: defaultCategory,
       status: 'active',
       itemCount: 0,
     };
@@ -58,7 +177,7 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Delete this master entry?')) {
+    if (confirm(`Delete this ${meta.singular.toLowerCase()}?`)) {
       setItems((prev) => prev.filter((i) => i.id !== id));
     }
   };
@@ -68,11 +187,13 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
       {/* Header */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
         <div>
-          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
-            Master Items
-          </h1>
+          <div className="d-flex align-items-center gap-2 mb-1">
+            <h1 className="h4 fw-bold mb-0" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
+              {title}
+            </h1>
+          </div>
           <p className="small mb-0" style={{ color: '#64748b' }}>
-            Define system master entities including industries, emotional vibe tags, locations, and special badges.
+            {description}
           </p>
         </div>
         <div>
@@ -83,15 +204,15 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
             onClick={() => setShowModal(true)}
           >
             <i className="bi bi-plus-lg" />
-            <span>Add Master Item</span>
+            <span>Add {meta.singular}</span>
           </button>
         </div>
       </div>
 
-      {/* Tabs & Search */}
+      {/* Search & Counter Card */}
       <div className="admin-card mb-4 p-3">
         <div className="row g-3 align-items-center">
-          <div className="col-12 col-md-5">
+          <div className="col-12 col-md-6 col-lg-5">
             <div className="position-relative">
               <i
                 className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
@@ -100,7 +221,7 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
               <input
                 type="text"
                 className="form-control admin-search-input ps-5"
-                placeholder="Search master item or slug..."
+                placeholder={`Search ${meta.label.toLowerCase()} or slug...`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -116,34 +237,13 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
               )}
             </div>
           </div>
-          <div className="col-12 col-md-7 d-flex justify-content-md-end gap-1 flex-wrap">
-            {(['all', 'category', 'emotion', 'city', 'tag'] as const).map((t) => {
-              const active = tabType === t;
-              const count = t === 'all' ? items.length : items.filter((i) => i.type === t).length;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  className={`btn btn-sm rounded-pill d-inline-flex align-items-center gap-2 px-3 py-1 ${
-                    active ? 'btn-dark' : 'btn-light border'
-                  }`}
-                  style={{ fontSize: '0.8rem' }}
-                  onClick={() => setTabType(t)}
-                >
-                  <span>{t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}</span>
-                  <span
-                    className="badge rounded-pill"
-                    style={{
-                      backgroundColor: active ? 'rgba(255, 255, 255, 0.25)' : '#e2e8f0',
-                      color: active ? '#ffffff' : '#475569',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="col-12 col-md-6 col-lg-7 d-flex justify-content-md-end align-items-center gap-2">
+            <span
+              className="badge rounded-pill fw-semibold"
+              style={{ backgroundColor: '#f1f5f9', color: '#475569', fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
+            >
+              {filtered.length} {filtered.length === 1 ? meta.singular : meta.label}
+            </span>
           </div>
         </div>
       </div>
@@ -154,10 +254,9 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
           <table className="table admin-table align-middle">
             <thead>
               <tr>
-                <th className="ps-4">Entity Type</th>
-                <th>Name</th>
+                <th className="ps-4">Name</th>
                 <th>Slug (URL Key)</th>
-                <th>Assigned Listings</th>
+                <th>Assigned Items</th>
                 <th>Status</th>
                 <th className="text-end pe-4" style={{ width: '100px' }}>Action</th>
               </tr>
@@ -165,51 +264,24 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-5 text-muted">
+                  <td colSpan={5} className="text-center py-5 text-muted">
                     <i className="bi bi-diagram-3 fs-2 d-block mb-2 text-secondary" />
-                    No master items found for selected filter.
+                    No {meta.label.toLowerCase()} found matching your criteria.
                   </td>
                 </tr>
               ) : (
                 filtered.map((item) => (
                   <tr key={item.id}>
-                    <td className="ps-4">
-                      <span
-                        className="badge rounded-pill text-uppercase"
-                        style={{
-                          backgroundColor:
-                            item.type === 'category'
-                              ? '#f1f5f9'
-                              : item.type === 'emotion'
-                              ? '#fef9c3'
-                              : item.type === 'city'
-                              ? '#f0f9ff'
-                              : '#f5f3ff',
-                          color:
-                            item.type === 'category'
-                              ? '#475569'
-                              : item.type === 'emotion'
-                              ? '#854d0e'
-                              : item.type === 'city'
-                              ? '#0369a1'
-                              : '#6d28d9',
-                          border: '1px solid #e2e8f0',
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          padding: '0.2rem 0.55rem',
-                        }}
-                      >
-                        {item.type}
-                      </span>
+                    <td className="ps-4 fw-semibold" style={{ color: '#0f172a' }}>
+                      {item.name}
                     </td>
-                    <td className="fw-semibold" style={{ color: '#0f172a' }}>{item.name}</td>
                     <td className="small" style={{ color: '#64748b' }}>/{item.slug}</td>
                     <td>
                       <span
                         className="badge rounded-pill fw-normal"
                         style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }}
                       >
-                        {item.itemCount} ads
+                        {item.itemCount} records
                       </span>
                     </td>
                     <td>
@@ -229,6 +301,7 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
                         className="btn btn-sm btn-outline-danger rounded-pill px-3"
                         style={{ fontSize: '0.75rem' }}
                         onClick={() => handleDelete(item.id)}
+                        title={`Delete ${item.name}`}
                       >
                         <i className="bi bi-trash" />
                       </button>
@@ -253,7 +326,7 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
               <form onSubmit={handleCreate}>
                 <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
                   <h6 className="modal-title fw-bold mb-0" style={{ color: '#0f172a' }}>
-                    Add Master Entity
+                    Add New {meta.singular}
                   </h6>
                   <button
                     type="button"
@@ -263,29 +336,17 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
                 </div>
                 <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Entity Type</label>
-                    <select
-                      className="form-select rounded-2"
-                      value={type}
-                      onChange={(e) =>
-                        setType(e.target.value as 'category' | 'emotion' | 'city' | 'tag')
-                      }
-                    >
-                      <option value="category">Category</option>
-                      <option value="emotion">Emotion</option>
-                      <option value="city">City</option>
-                      <option value="tag">Special Tag</option>
-                    </select>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Display Name</label>
+                    <label className="form-label small fw-semibold text-muted">
+                      {meta.singular} Name / Title
+                    </label>
                     <input
                       type="text"
                       className="form-control rounded-2"
-                      placeholder="e.g. Solar Energy or Gandhinagar"
+                      placeholder={meta.placeholder}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
+                      autoFocus
                     />
                   </div>
                 </div>
@@ -302,7 +363,7 @@ export default function MasterItemView({ initialMasterItems }: MasterItemViewPro
                     className="btn btn-sm text-white rounded-2 px-3"
                     style={{ backgroundColor: 'var(--lb-primary)' }}
                   >
-                    Save Entity
+                    Save {meta.singular}
                   </button>
                 </div>
               </form>

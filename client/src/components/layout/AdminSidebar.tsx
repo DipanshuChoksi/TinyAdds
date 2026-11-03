@@ -1,33 +1,73 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
+export interface AdminNavSubItem {
+  href: string;
+  label: string;
+}
 
 export interface AdminNavItem {
   href: string;
   label: string;
   icon: string;
   badge?: string;
+  children?: AdminNavSubItem[];
 }
 
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: 'bi-grid-1x2' },
-  { href: '/admin/inquire', label: 'Inquire', icon: 'bi-envelope-paper', badge: '4' },
-  { href: '/admin/post-approval', label: 'Post Approval', icon: 'bi-check2-circle', badge: '2' },
+  { href: '/admin/inquire', label: 'Inquire', icon: 'bi-envelope-paper' },
+  { href: '/admin/post-approval', label: 'Post Approval', icon: 'bi-check2-circle' },
   { href: '/admin/manage-blogs', label: 'Manage Blogs', icon: 'bi-journal-richtext' },
   { href: '/admin/manage-package', label: 'Manage Package', icon: 'bi-box-seam' },
   { href: '/admin/manage-search', label: 'Manage Search', icon: 'bi-search' },
-  { href: '/admin/master-item', label: 'Master Item', icon: 'bi-database-gear' },
+  {
+    href: '/admin/master-item',
+    label: 'Master',
+    icon: 'bi-database-gear',
+    children: [
+      { href: '/admin/master-item/emotions', label: 'Emotions' },
+      { href: '/admin/master-item/employee', label: 'Employee' },
+      { href: '/admin/master-item/manage-cms', label: 'Manage CMS' },
+      { href: '/admin/master-item/manage-marquee', label: 'Manage Marquee' },
+      { href: '/admin/master-item/tax-master', label: 'TaxMaster' },
+      { href: '/admin/master-item/success-stories', label: 'Success Stories' },
+      { href: '/admin/master-item/user', label: 'User' },
+      { href: '/admin/master-item/country', label: 'Country' },
+      { href: '/admin/master-item/state', label: 'State' },
+      { href: '/admin/master-item/cities', label: 'City' },
+      { href: '/admin/master-item/area', label: 'Area' },
+      { href: '/admin/master-item/inquire-contact-us', label: 'Inquire Contact Us' },
+    ],
+  },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
+    '/admin/master-item': true, // Keep open by default
+  });
 
-  const isItemActive = (href: string) => {
-    if (href === '/admin') {
+  const isExactActive = (href: string) => pathname === href;
+
+  const isParentActive = (item: AdminNavItem) => {
+    if (item.href === '/admin') {
       return pathname === '/admin';
     }
-    return pathname.startsWith(href);
+    if (item.children) {
+      return item.children.some((child) => pathname === child.href);
+    }
+    return pathname.startsWith(item.href);
+  };
+
+  const toggleSubmenu = (href: string) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [href]: !prev[href],
+    }));
   };
 
   const closeOffcanvas = () => {
@@ -63,7 +103,84 @@ export default function AdminSidebar() {
         </div>
         <nav className="nav flex-column gap-1">
           {ADMIN_NAV_ITEMS.map((item) => {
-            const active = isItemActive(item.href);
+            const hasChildren = Boolean(item.children && item.children.length > 0);
+            const activeParent = isParentActive(item);
+            const isOpen = openMenus[item.href] ?? activeParent;
+
+            if (hasChildren) {
+              return (
+                <div key={item.href} className="w-100">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => toggleSubmenu(item.href)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleSubmenu(item.href);
+                      }
+                    }}
+                    className={`admin-nav-link d-flex align-items-center justify-content-between text-decoration-none w-100 ${
+                      activeParent ? 'active' : ''
+                    }`}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="d-flex align-items-center gap-2">
+                      <i
+                        className={`bi ${item.icon} fs-5`}
+                        style={{ color: activeParent ? 'var(--lb-primary)' : '#64748b' }}
+                      />
+                      <span>{item.label}</span>
+                    </div>
+                    <i
+                      className={`bi bi-chevron-down fs-7 transition-all ${isOpen ? 'rotate-180' : ''}`}
+                      style={{
+                        fontSize: '0.75rem',
+                        color: '#94a3b8',
+                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                      }}
+                    />
+                  </div>
+
+                  {/* Submenu links */}
+                  {isOpen && (
+                    <div className="d-flex flex-column gap-1 ps-2 pt-1 border-start ms-3 my-1" style={{ borderColor: '#e2e8f0' }}>
+                      {item.children?.map((sub) => {
+                        const subActive = isExactActive(sub.href);
+                        return (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            onClick={closeOffcanvas}
+                            className={`admin-nav-link py-1 px-2 d-flex align-items-center gap-2 text-decoration-none rounded-2 ${
+                              subActive ? 'active' : ''
+                            }`}
+                            style={{
+                              fontSize: '0.81rem',
+                              backgroundColor: subActive ? 'rgba(212, 87, 43, 0.08)' : 'transparent',
+                              color: subActive ? 'var(--lb-primary)' : '#64748b',
+                              fontWeight: subActive ? 600 : 400,
+                            }}
+                          >
+                            <i
+                              className="bi bi-circle-fill"
+                              style={{
+                                fontSize: '0.35rem',
+                                color: subActive ? 'var(--lb-primary)' : '#94a3b8',
+                              }}
+                            />
+                            <span>{sub.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            const active = isExactActive(item.href);
             return (
               <Link
                 key={item.href}

@@ -122,12 +122,29 @@ export interface AdminSearchTerm {
   trend: 'up' | 'down' | 'stable';
 }
 
+export type MasterEntityType =
+  | 'category'
+  | 'emotion'
+  | 'employee'
+  | 'manage-cms'
+  | 'manage-marquee'
+  | 'tax-master'
+  | 'success-stories'
+  | 'user'
+  | 'country'
+  | 'state'
+  | 'city'
+  | 'area'
+  | 'inquire-contact-us'
+  | 'tag';
+
 export interface AdminMasterItem {
   id: string;
-  type: 'category' | 'emotion' | 'city' | 'tag';
+  type: MasterEntityType;
   name: string;
   slug: string;
   status: 'active' | 'inactive';
   itemCount: number;
+  metadata?: Record<string, string | number | boolean | undefined>;
 }
 
