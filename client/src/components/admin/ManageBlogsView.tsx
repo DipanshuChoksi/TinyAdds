@@ -52,22 +52,20 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
   return (
     <div>
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
         <div>
-          <span className="lb-badge mb-2">
-            Editorial Management
-          </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
+          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
             Manage Blogs
           </h1>
-          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
+          <p className="small mb-0" style={{ color: '#64748b' }}>
             Publish educational content, contractor tips, and local business spotlights.
           </p>
         </div>
         <div>
           <button
             type="button"
-            className="btn lb-btn-primary d-inline-flex align-items-center gap-2"
+            className="btn btn-sm d-inline-flex align-items-center gap-2 py-1 px-3 text-white fw-medium rounded-pill shadow-sm"
+            style={{ backgroundColor: 'var(--lb-primary)', fontSize: '0.82rem' }}
             onClick={() => setShowCreateModal(true)}
           >
             <i className="bi bi-plus-lg" />
@@ -81,7 +79,7 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
         <div className="position-relative">
           <i
             className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
-            style={{ color: 'var(--lb-text)' }}
+            style={{ color: '#94a3b8' }}
           />
           <input
             type="text"
@@ -94,7 +92,7 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
             <button
               type="button"
               className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
-              style={{ color: 'var(--lb-text)' }}
+              style={{ color: '#94a3b8' }}
               onClick={() => setSearch('')}
             >
               <i className="bi bi-x-circle-fill" />
@@ -109,28 +107,28 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
           <table className="table admin-table align-middle">
             <thead>
               <tr>
-                <th style={{ width: 80 }}>Cover</th>
+                <th className="ps-4" style={{ width: 80 }}>Cover</th>
                 <th>Article Title</th>
                 <th>Tag</th>
                 <th>Date</th>
-                <th className="text-end">Actions</th>
+                <th className="text-end pe-4" style={{ width: '130px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-5" style={{ color: 'var(--lb-text)' }}>
-                    <i className="bi bi-journal-x fs-1 d-block mb-2" style={{ color: 'var(--lb-primary)' }} />
+                  <td colSpan={5} className="text-center py-5 text-muted">
+                    <i className="bi bi-journal-x fs-2 d-block mb-2 text-secondary" />
                     No articles found matching search.
                   </td>
                 </tr>
               ) : (
                 filtered.map((blog) => (
                   <tr key={blog.slug}>
-                    <td>
+                    <td className="ps-4">
                       <div
-                        className="position-relative rounded-3 overflow-hidden"
-                        style={{ width: 64, height: 46, backgroundColor: 'var(--lb-soft)', border: '1px solid var(--lb-line)' }}
+                        className="position-relative rounded-2 overflow-hidden"
+                        style={{ width: 56, height: 40, backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}
                       >
                         <Image
                           src={blog.image}
@@ -141,32 +139,33 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
                       </div>
                     </td>
                     <td>
-                      <div className="fw-bold" style={{ color: 'var(--lb-ink)' }}>{blog.title}</div>
-                      <small style={{ color: 'var(--lb-text)' }}>slug: /{blog.slug}</small>
+                      <div className="fw-semibold" style={{ color: '#0f172a' }}>{blog.title}</div>
+                      <small style={{ color: '#64748b', fontSize: '0.74rem' }}>slug: /{blog.slug}</small>
                     </td>
                     <td>
                       <span
-                        className="badge rounded-pill"
-                        style={{ backgroundColor: 'var(--lb-soft)', color: 'var(--lb-primary)', border: '1px solid var(--lb-line)' }}
+                        className="badge rounded-pill fw-normal"
+                        style={{ backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}
                       >
                         {blog.tag}
                       </span>
                     </td>
-                    <td className="small" style={{ color: 'var(--lb-text)' }}>{blog.date}</td>
-                    <td className="text-end">
-                      <div className="d-inline-flex gap-2">
+                    <td className="small" style={{ color: '#64748b' }}>{blog.date}</td>
+                    <td className="text-end pe-4">
+                      <div className="d-inline-flex align-items-center justify-content-end gap-1">
                         <a
                           href={`/blogs/${blog.slug}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="btn lb-btn-soft admin-pill-btn py-1 px-3"
-                          style={{ fontSize: '0.8rem' }}
+                          className="btn btn-sm btn-outline-secondary rounded-2 py-1 px-2"
+                          style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}
                         >
                           <i className="bi bi-box-arrow-up-right me-1" /> View
                         </a>
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                          className="btn btn-sm btn-outline-danger rounded-2 py-1 px-2"
+                          style={{ fontSize: '0.75rem' }}
                           onClick={() => handleDelete(blog.slug)}
                         >
                           <i className="bi bi-trash" />
@@ -186,18 +185,15 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(59, 36, 24, 0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(2px)', zIndex: 1050 }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content admin-card border-0 shadow-lg p-0 overflow-hidden">
+            <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
               <form onSubmit={handleCreate}>
-                <div
-                  className="modal-header border-0 p-4 pb-2 d-flex justify-content-between align-items-center"
-                  style={{ borderBottom: '1px solid var(--lb-line)' }}
-                >
-                  <h5 className="modal-title fw-bold mb-0" style={{ color: 'var(--lb-ink)' }}>
+                <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+                  <h6 className="modal-title fw-bold mb-0" style={{ color: '#0f172a' }}>
                     Create Blog Post
-                  </h5>
+                  </h6>
                   <button
                     type="button"
                     className="btn-close"
@@ -206,11 +202,10 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
                 </div>
                 <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Title</label>
+                    <label className="form-label small fw-semibold text-muted">Title</label>
                     <input
                       type="text"
-                      className="form-control rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-control rounded-2"
                       placeholder="e.g. 5 Tips to Choose the Right Contractor"
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
@@ -218,10 +213,9 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Category Tag</label>
+                    <label className="form-label small fw-semibold text-muted">Category Tag</label>
                     <select
-                      className="form-select rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-select rounded-2"
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
                     >
@@ -232,18 +226,19 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
                     </select>
                   </div>
                 </div>
-                <div
-                  className="modal-footer border-0 p-3 px-4 d-flex justify-content-end gap-2"
-                  style={{ backgroundColor: 'var(--lb-soft)' }}
-                >
+                <div className="modal-footer p-3 bg-light border-top">
                   <button
                     type="button"
-                    className="btn lb-btn-soft admin-pill-btn"
+                    className="btn btn-sm btn-secondary rounded-2"
                     onClick={() => setShowCreateModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn lb-btn-primary admin-pill-btn">
+                  <button
+                    type="submit"
+                    className="btn btn-sm text-white rounded-2 px-3"
+                    style={{ backgroundColor: 'var(--lb-primary)' }}
+                  >
                     Save Article
                   </button>
                 </div>

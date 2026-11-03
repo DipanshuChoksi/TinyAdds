@@ -52,22 +52,20 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
   return (
     <div>
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
         <div>
-          <span className="lb-badge mb-2">
-            Search Analytics & Trends
-          </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
+          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
             Manage Search
           </h1>
-          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
+          <p className="small mb-0" style={{ color: '#64748b' }}>
             Track user search trends, query volume, geographical intent, and configure promoted search terms.
           </p>
         </div>
         <div>
           <button
             type="button"
-            className="btn lb-btn-primary d-inline-flex align-items-center gap-2"
+            className="btn btn-sm d-inline-flex align-items-center gap-2 py-1 px-3 text-white fw-medium rounded-pill shadow-sm"
+            style={{ backgroundColor: 'var(--lb-primary)', fontSize: '0.82rem' }}
             onClick={() => setShowAddModal(true)}
           >
             <i className="bi bi-plus-lg" />
@@ -83,7 +81,7 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
             <div className="position-relative">
               <i
                 className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
-                style={{ color: 'var(--lb-text)' }}
+                style={{ color: '#94a3b8' }}
               />
               <input
                 type="text"
@@ -95,12 +93,12 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
             </div>
           </div>
           <div className="col-12 col-md-6 d-flex justify-content-md-end gap-2 align-items-center flex-wrap">
-            <label className="small fw-bold me-1" style={{ color: 'var(--lb-text)', fontSize: '0.8rem' }}>
+            <label className="small fw-semibold me-1" style={{ color: '#64748b', fontSize: '0.8rem' }}>
               Filter by City:
             </label>
             <select
-              className="form-select form-select-sm w-auto rounded-pill px-3 py-2"
-              style={{ border: '1px solid var(--lb-line)', color: 'var(--lb-ink)', backgroundColor: '#ffffff', fontWeight: 600 }}
+              className="form-select form-select-sm w-auto rounded-pill px-3 py-1"
+              style={{ border: '1px solid #e2e8f0', color: '#1e293b', backgroundColor: '#ffffff', fontWeight: 500, fontSize: '0.82rem' }}
               value={filterCity}
               onChange={(e) => setFilterCity(e.target.value)}
             >
@@ -120,43 +118,43 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
           <table className="table admin-table align-middle">
             <thead>
               <tr>
-                <th>Search Keyword / Query</th>
+                <th className="ps-4">Search Keyword / Query</th>
                 <th>Target Category</th>
                 <th>City</th>
                 <th>Volume (30d)</th>
                 <th>Trend</th>
                 <th>Last Query</th>
-                <th className="text-end">Action</th>
+                <th className="text-end pe-4" style={{ width: '100px' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-5" style={{ color: 'var(--lb-text)' }}>
-                    <i className="bi bi-search fs-1 d-block mb-2" style={{ color: 'var(--lb-primary)' }} />
+                  <td colSpan={7} className="text-center py-5 text-muted">
+                    <i className="bi bi-search fs-2 d-block mb-2 text-secondary" />
                     No search terms found matching filters.
                   </td>
                 </tr>
               ) : (
                 filtered.map((item) => (
                   <tr key={item.id}>
-                    <td>
-                      <div className="d-flex align-items-center gap-2 fw-bold" style={{ color: 'var(--lb-ink)' }}>
-                        <i className="bi bi-search" style={{ color: 'var(--lb-primary)', fontSize: '0.85rem' }} />
+                    <td className="ps-4">
+                      <div className="d-flex align-items-center gap-2 fw-semibold" style={{ color: '#0f172a' }}>
+                        <i className="bi bi-search" style={{ color: '#94a3b8', fontSize: '0.8rem' }} />
                         <span>{item.term}</span>
                       </div>
                     </td>
                     <td>
                       <span
-                        className="badge rounded-pill"
-                        style={{ backgroundColor: 'var(--lb-soft)', color: 'var(--lb-primary)', border: '1px solid var(--lb-line)' }}
+                        className="badge rounded-pill fw-normal"
+                        style={{ backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}
                       >
                         {item.category}
                       </span>
                     </td>
-                    <td className="small fw-semibold" style={{ color: 'var(--lb-text)' }}>{item.city}</td>
+                    <td className="small" style={{ color: '#64748b' }}>{item.city}</td>
                     <td>
-                      <span className="fw-bold" style={{ color: 'var(--lb-ink)' }}>{item.count.toLocaleString()}</span>
+                      <span className="fw-semibold" style={{ color: '#0f172a' }}>{item.count.toLocaleString()}</span>
                     </td>
                     <td>
                       {item.trend === 'up' && (
@@ -175,11 +173,12 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
                         </span>
                       )}
                     </td>
-                    <td className="small" style={{ color: 'var(--lb-text)' }}>{item.lastSearched}</td>
-                    <td className="text-end">
+                    <td className="small" style={{ color: '#64748b' }}>{item.lastSearched}</td>
+                    <td className="text-end pe-4">
                       <button
                         type="button"
                         className="btn btn-sm btn-outline-danger rounded-pill px-3"
+                        style={{ fontSize: '0.75rem' }}
                         onClick={() => handleDelete(item.id)}
                       >
                         <i className="bi bi-trash" />
@@ -198,18 +197,15 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(59, 36, 24, 0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(2px)', zIndex: 1050 }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content admin-card border-0 shadow-lg p-0 overflow-hidden">
+            <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
               <form onSubmit={handleAddTracked}>
-                <div
-                  className="modal-header border-0 p-4 pb-2 d-flex justify-content-between align-items-center"
-                  style={{ borderBottom: '1px solid var(--lb-line)' }}
-                >
-                  <h5 className="modal-title fw-bold mb-0" style={{ color: 'var(--lb-ink)' }}>
+                <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+                  <h6 className="modal-title fw-bold mb-0" style={{ color: '#0f172a' }}>
                     Add Search Keyword to Monitor
-                  </h5>
+                  </h6>
                   <button
                     type="button"
                     className="btn-close"
@@ -218,11 +214,10 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
                 </div>
                 <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Keyword or Phrase</label>
+                    <label className="form-label small fw-semibold text-muted">Keyword or Phrase</label>
                     <input
                       type="text"
-                      className="form-control rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-control rounded-2"
                       placeholder="e.g. CCTV camera installation"
                       value={newKeyword}
                       onChange={(e) => setNewKeyword(e.target.value)}
@@ -230,40 +225,39 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Category</label>
+                    <label className="form-label small fw-semibold text-muted">Category</label>
                     <input
                       type="text"
-                      className="form-control rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-control rounded-2"
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>City</label>
+                    <label className="form-label small fw-semibold text-muted">City</label>
                     <input
                       type="text"
-                      className="form-control rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-control rounded-2"
                       value={newCity}
                       onChange={(e) => setNewCity(e.target.value)}
                       required
                     />
                   </div>
                 </div>
-                <div
-                  className="modal-footer border-0 p-3 px-4 d-flex justify-content-end gap-2"
-                  style={{ backgroundColor: 'var(--lb-soft)' }}
-                >
+                <div className="modal-footer p-3 bg-light border-top">
                   <button
                     type="button"
-                    className="btn lb-btn-soft admin-pill-btn"
+                    className="btn btn-sm btn-secondary rounded-2"
                     onClick={() => setShowAddModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn lb-btn-primary admin-pill-btn">
+                  <button
+                    type="submit"
+                    className="btn btn-sm text-white rounded-2 px-3"
+                    style={{ backgroundColor: 'var(--lb-primary)' }}
+                  >
                     Add Keyword
                   </button>
                 </div>

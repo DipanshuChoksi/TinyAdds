@@ -88,22 +88,20 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
   return (
     <div>
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
         <div>
-          <span className="lb-badge mb-2">
-            Monetization & Plans
-          </span>
-          <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
-            Manage Subscription Packages
+          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
+            Subscription Packages
           </h1>
-          <p className="small mb-0" style={{ color: 'var(--lb-text)' }}>
+          <p className="small mb-0" style={{ color: '#64748b' }}>
             Configure vendor subscription tiers, listing quotas, search boost benefits, and pricing.
           </p>
         </div>
         <div>
           <button
             type="button"
-            className="btn lb-btn-primary d-inline-flex align-items-center gap-2"
+            className="btn btn-sm d-inline-flex align-items-center gap-2 py-1 px-3 text-white fw-medium rounded-pill shadow-sm"
+            style={{ backgroundColor: 'var(--lb-primary)', fontSize: '0.82rem' }}
             onClick={openCreateModal}
           >
             <i className="bi bi-plus-lg" />
@@ -113,25 +111,24 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
       </div>
 
       {/* Packages Grid */}
-      <div className="row g-4">
+      <div className="row g-3">
         {packages.map((pkg) => (
           <div key={pkg.id} className="col-12 col-md-6 col-xl-4">
             <div
               className="admin-card h-100 p-4 position-relative d-flex flex-column"
               style={{
-                borderColor: pkg.isPopular ? 'var(--lb-primary)' : 'var(--lb-line)',
-                boxShadow: pkg.isPopular ? '0 1rem 2.5rem rgba(212, 87, 43, 0.12)' : undefined,
+                borderColor: pkg.isPopular ? 'var(--lb-primary)' : 'rgba(226, 232, 240, 0.8)',
               }}
             >
               {pkg.isPopular && (
                 <span
-                  className="position-absolute top-0 end-0 m-3 badge rounded-pill px-3 py-2"
-                  style={{ backgroundColor: 'var(--lb-primary)', color: '#fff', fontWeight: 700, fontSize: '0.75rem' }}
+                  className="position-absolute top-0 end-0 m-3 badge rounded-pill px-2 py-1"
+                  style={{ backgroundColor: 'rgba(212, 87, 43, 0.12)', color: 'var(--lb-primary)', fontWeight: 600, fontSize: '0.7rem' }}
                 >
-                  Most Popular
+                  Popular
                 </span>
               )}
-              <div className="d-flex align-items-center justify-content-between mb-3">
+              <div className="d-flex align-items-center justify-content-between mb-2">
                 <span
                   className={
                     pkg.status === 'active'
@@ -142,33 +139,33 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                   {pkg.status.toUpperCase()}
                 </span>
               </div>
-              <h3 className="h5 fw-bold mb-1" style={{ color: 'var(--lb-ink)' }}>
+              <h3 className="h6 fw-semibold mb-1" style={{ color: '#0f172a' }}>
                 {pkg.name}
               </h3>
-              <div className="d-flex align-items-baseline gap-1 my-3">
-                <span className="fs-1 fw-bold" style={{ color: 'var(--lb-primary)', lineHeight: 1 }}>
+              <div className="d-flex align-items-baseline gap-1 my-2">
+                <span className="h4 fw-bold mb-0" style={{ color: '#0f172a' }}>
                   ₹{pkg.price}
                 </span>
-                <span className="small fw-semibold" style={{ color: 'var(--lb-text)' }}>/{pkg.period}</span>
+                <span className="small text-muted">/{pkg.period}</span>
               </div>
-              <div className="small mb-3" style={{ color: 'var(--lb-text)' }}>
-                <strong style={{ color: 'var(--lb-ink)' }}>{pkg.listingLimit}</strong> ad listings included
+              <div className="small text-muted mb-3">
+                <strong className="text-dark">{pkg.listingLimit}</strong> ad listings included
               </div>
 
               <div
                 className="pt-3 mb-4 flex-grow-1"
-                style={{ borderTop: '1px solid var(--lb-line)' }}
+                style={{ borderTop: '1px solid #f1f5f9' }}
               >
                 <div
-                  className="small fw-bold text-uppercase mb-2"
-                  style={{ color: 'var(--lb-text)', fontSize: '0.75rem', letterSpacing: '0.05em' }}
+                  className="text-uppercase mb-2 text-muted fw-semibold"
+                  style={{ fontSize: '0.68rem', letterSpacing: '0.05em' }}
                 >
-                  Package Benefits:
+                  Features
                 </div>
                 <ul className="list-unstyled mb-0 d-flex flex-column gap-2 small">
                   {pkg.features.map((feat, idx) => (
-                    <li key={idx} className="d-flex align-items-center gap-2" style={{ color: 'var(--lb-ink)' }}>
-                      <i className="bi bi-check-circle-fill text-success" />
+                    <li key={idx} className="d-flex align-items-center gap-2" style={{ color: '#475569', fontSize: '0.82rem' }}>
+                      <i className="bi bi-check2 text-success fw-bold" />
                       <span>{feat}</span>
                     </li>
                   ))}
@@ -177,20 +174,22 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
 
               <div
                 className="mt-auto pt-3 d-flex gap-2"
-                style={{ borderTop: '1px solid var(--lb-line)' }}
+                style={{ borderTop: '1px solid #f1f5f9' }}
               >
                 <button
                   type="button"
-                  className="btn lb-btn-soft admin-pill-btn flex-grow-1"
+                  className="btn btn-sm btn-outline-secondary rounded-2 flex-grow-1 py-1"
+                  style={{ fontSize: '0.78rem' }}
                   onClick={() => openEditModal(pkg)}
                 >
                   <i className="bi bi-pencil me-1" /> Edit
                 </button>
                 <button
                   type="button"
-                  className={`btn admin-pill-btn ${
+                  className={`btn btn-sm rounded-2 py-1 px-3 ${
                     pkg.status === 'active' ? 'btn-outline-danger' : 'btn-outline-success'
                   }`}
+                  style={{ fontSize: '0.78rem' }}
                   onClick={() => toggleStatus(pkg.id)}
                 >
                   {pkg.status === 'active' ? 'Deactivate' : 'Activate'}
@@ -206,18 +205,15 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(59, 36, 24, 0.4)', backdropFilter: 'blur(3px)', zIndex: 1050 }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(2px)', zIndex: 1050 }}
         >
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content admin-card border-0 shadow-lg p-0 overflow-hidden">
+            <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
               <form onSubmit={handleSave}>
-                <div
-                  className="modal-header border-0 p-4 pb-2 d-flex justify-content-between align-items-center"
-                  style={{ borderBottom: '1px solid var(--lb-line)' }}
-                >
-                  <h5 className="modal-title fw-bold mb-0" style={{ color: 'var(--lb-ink)' }}>
+                <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+                  <h6 className="modal-title fw-bold mb-0" style={{ color: '#0f172a' }}>
                     {editingPkg ? 'Edit Package' : 'Create Package'}
-                  </h5>
+                  </h6>
                   <button
                     type="button"
                     className="btn-close"
@@ -226,11 +222,10 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                 </div>
                 <div className="modal-body p-4">
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Package Name</label>
+                    <label className="form-label small fw-semibold text-muted">Package Name</label>
                     <input
                       type="text"
-                      className="form-control rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-control rounded-2"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
@@ -238,22 +233,20 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                   </div>
                   <div className="row g-2 mb-3">
                     <div className="col-6">
-                      <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Price (INR)</label>
+                      <label className="form-label small fw-semibold text-muted">Price (INR)</label>
                       <input
                         type="number"
-                        className="form-control rounded-4 p-3"
-                        style={{ border: '1px solid var(--lb-line)' }}
+                        className="form-control rounded-2"
                         value={price}
                         onChange={(e) => setPrice(Number(e.target.value))}
                         required
                       />
                     </div>
                     <div className="col-6">
-                      <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Listing Limit</label>
+                      <label className="form-label small fw-semibold text-muted">Listing Limit</label>
                       <input
                         type="number"
-                        className="form-control rounded-4 p-3"
-                        style={{ border: '1px solid var(--lb-line)' }}
+                        className="form-control rounded-2"
                         value={listingLimit}
                         onChange={(e) => setListingLimit(Number(e.target.value))}
                         required
@@ -261,10 +254,9 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--lb-ink)' }}>Features (one per line)</label>
+                    <label className="form-label small fw-semibold text-muted">Features (one per line)</label>
                     <textarea
-                      className="form-control rounded-4 p-3"
-                      style={{ border: '1px solid var(--lb-line)' }}
+                      className="form-control rounded-2"
                       rows={4}
                       value={featuresText}
                       onChange={(e) => setFeaturesText(e.target.value)}
@@ -279,23 +271,24 @@ export default function ManagePackageView({ initialPackages }: ManagePackageView
                       checked={isPopular}
                       onChange={(e) => setIsPopular(e.target.checked)}
                     />
-                    <label className="form-check-label small fw-semibold" htmlFor="isPopularCheck" style={{ color: 'var(--lb-ink)' }}>
-                      Mark as &quot;Most Popular&quot; featured card
+                    <label className="form-check-label small" htmlFor="isPopularCheck">
+                      Mark as Popular tier
                     </label>
                   </div>
                 </div>
-                <div
-                  className="modal-footer border-0 p-3 px-4 d-flex justify-content-end gap-2"
-                  style={{ backgroundColor: 'var(--lb-soft)' }}
-                >
+                <div className="modal-footer p-3 bg-light border-top">
                   <button
                     type="button"
-                    className="btn lb-btn-soft admin-pill-btn"
+                    className="btn btn-sm btn-secondary rounded-2"
                     onClick={() => setShowModal(false)}
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn lb-btn-primary admin-pill-btn">
+                  <button
+                    type="submit"
+                    className="btn btn-sm text-white rounded-2 px-3"
+                    style={{ backgroundColor: 'var(--lb-primary)' }}
+                  >
                     Save Changes
                   </button>
                 </div>
