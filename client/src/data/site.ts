@@ -105,34 +105,161 @@ export const HOME_EVENTS: HomeEvent[] = TEMPLATES.map((t, i) => ({
   createdAt: new Date(2026, 0, 10 + i).toISOString(),
 }));
 
-export const BLOGS: BlogSummary[] = [1, 2, 3, 4].map((n) => ({
-  slug: `barcelona-national-zoo-${n}`,
-  title: 'Barcelona National Zoo',
-  tag: 'Entertainment',
-  date: '01/02/2026',
-  image: '/assets/img/listings/city-guide/v1/01.jpg',
-}));
+// Blog images are the demo-template pictures; swap for /public paths when real assets exist.
+const BLOG_IMG = 'https://html.aqlova.com/listbnb-prv/listbnb/assets/img';
+const BLOG_EXCERPT =
+  "In a world brimming with opportunities, it's disheartening to know that not everyone has equal access to education. Education is the cornerstone of progress and personal.";
 
-export const BLOG_POST: BlogPost = {
-  title: 'How real estate drone photography can elevate your listing?',
-  author: 'Darrell Steward',
-  date: 'May 05, 2024',
-  intro:
-    "In the competitive world of real estate, first impressions matter, and drone photography has become a game-changer for property listings. The use of aerial imagery captured by drones can significantly elevate the presentation of a property. Here's how real estate drone photography can make your listing stand out.",
-  images: ['/assets/img/blog/v1/single/01.jpg', '/assets/img/blog/v1/single/02.jpg'],
-  sections: [
-    ['Captivating perspectives', 'Drones provide a unique vantage point, capturing stunning aerial views of the property and its surroundings. This allows potential buyers to visualize the layout, landscaping, and neighborhood in a way that traditional ground-level photos cannot convey.'],
-    ['Highlighting property features', "Drones excel at showcasing expansive properties, emphasizing key features like pools, gardens, and outdoor amenities. Aerial shots provide a comprehensive view, helping buyers understand the property's layout and potential."],
-    ['Showcasing surrounding area', "Drone photography extends beyond the property boundaries, offering a glimpse of the surrounding neighborhood, parks, or proximity to landmarks. This broader perspective can influence a buyer's decision by presenting the property in its larger context."],
-    ['Creating a cinematic experience', 'Drones can capture dynamic, sweeping shots that add a cinematic quality to property videos. This immersive experience can evoke emotion and create a lasting impression, setting your listing apart from others.'],
-    ['Emphasizing property size and scale', "Drones excel at illustrating the size and scale of a property, particularly for larger estates or expansive landscapes. This helps potential buyers gauge the property's proportions and get a comprehensive understanding of its size."],
-    ['Engaging online presence', "In an era where online browsing plays a crucial role in the home-buying process, drone photography enhances your listing's online presence. Eye-catching visuals grab attention, encouraging potential buyers to explore the property further."],
-    ['Demonstrating property connectivity', "Drones can showcase a property's proximity to amenities, schools, and transportation hubs. This connectivity is valuable information for buyers looking for a convenient and well-connected living environment."],
-    ['Competitive edge in marketing', 'As drone technology becomes more accessible, incorporating it into your real estate marketing strategy can give you a competitive edge. Properties with high-quality aerial imagery are more likely to attract attention and stand out in a crowded market.'],
+export const BLOG_PAGE_SIZE = 6;
+
+export const BLOGS: BlogSummary[] = [
+  {
+    slug: 'buildings-and-other-physical-structures',
+    title: 'Buildings and other physical structures, as well as the profession...',
+    tag: 'classified',
+    date: 'March 8, 2023',
+    image: `${BLOG_IMG}/blog/blog-details-1.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 23,
+    views: '2000+',
+    keywords: ['Architecture', 'Design'],
+  },
+  {
+    slug: 'powered-by-nvidia-ada-lovelace-architecture',
+    title: 'It’s powered by the NVIDIA Ada Lovelace architecture and comes',
+    tag: 'classified',
+    date: 'March 8, 2023',
+    image: `${BLOG_IMG}/blog/blog-details-2.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 23,
+    views: '2000+',
+    keywords: ['Renovation', 'Construction'],
+  },
+  {
+    slug: '16-gb-of-g6x-memory-for-gamers',
+    title: 'With 16 GB of G6X memory to deliver the ultimate experience for gamers',
+    tag: 'classified',
+    date: 'March 8, 2023',
+    image: `${BLOG_IMG}/blog/blog-details-3.jpg`,
+    gallery: [
+      `${BLOG_IMG}/blog/blog-details-3.jpg`,
+      `${BLOG_IMG}/blog/blog-details-2.jpg`,
+      `${BLOG_IMG}/blog/blog-details-1.jpg`,
+    ],
+    excerpt: BLOG_EXCERPT,
+    comments: 23,
+    views: '2000+',
+    keywords: ['Soil', 'Rebuild'],
+  },
+  {
+    slug: '22-4-power-supply-and-16-pin-connector',
+    title: 'This graphics card has a 22+4 power supply and a 16-pin power connector.',
+    tag: 'classified',
+    date: 'March 8, 2023',
+    image: `${BLOG_IMG}/blog/blog-details-4.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 23,
+    views: '2000+',
+    keywords: ['Interior', 'Architecture'],
+  },
+  {
+    slug: 'recommended-power-input-and-tdp',
+    title: 'Its recommended power input is One 16-Pin , & its TDP is 460W.',
+    tag: 'classified',
+    date: 'March 8, 2023',
+    image: `${BLOG_IMG}/blog/blog-details-5.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 23,
+    views: '2000+',
+    keywords: ['Design', 'Renovation'],
+  },
+  {
+    slug: 'need-to-avoid-redirect-couple-our-design',
+    title: 'Need to avoid redirect couple our design',
+    tag: 'classified',
+    date: 'November 21, 2022',
+    image: `${BLOG_IMG}/blog/blog-details-4.jpg`,
+    thumb: `${BLOG_IMG}/blog/details-sm-1-1.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 12,
+    views: '1500+',
+    keywords: ['Construction', 'Interior'],
+  },
+  {
+    slug: 'this-graphics-card-has-a-22-4-power',
+    title: 'This graphics card has a 22+4 power',
+    tag: 'classified',
+    date: 'November 21, 2022',
+    image: `${BLOG_IMG}/blog/blog-details-5.jpg`,
+    thumb: `${BLOG_IMG}/blog/details-sm-1-2.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 12,
+    views: '1500+',
+    keywords: ['Soil', 'Architecture'],
+  },
+  {
+    slug: 'for-gamers-and-creators',
+    title: 'For gamers and creators.',
+    tag: 'classified',
+    date: 'November 21, 2022',
+    image: `${BLOG_IMG}/blog/blog-details-1.jpg`,
+    thumb: `${BLOG_IMG}/blog/details-sm-1-3.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 12,
+    views: '1500+',
+    keywords: ['Rebuild', 'Design'],
+  },
+  {
+    slug: 'to-deliver-the-ultimate-experience',
+    title: 'To deliver the ultimate experience',
+    tag: 'classified',
+    date: 'November 21, 2022',
+    image: `${BLOG_IMG}/blog/blog-details-2.jpg`,
+    thumb: `${BLOG_IMG}/blog/details-sm-1-4.jpg`,
+    excerpt: BLOG_EXCERPT,
+    comments: 12,
+    views: '1500+',
+    keywords: ['Interior', 'Renovation'],
+  },
+];
+
+/** Article copy shown on every blog details page (mock – same text for each slug). */
+export const BLOG_POST: Omit<BlogPost, keyof BlogSummary> = {
+  paragraphs: [
+    "In a world brimming with opportunities, it's disheartening to know that not everyone has equal access to education. Education is the cornerstone of progress and personal growth, yet countless communities around the globe struggle to provide quality learning experiences for their children. This blog post delves into the profound significance of supporting education initiatives in underserved communities and how they can pave the way for a brighter future.",
+    "It's no secret that access to quality education is unevenly distributed. Many children in underserved communities lack proper school infrastructure, qualified teachers, and essential learning resources. This disparity creates a cycle of disadvantage that persists from one generation to the next. Addressing this divide is crucial for breaking the chains of poverty and fostering sustainable development. Education is more than just acquiring facts; it's about empowerment. When we invest in education, we equip individuals with the tools they need to think critically, solve problems, and make informed decisions. Education empowers children to dream beyond their circumstances and envision a world of possibilities. It's a catalyst for personal growth, self-confidence, and social mobility. Education doesn't just benefit individuals; it transforms entire communities. Educated individuals become agents of change, driving progress and innovation in their societies. By nurturing a culture of learning, underserved communities can break free from cycles of poverty, reduce crime rates, and contribute positively to economic development.",
+    "Education is more than just acquiring facts; it's about empowerment. When we invest in education, we equip individuals with the tools they need to think critically, solve problems, and make informed decisions. Education empowers children to dream beyond their circumstances and envision a world of possibilities. It's a catalyst for personal growth, self-confidence, and social mobility. Education doesn't just benefit individuals; it transforms entire communities. Educated individuals become agents of change, driving progress and innovation in their societies. By nurturing a culture of learning, underserved communities can break free from cycles of poverty, reduce crime rates, and contribute positively to economic development.",
+    'Educated individuals become agents of change, driving progress and innovation in their societies. By nurturing a culture of learning, underserved communities can break free from cycles of poverty, reduce crime rates, and contribute positively to economic development is not only easy.',
+    "In a world brimming with opportunities, it's disheartening to know that not everyone has equal access to education. Education is the cornerstone of progress and personal growth, yet countless communities around the globe struggle to provide quality learning experiences for their children. This blog post delves into the profound significance of supporting education initiatives in underserved communities and how they can pave the way for a brighter future.",
   ],
-  conclusion:
-    "Incorporating drone photography into your real estate listings not only adds a touch of innovation but also provides potential buyers with a comprehensive and visually appealing overview of the property. It's an investment that can pay off by making your listings more attractive and memorable in the eyes of prospective buyers. So why settle for a worm's-eye view when you can soar above the competition with drone photography?",
-  authorCard: { name: 'Naman Gami', avatar: '/assets/img/blog/v1/single/avatar.jpg' },
+  inlineImage: `${BLOG_IMG}/blog/blog-details-5.jpg`,
+  quote: {
+    text: 'This quote emphasizes the significance of charity as an essential virtue that allows compassion and benevolence to flow from one person',
+    name: 'Ronald D. Dowson',
+    role: 'CTO, Dowson Co.',
+    avatar: `${BLOG_IMG}/avata/avata-8-1.png`,
+  },
+  tags: ['Find', 'Classified', 'ROI'],
+  commentList: [
+    {
+      name: 'Tromas H. Hendson',
+      date: 'Nov 9, 2023',
+      avatar: `${BLOG_IMG}/avata/avata-8-2.png`,
+      text: 'Variations in the floor plan, window location, and interstitial outdoor spaces enhance this material homogeneity. The goal was to produce a unified whole using a modern design language, where attention to materiality and detail is evident. All flats have two sides and are in close proximity to the outside world.',
+    },
+    {
+      name: 'Tromas H. Hendson',
+      date: 'Nov 9, 2023',
+      avatar: `${BLOG_IMG}/avata/avata-8-3.png`,
+      text: 'Variations in the floor plan, window location, and interstitial outdoor spaces enhance this material homogeneity. The goal was to produce a unified whole using a modern design language, where attention to materiality and detail is evident.',
+    },
+    {
+      name: 'Tromas H. Hendson',
+      date: 'Nov 9, 2023',
+      avatar: `${BLOG_IMG}/avata/avata-8-4.png`,
+      text: 'Variations in the floor plan, window location, and interstitial outdoor spaces enhance this material homogeneity. The goal was to produce a unified whole using a modern design language, where attention to materiality and detail is evident. All flats have two sides and are in close proximity to the outside world.',
+    },
+  ],
 };
 
 export const BENEFITS = [

@@ -9,7 +9,7 @@ export default function Hero() {
         <div className="container position-relative">
           <CategoryMarquee />
 
-          <div className="row align-items-center g-5 pt-4 pb-5">
+          <div className="row align-items-center g-lg-5 g-0 pt-4 pb-5">
             <div className="col-lg-6">
               <span className="lb-badge">TinyAdds</span>
               <h1 className="lb-hero-title">Get daily thing in same platform</h1>

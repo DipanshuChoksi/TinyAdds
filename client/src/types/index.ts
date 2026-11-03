@@ -24,17 +24,30 @@ export interface Listing extends HomeEvent { emotion: string }
 
 export interface MyListing extends EventSummary { created: string }
 
-export interface BlogSummary { slug: string; title: string; tag: string; date: string; image: string }
-
-export interface BlogPost {
+export interface BlogSummary {
+  slug: string;
   title: string;
-  author: string;
+  tag: string;
   date: string;
-  intro: string;
-  images: string[];
-  sections: [string, string][];
-  conclusion: string;
-  authorCard: { name: string; avatar: string };
+  image: string;
+  excerpt?: string;
+  gallery?: string[];
+  thumb?: string;
+  comments?: number;
+  views?: string;
+  keywords?: string[];
+}
+
+export interface BlogQuote { text: string; name: string; role: string; avatar: string }
+
+export interface BlogComment { name: string; date: string; avatar: string; text: string }
+
+export interface BlogPost extends BlogSummary {
+  paragraphs: string[];
+  inlineImage: string;
+  quote: BlogQuote;
+  tags: string[];
+  commentList: BlogComment[];
 }
 
 export interface User {

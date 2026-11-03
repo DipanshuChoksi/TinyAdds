@@ -14,7 +14,7 @@ export default function Footer() {
     <>
       <footer className="lb-footer">
         <div className="container">
-          <div className="row g-5 lb-footer-top">
+          <div className="row g-lg-5 g-0 lb-footer-top">
             <div className="col-lg-4">
               <span className="lb-footer-label">TinyAdds</span>
               <p className="mb-1 small opacity-75">support email</p>
@@ -29,16 +29,16 @@ export default function Footer() {
             <div className="col-md-6 col-lg-4">
               <h3 className="lb-footer-h">Essential</h3>
               <ul className="lb-footer-links">
-      <li><Link href="/contact">Company &amp; Contact Info</Link></li>
-      <li><a href="#">Blog &amp; Articles</a></li>
-      <li><a href="#">Sitemap</a></li>
-      <li><a href="#">Terms of Service</a></li>
-      <li><a href="#">Privacy Policy</a></li>
-      <li><a href="#">Live Chat</a></li>
-      <li><a href="#">FAQ Page</a></li>
-      <li><a href="#">How to Stay Safe</a></li>
-      <li><a href="#">Terms &amp; Conditions</a></li>
-      <li><Link href="/contact">Contact Us</Link></li>
+                <li><Link href="/contact">Company &amp; Contact Info</Link></li>
+                <li><a href="#">Blog &amp; Articles</a></li>
+                <li><a href="#">Sitemap</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Live Chat</a></li>
+                <li><a href="#">FAQ Page</a></li>
+                <li><a href="#">How to Stay Safe</a></li>
+                <li><a href="#">Terms &amp; Conditions</a></li>
+                <li><Link href="/contact">Contact Us</Link></li>
               </ul>
             </div>
             <div className="col-md-6 col-lg-4">
@@ -48,13 +48,9 @@ export default function Footer() {
           </div>
 
           <div className="lb-footer-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <a href="#"><img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/logo/logo-white-2.png" alt="TinyAdds" height="34" /></a>
-            <p className="mb-0 small">Copyright &amp; Design by <a href="#">@ThemePure</a> - 2024</p>
+            <Link href="/" className="lb-wordmark">Tiny<span>Adds</span></Link>
+            <p className="mb-0 small">Copyright &copy; 2026 TinyAdds</p>
             <div className="lb-social"><a href="#" aria-label="Facebook"><i className="bi bi-facebook"></i></a><a href="#" aria-label="Twitter"><i className="bi bi-twitter-x"></i></a><a href="#" aria-label="Instagram"><i className="bi bi-instagram"></i></a><a href="#" aria-label="LinkedIn"><i className="bi bi-linkedin"></i></a></div>
-            <div className="dropdown">
-              <button className="btn btn-outline-light btn-sm rounded-pill dropdown-toggle px-3" data-bs-toggle="dropdown" aria-expanded="false"><i className="bi bi-globe2 me-2"></i>English</button>
-              <ul className="dropdown-menu dropdown-menu-end"><li><a className="dropdown-item" href="#">Arabic</a></li><li><a className="dropdown-item" href="#">Spanish</a></li><li><a className="dropdown-item" href="#">Mandarin</a></li></ul>
-            </div>
           </div>
         </div>
       </footer>

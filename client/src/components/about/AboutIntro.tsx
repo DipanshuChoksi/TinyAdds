@@ -13,7 +13,7 @@ export default function AboutIntro() {
   return (
     <section className="lb-section">
       <div className="container">
-        <div className="row align-items-center g-5">
+        <div className="row align-items-center g-lg-5 g-0">
           <div className="col-lg-5">
             <div className="lb-about-media">
               <span className="lb-blob lb-blob-1" aria-hidden="true"></span>

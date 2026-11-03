@@ -46,7 +46,18 @@ export async function getBlogs(): Promise<BlogSummary[]> {
   return BLOGS;
 }
 export async function getBlog(slug: string): Promise<BlogPost | null> {
-  return BLOGS.some((b) => b.slug === slug) ? BLOG_POST : null;
+  const summary = BLOGS.find((b) => b.slug === slug);
+  return summary ? { ...summary, ...BLOG_POST } : null;
+}
+export async function searchBlogs(query = ''): Promise<BlogSummary[]> {
+  const term = query.trim().toLowerCase();
+  if (!term) return BLOGS;
+  return BLOGS.filter((b) =>
+    [b.title, b.excerpt ?? '', b.tag, ...(b.keywords ?? [])].join(' ').toLowerCase().includes(term),
+  );
+}
+export async function getRecentBlogs(limit = 4): Promise<BlogSummary[]> {
+  return BLOGS.slice(-limit);
 }
 export async function getVendor(): Promise<Vendor> {
   return VENDOR;
