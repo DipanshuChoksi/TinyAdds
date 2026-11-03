@@ -30,18 +30,27 @@ export default function AdminSidebar() {
     return pathname.startsWith(href);
   };
 
-  return (
-    <aside className="admin-sidebar d-flex flex-column p-3">
+  const closeOffcanvas = () => {
+    const el = document.getElementById('adminSidebarNav');
+    if (el?.classList.contains('show')) {
+      el.querySelector<HTMLElement>('.btn-close')?.click();
+    }
+  };
+
+  const navContent = (
+    <>
       {/* Brand Wordmark & Label */}
-      <div className="px-2 py-2 mb-3 border-bottom pb-3" style={{ borderColor: 'var(--lb-line)' }}>
-        <Link href="/" className="lb-wordmark text-decoration-none d-block mb-1">
+      <div className="px-2 py-2 mb-3 border-bottom pb-3 d-flex align-items-center justify-content-between" style={{ borderColor: 'var(--lb-line)' }}>
+        <Link href="/" className="lb-wordmark text-decoration-none d-block m-0" onClick={closeOffcanvas}>
           Tiny<span>Adds</span>
         </Link>
-        <div className="d-flex align-items-center gap-2 mt-2">
-          <span className="lb-badge" style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem' }}>
-            {/* <i className="bi bi-shield-lock-fill me-1" /> Control Center */}
-          </span>
-        </div>
+        <button
+          type="button"
+          className="btn-close d-lg-none"
+          data-bs-dismiss="offcanvas"
+          data-bs-target="#adminSidebarNav"
+          aria-label="Close menu"
+        />
       </div>
 
       {/* Nav Menu */}
@@ -59,6 +68,7 @@ export default function AdminSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={closeOffcanvas}
                 className={`admin-nav-link d-flex align-items-center justify-content-between text-decoration-none ${
                   active ? 'active' : ''
                 }`}
@@ -94,6 +104,7 @@ export default function AdminSidebar() {
       <div className="border-top pt-3 mt-auto" style={{ borderColor: 'var(--lb-line)' }}>
         <Link
           href="/"
+          onClick={closeOffcanvas}
           className="admin-nav-link d-flex align-items-center gap-2 text-decoration-none mb-2"
           style={{ color: 'var(--lb-text)' }}
         >
@@ -120,6 +131,49 @@ export default function AdminSidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile Topbar with Hamburger Toggle */}
+      <header
+        className="d-lg-none bg-white px-3 py-2 border-bottom d-flex align-items-center justify-content-between sticky-top"
+        style={{ borderColor: 'var(--lb-line)', zIndex: 1010 }}
+      >
+        <Link href="/" className="lb-wordmark text-decoration-none m-0">
+          Tiny<span>Adds</span>
+        </Link>
+        <button
+          className="btn btn-light rounded-pill border-0 p-2 d-flex align-items-center justify-content-center"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#adminSidebarNav"
+          aria-controls="adminSidebarNav"
+          aria-label="Open navigation menu"
+          style={{ width: 42, height: 42, backgroundColor: 'var(--lb-soft)', color: 'var(--lb-primary)' }}
+        >
+          <i className="bi bi-list fs-3" />
+        </button>
+      </header>
+
+      {/* Desktop Sticky Sidebar (visible on lg and up) */}
+      <aside className="admin-sidebar d-none d-lg-flex flex-column p-3">
+        {navContent}
+      </aside>
+
+      {/* Mobile Offcanvas Drawer (hidden on lg and up) */}
+      <div
+        className="offcanvas offcanvas-start d-lg-none"
+        tabIndex={-1}
+        id="adminSidebarNav"
+        aria-labelledby="adminSidebarNavLabel"
+        style={{ width: '290px', backgroundColor: '#ffffff' }}
+      >
+        <div className="offcanvas-body d-flex flex-column p-3 h-100">
+          {navContent}
+        </div>
+      </div>
+    </>
   );
 }
