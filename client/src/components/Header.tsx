@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import LocationModal from "@/components/LocationModal";
+import Image from "next/image";
 
 /** Close the mobile drawer (Bootstrap's own dismiss attribute would cancel the link navigation). */
 const closeDrawer = () => {
@@ -11,21 +14,41 @@ const closeDrawer = () => {
 
 export default function Header() {
   const pathname = usePathname();
+  const [locOpen, setLocOpen] = useState(false);
+  const [city, setCity] = useState("");
+
+  useEffect(() => {
+    try { setCity(localStorage.getItem("tinyadds:city") ?? ""); } catch { /* ignore */ }
+  }, []);
+
+  const selectCity = (value: string) => {
+    setCity(value);
+    try { localStorage.setItem("tinyadds:city", value); } catch { /* ignore */ }
+  };
+
   const onAbout = pathname === "/about-us";
   const onBlog = pathname === "/blog" || pathname.startsWith("/blog/");
   const onContact = pathname === "/contact";
-
-  // Do not render public header on admin portal routes
-  if (pathname?.startsWith("/admin")) {
-    return null;
-  }
 
   return (
     <>
       <header className="lb-header sticky-top">
         <nav className="navbar navbar-expand-xl">
           <div className="container">
-            <Link className="navbar-brand lb-wordmark" href="/">Tiny<span>Adds</span></Link>
+            <Link className="navbar-brand lb-wordmark" href="/">
+              <Image
+                src="/logo.png"
+                alt="TinyAdds"
+                width={180}
+                height={60}
+                priority
+                style={{
+                  width: "180px",
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </Link>
             <button className="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainNav" aria-controls="mainNav" aria-label="Toggle navigation"><i className="bi bi-list fs-1"></i></button>
             <div className="offcanvas offcanvas-end lb-drawer" tabIndex={-1} id="mainNav" aria-labelledby="mainNavLabel">
               <div className="offcanvas-header">
@@ -40,8 +63,11 @@ export default function Header() {
                   <li className="nav-item"><Link className={`nav-link${onContact ? " active" : ""}`} href="/contact" onClick={closeDrawer}>Contact</Link></li>
                 </ul>
                 <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3 mt-3 mt-xl-0">
+                  <button type="button" className="lb-city-btn" onClick={() => setLocOpen(true)} aria-label="Select location">
+                    <i className="bi bi-geo-alt-fill"></i>{city && <span>{city}</span>}
+                  </button>
                   <Link href="/login" className="lb-signin" onClick={closeDrawer}><i className="bi bi-person-circle me-2"></i>Sign In</Link>
-                  <a href="#" className="btn lb-btn-primary"><i className="bi bi-plus-circle me-2"></i>Post Your Add</a>
+                  <Link href="/client-admin" className="btn lb-btn-primary" onClick={closeDrawer}><i className="bi bi-plus-circle me-2"></i>Post Your Ad</Link>
                 </div>
               </div>
             </div>
@@ -49,6 +75,7 @@ export default function Header() {
         </nav>
       </header>
 
+      <LocationModal open={locOpen} current={city} onClose={() => setLocOpen(false)} onSelect={selectCity} />
     </>
   );
 }
