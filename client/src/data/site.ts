@@ -522,8 +522,6 @@ export const ADMIN_MASTER_ITEMS: AdminMasterItem[] = [
   { id: 'mi-1', type: 'category', name: 'Automotive', slug: 'automotive', status: 'active', itemCount: 42 },
   { id: 'mi-2', type: 'category', name: 'Communication Services', slug: 'communication-services', status: 'active', itemCount: 28 },
   { id: 'mi-3', type: 'category', name: 'Healthcare', slug: 'healthcare', status: 'active', itemCount: 35 },
-  { id: 'mi-4', type: 'emotion', name: 'Happy', slug: 'happy', status: 'active', itemCount: 64 },
-  { id: 'mi-5', type: 'emotion', name: 'Corporate', slug: 'corporate', status: 'active', itemCount: 51 },
   { id: 'mi-6', type: 'employee', name: 'Rajesh Sharma (Operations Lead)', slug: 'rajesh-sharma', status: 'active', itemCount: 14 },
   { id: 'mi-7', type: 'employee', name: 'Priya Patel (Account Manager)', slug: 'priya-patel', status: 'active', itemCount: 22 },
   { id: 'mi-8', type: 'manage-cms', name: 'Terms of Service Page', slug: 'terms-of-service', status: 'active', itemCount: 1 },

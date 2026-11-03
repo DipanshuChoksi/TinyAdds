@@ -142,9 +142,13 @@ export interface AdminMasterItem {
   id: string;
   type: MasterEntityType;
   name: string;
-  slug: string;
+  slug?: string;
   status: 'active' | 'inactive';
   itemCount: number;
+  image?: string;
   metadata?: Record<string, string | number | boolean | undefined>;
 }
+
+export * from './emotion';
+
 
