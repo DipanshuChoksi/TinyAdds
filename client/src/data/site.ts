@@ -480,8 +480,6 @@ export const ADMIN_MASTER_ITEMS: AdminMasterItem[] = [
   { id: 'mi-1', type: 'category', name: 'Automotive', slug: 'automotive', status: 'active', itemCount: 42 },
   { id: 'mi-2', type: 'category', name: 'Communication Services', slug: 'communication-services', status: 'active', itemCount: 28 },
   { id: 'mi-3', type: 'category', name: 'Healthcare', slug: 'healthcare', status: 'active', itemCount: 35 },
-  { id: 'mi-8', type: 'manage-cms', name: 'Terms of Service Page', slug: 'terms-of-service', status: 'active', itemCount: 1 },
-  { id: 'mi-9', type: 'manage-cms', name: 'Privacy Policy Page', slug: 'privacy-policy', status: 'active', itemCount: 1 },
   { id: 'mi-10', type: 'manage-marquee', name: 'Diwali Festive Boost: 20% Off Listing Packages', slug: 'diwali-festive-boost', status: 'active', itemCount: 1 },
   { id: 'mi-11', type: 'tax-master', name: 'GST 18% (Standard Services)', slug: 'gst-18', status: 'active', itemCount: 18 },
   { id: 'mi-12', type: 'tax-master', name: 'GST 5% (Essential Services)', slug: 'gst-5', status: 'active', itemCount: 5 },
