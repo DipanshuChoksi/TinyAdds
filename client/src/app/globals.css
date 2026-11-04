@@ -3082,7 +3082,7 @@ a.lb-post-media:hover img {
 /* ===== reusable UI: toast + confirm (swal style) ===== */
 .lb-ui-toasts {
   position: fixed;
-  top: 1rem;
+  bottom: 1rem;
   right: 1rem;
   z-index: 3200;
   display: grid;

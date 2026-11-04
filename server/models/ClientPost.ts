@@ -18,6 +18,8 @@ const clientPostSchema = new Schema(
     description: { type: String, default: "", maxlength: 100_000 },
     isDisplay: { type: Boolean, default: true, index: true },
     deletedAt: { type: Date, default: null },
+    deletedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    deletedByName: { type: String, default: "", trim: true, maxlength: 161 },
   },
   { timestamps: true }
 );
@@ -41,6 +43,8 @@ export interface ClientPostData {
   description: string;
   isDisplay: boolean;
   deletedAt: Date | null;
+  deletedBy: Types.ObjectId | null;
+  deletedByName: string;
 }
 
 export type ClientPostDocument = HydratedDocument<ClientPostData>;

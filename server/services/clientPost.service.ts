@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { ClientPost, type ClientPostData } from "../models/ClientPost.js";
+import { User } from "../models/User.js";
 import { NotFoundError } from "../utils/errors.js";
 import type { ClientPostInput } from "../validators/post.validator.js";
 
@@ -66,9 +67,20 @@ export class ClientPostService {
 
   async softDelete(ownerId: string, postId: string): Promise<void> {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
+    const actor = await User.findById(ownerId).select("firstName lastName").lean();
+    if (!actor) throw new NotFoundError("Account not found");
+    const deletedAt = new Date();
+    const deletedByName = `${actor.firstName} ${actor.lastName}`.trim();
     const post = await ClientPost.findOneAndUpdate(
       { _id: postId, owner: ownerId, isDisplay: true },
-      { $set: { isDisplay: false, deletedAt: new Date() } }
+      {
+        $set: {
+          isDisplay: false,
+          deletedAt,
+          deletedBy: new Types.ObjectId(ownerId),
+          deletedByName,
+        },
+      }
     );
     if (!post) throw new NotFoundError("Post not found");
   }

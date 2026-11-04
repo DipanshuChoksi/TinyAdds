@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import LocationModal from "@/components/LocationModal";
 import Image from "next/image";
+import http from "@/lib/http";
 
 /** Close the mobile drawer (Bootstrap's own dismiss attribute would cancel the link navigation). */
 const closeDrawer = () => {
@@ -16,10 +17,21 @@ export default function Header() {
   const pathname = usePathname();
   const [locOpen, setLocOpen] = useState(false);
   const [city, setCity] = useState("");
+  const [accountName, setAccountName] = useState("");
 
   useEffect(() => {
     try { setCity(localStorage.getItem("tinyadds:city") ?? ""); } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    http.get<{ firstName: string; lastName: string }>("/auth/me").then(({ data }) => {
+      if (active) setAccountName(`${data.firstName} ${data.lastName}`.trim());
+    }).catch(() => {
+      if (active) setAccountName("");
+    });
+    return () => { active = false; };
+  }, [pathname]);
 
   const selectCity = (value: string) => {
     setCity(value);
@@ -73,7 +85,7 @@ export default function Header() {
                   <button type="button" className="lb-city-btn" onClick={() => setLocOpen(true)} aria-label="Select location">
                     <i className="bi bi-geo-alt-fill"></i>{city && <span>{city}</span>}
                   </button>
-                  <Link href="/login" className="lb-signin" onClick={closeDrawer}><i className="bi bi-person-circle me-2"></i>Sign In</Link>
+                  <Link href={accountName ? "/client-admin" : "/login"} className="lb-signin" onClick={closeDrawer}><i className="bi bi-person-circle me-2"></i>{accountName || "Sign In"}</Link>
                   <Link href="/client-admin" className="btn lb-btn-primary" onClick={closeDrawer}><i className="bi bi-plus-circle me-2"></i>Post Your Ad</Link>
                 </div>
               </div>

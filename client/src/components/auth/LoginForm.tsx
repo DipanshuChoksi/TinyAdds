@@ -29,7 +29,7 @@ export default function LoginForm() {
     try {
       await http.post("/auth/login", { email: emailValue, password });
       toast.success("Login successful");
-      router.push("/client-admin");
+      router.push("/client-admin/add-post");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to log in");
     } finally {
