@@ -374,48 +374,6 @@ export const DEVICES: Device[] = [
 
 export const LANGUAGES = ['English', 'Spanish', 'French', 'German', 'Italian'];
 
-export const ADMIN_INQUIRIES: AdminInquiry[] = [
-  {
-    id: 'inq-1',
-    name: 'Amit Sharma',
-    email: 'amit.sharma@example.com',
-    phone: '+91 98765 43210',
-    service: 'Automotive Electrician',
-    message: 'Looking for verified mobile mechanic contractors in Vadodara area for bulk fleet servicing.',
-    date: '2026-11-01',
-    status: 'pending',
-  },
-  {
-    id: 'inq-2',
-    name: 'Pooja Patel',
-    email: 'pooja.patel@example.com',
-    phone: '+91 98234 56789',
-    service: 'Retail Fit-out',
-    message: 'Need quotation details for listing my commercial furniture brand on featured banner.',
-    date: '2026-10-31',
-    status: 'in_progress',
-  },
-  {
-    id: 'inq-3',
-    name: 'Rahul Verma',
-    email: 'rahul.v@example.com',
-    phone: '+91 97112 34567',
-    service: 'Healthcare Equipment',
-    message: 'Inquiring about package upgrade to post multiple city ads simultaneously.',
-    date: '2026-10-29',
-    status: 'resolved',
-  },
-  {
-    id: 'inq-4',
-    name: 'Sneha Deshmukh',
-    email: 'sneha.d@example.com',
-    phone: '+91 99887 76655',
-    service: 'Education & Coaching',
-    message: 'Can I link multiple tutors under one enterprise company profile?',
-    date: '2026-10-28',
-    status: 'pending',
-  },
-];
 
 export const ADMIN_POST_APPROVALS: AdminPostApproval[] = [
   {
@@ -522,8 +480,6 @@ export const ADMIN_MASTER_ITEMS: AdminMasterItem[] = [
   { id: 'mi-1', type: 'category', name: 'Automotive', slug: 'automotive', status: 'active', itemCount: 42 },
   { id: 'mi-2', type: 'category', name: 'Communication Services', slug: 'communication-services', status: 'active', itemCount: 28 },
   { id: 'mi-3', type: 'category', name: 'Healthcare', slug: 'healthcare', status: 'active', itemCount: 35 },
-  { id: 'mi-6', type: 'employee', name: 'Rajesh Sharma (Operations Lead)', slug: 'rajesh-sharma', status: 'active', itemCount: 14 },
-  { id: 'mi-7', type: 'employee', name: 'Priya Patel (Account Manager)', slug: 'priya-patel', status: 'active', itemCount: 22 },
   { id: 'mi-8', type: 'manage-cms', name: 'Terms of Service Page', slug: 'terms-of-service', status: 'active', itemCount: 1 },
   { id: 'mi-9', type: 'manage-cms', name: 'Privacy Policy Page', slug: 'privacy-policy', status: 'active', itemCount: 1 },
   { id: 'mi-10', type: 'manage-marquee', name: 'Diwali Festive Boost: 20% Off Listing Packages', slug: 'diwali-festive-boost', status: 'active', itemCount: 1 },
@@ -538,10 +494,6 @@ export const ADMIN_MASTER_ITEMS: AdminMasterItem[] = [
   { id: 'mi-19', type: 'state', name: 'Maharashtra', slug: 'maharashtra', status: 'active', itemCount: 55 },
   { id: 'mi-20', type: 'city', name: 'Vadodara', slug: 'vadodara', status: 'active', itemCount: 120 },
   { id: 'mi-21', type: 'city', name: 'Surat', slug: 'surat', status: 'active', itemCount: 98 },
-  { id: 'mi-22', type: 'area', name: 'Alkapuri', slug: 'alkapuri', status: 'active', itemCount: 46 },
-  { id: 'mi-23', type: 'area', name: 'Gotri Road', slug: 'gotri-road', status: 'active', itemCount: 32 },
-  { id: 'mi-24', type: 'area', name: 'Adajan', slug: 'adajan', status: 'active', itemCount: 41 },
-  { id: 'mi-25', type: 'inquire-contact-us', name: 'General Inquiries & Portal Support', slug: 'general-inquiries', status: 'active', itemCount: 68 },
   { id: 'mi-26', type: 'tag', name: 'Verified Vendor', slug: 'verified-vendor', status: 'active', itemCount: 85 },
   { id: 'mi-27', type: 'tag', name: 'Emergency 24x7', slug: 'emergency-24x7', status: 'active', itemCount: 19 },
 ];

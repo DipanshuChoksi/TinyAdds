@@ -1,5 +1,4 @@
 import {
-  ADMIN_INQUIRIES,
   ADMIN_MASTER_ITEMS,
   ADMIN_PACKAGES,
   ADMIN_POST_APPROVALS,
@@ -12,7 +11,6 @@ import {
   buildListings,
 } from '@/data/site';
 import type {
-  AdminInquiry,
   AdminMasterItem,
   AdminPackage,
   AdminPostApproval,
@@ -63,10 +61,6 @@ export async function getVendor(): Promise<Vendor> {
   return VENDOR;
 }
 
-export async function getAdminInquiries(): Promise<AdminInquiry[]> {
-  return ADMIN_INQUIRIES;
-}
-
 export async function getAdminPostApprovals(): Promise<AdminPostApproval[]> {
   return ADMIN_POST_APPROVALS;
 }
@@ -84,5 +78,6 @@ export async function getAdminMasterItems(): Promise<AdminMasterItem[]> {
 }
 
 export * from './emotionApi';
+export * from './contactApi';
 
 

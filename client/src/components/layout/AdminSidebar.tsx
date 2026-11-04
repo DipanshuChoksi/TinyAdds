@@ -37,7 +37,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
       { href: '/admin/master-item/country', label: 'Country' },
       { href: '/admin/master-item/state', label: 'State' },
       { href: '/admin/master-item/cities', label: 'City' },
-      { href: '/admin/master-item/inquire-contact-us', label: 'Inquire Contact Us' },
     ],
   },
 ];

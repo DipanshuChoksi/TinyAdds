@@ -101,7 +101,7 @@ export interface AdminInquiry {
   name: string;
   email: string;
   phone: string;
-  service: string;
+  subject?: string;
   message: string;
   date: string;
   status: 'pending' | 'in_progress' | 'resolved';
@@ -143,7 +143,6 @@ export interface AdminSearchTerm {
 export type MasterEntityType =
   | 'category'
   | 'emotion'
-  | 'employee'
   | 'manage-cms'
   | 'manage-marquee'
   | 'tax-master'
@@ -152,8 +151,6 @@ export type MasterEntityType =
   | 'country'
   | 'state'
   | 'city'
-  | 'area'
-  | 'inquire-contact-us'
   | 'tag';
 
 export interface AdminMasterItem {
@@ -171,5 +168,6 @@ export * from './emotion';
 export * from './country';
 export * from './state';
 export * from './city';
+export * from './contact';
 
 

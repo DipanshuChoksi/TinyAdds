@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import {
-  getAdminInquiries,
   getAdminMasterItems,
   getAdminPackages,
   getAdminPostApprovals,
@@ -9,8 +8,7 @@ import {
 } from '@/lib/api';
 
 export default async function AdminDashboardPage() {
-  const [inquiries, approvals, blogs, packages] = await Promise.all([
-    getAdminInquiries(),
+  const [approvals, blogs, packages] = await Promise.all([
     getAdminPostApprovals(),
     getBlogs(),
     getAdminPackages(),
@@ -18,13 +16,12 @@ export default async function AdminDashboardPage() {
     getAdminMasterItems(),
   ]);
 
-  const pendingInquiries = inquiries.filter((i) => i.status === 'pending').length;
   const pendingApprovals = approvals.filter((a) => a.status === 'pending').length;
 
   const STATS = [
     {
       title: 'Pending Inquiries',
-      value: pendingInquiries,
+      value: 0,
       icon: 'bi-envelope-paper',
       href: '/admin/inquire',
       label: 'Needs direct response',
@@ -115,7 +112,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Full-Width Recent Inquiries Table */}
-      <div className="admin-card overflow-hidden p-0 mb-4">
+      {/* <div className="admin-card overflow-hidden p-0 mb-4">
         <div
           className="px-4 py-3 d-flex justify-content-between align-items-center"
           style={{ borderBottom: '1px solid #f1f5f9' }}
@@ -205,7 +202,7 @@ export default async function AdminDashboardPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

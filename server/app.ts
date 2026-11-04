@@ -11,6 +11,8 @@ import stateRoutes from "./routes/state.routes.js";
 import adminStateRoutes from "./routes/adminState.routes.js";
 import cityRoutes from "./routes/city.routes.js";
 import adminCityRoutes from "./routes/adminCity.routes.js";
+import contactRoutes from "./routes/contact.routes.js";
+import adminContactRoutes from "./routes/adminContact.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 const app: Application = express();
@@ -36,6 +38,9 @@ app.use("/api/admin/states", adminStateRoutes);
 
 app.use("/api/cities", cityRoutes);
 app.use("/api/admin/cities", adminCityRoutes);
+
+app.use("/api/contacts", contactRoutes);
+app.use("/api/admin/contacts", adminContactRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);

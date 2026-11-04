@@ -26,13 +26,6 @@ export const MASTER_CATEGORY_META: Record<MasterEntityType, MasterCategoryMeta> 
     placeholder: 'e.g. Happy, Exciting, Corporate, Surprise...',
     icon: 'bi-emoji-smile',
   },
-  employee: {
-    label: 'Employee',
-    singular: 'Employee',
-    description: 'Manage internal staff, operations managers, and admin employees.',
-    placeholder: 'e.g. Rajesh Sharma, Priya Patel...',
-    icon: 'bi-person-badge',
-  },
   'manage-cms': {
     label: 'Manage CMS',
     singular: 'CMS Page',
@@ -88,20 +81,6 @@ export const MASTER_CATEGORY_META: Record<MasterEntityType, MasterCategoryMeta> 
     description: 'Manage operational cities and districts for local listings.',
     placeholder: 'e.g. Vadodara, Ahmedabad, Surat...',
     icon: 'bi-buildings',
-  },
-  area: {
-    label: 'Area',
-    singular: 'Area',
-    description: 'Manage sub-localities, pincode clusters, and delivery zones.',
-    placeholder: 'e.g. Alkapuri, Gotri Road, Adajan...',
-    icon: 'bi-geo-alt',
-  },
-  'inquire-contact-us': {
-    label: 'Inquire Contact Us',
-    singular: 'Contact Inquire Channel',
-    description: 'Manage contact inquiry departments, routing subjects, and support channels.',
-    placeholder: 'e.g. General Inquiries, Portal Technical Support...',
-    icon: 'bi-envelope-at',
   },
   tag: {
     label: 'Special Tags',
