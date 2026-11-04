@@ -13,8 +13,13 @@ import type { ClientPost } from "@/types";
 const EMPTY = { contactPerson: "", contactNo: "", email: "", address: "", banner: "", emotion: "", searchGroup: "", searchCategory: "", fromDate: "", title: "", image: "", tag: "", description: "" };
 type Values = typeof EMPTY;
 type Errors = Partial<Record<keyof Values | "file", string>>;
+interface Props {
+  mode?: "client" | "admin";
+  postId?: string;
+  onSaved?: () => void;
+}
 
-export default function AddPostForm() {
+export default function AddPostForm({ mode = "client", postId, onSaved }: Props = {}) {
   const toast = useToast();
   const router = useRouter();
   const [values, setValues] = useState<Values>(EMPTY);
@@ -23,14 +28,15 @@ export default function AddPostForm() {
   const [editId, setEditId] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const endpoint = mode === "admin" ? "/admin/posts" : "/client/posts";
 
   useEffect(() => {
     let active = true;
-    const id = new URLSearchParams(window.location.search).get("edit");
+    const id = postId ?? new URLSearchParams(window.location.search).get("edit") ?? "";
     if (!id) return () => { active = false; };
     setEditId(id);
     setLoading(true);
-    http.get<ClientPost>(`/client/posts/${encodeURIComponent(id)}`).then(({ data }) => {
+    http.get<ClientPost>(`${endpoint}/${encodeURIComponent(id)}`).then(({ data }) => {
       if (active) setValues({ ...EMPTY, ...data });
     }).catch((error: unknown) => {
       if (active) toast.error(error instanceof Error ? error.message : "Unable to load post");
@@ -38,7 +44,7 @@ export default function AddPostForm() {
       if (active) setLoading(false);
     });
     return () => { active = false; };
-  }, [toast]);
+  }, [endpoint, postId, toast]);
 
   const set = (key: keyof Values) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setValues((v) => ({ ...v, [key]: e.target.value }));
@@ -78,15 +84,19 @@ export default function AddPostForm() {
     setSaving(true);
     try {
       if (editId) {
-        await http.put<ClientPost, Values>(`/client/posts/${encodeURIComponent(editId)}`, values);
+        await http.put<ClientPost, Values>(`${endpoint}/${encodeURIComponent(editId)}`, values);
         toast.success("Post updated successfully");
-        router.replace("/client-admin/view-post");
+        if (onSaved) onSaved();
+        else router.replace("/client-admin/view-post");
       } else {
-        await http.post<ClientPost, Values>("/client/posts", values);
+        await http.post<ClientPost, Values>(endpoint, values);
         toast.success("Post created successfully");
-        setValues(EMPTY);
-        setFileKey((key) => key + 1);
-        setErrors({});
+        if (onSaved) onSaved();
+        else {
+          setValues(EMPTY);
+          setFileKey((key) => key + 1);
+          setErrors({});
+        }
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to save post");

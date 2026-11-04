@@ -1629,6 +1629,10 @@ html.lb-loading {
   animation: lb-wave 2s linear infinite;
 }
 
+.lb-wave-compact {
+  font-size: 24px;
+}
+
 .lb-wave::before {
   content: "Loading";
 }

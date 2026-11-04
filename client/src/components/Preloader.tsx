@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 /**
  * The loader only appears when something is actually slow:
@@ -95,8 +96,7 @@ export default function Preloader() {
         <div className="lb-loader-logo">
           Tiny<span>Adds</span>
         </div>
-        <div className="lb-wave" aria-hidden="true"></div>
-        <span className="visually-hidden">Loading…</span>
+        <LoadingIndicator />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { Schema, model, type HydratedDocument, Types } from "mongoose";
 
 const clientPostSchema = new Schema(
   {
-    owner: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    owner: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
     contactPerson: { type: String, required: true, trim: true, maxlength: 160 },
     contactNo: { type: String, required: true, trim: true, maxlength: 20 },
     email: { type: String, required: true, lowercase: true, trim: true, maxlength: 254 },
@@ -16,6 +16,11 @@ const clientPostSchema = new Schema(
     image: { type: String, default: "", maxlength: 8_000_000 },
     tag: { type: String, default: "", trim: true, maxlength: 300 },
     description: { type: String, default: "", maxlength: 100_000 },
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending", index: true },
+    rejectionComment: { type: String, default: "", trim: true, maxlength: 2000 },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    reviewedByName: { type: String, default: "", trim: true, maxlength: 161 },
+    reviewedAt: { type: Date, default: null },
     isDisplay: { type: Boolean, default: true, index: true },
     deletedAt: { type: Date, default: null },
     deletedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
@@ -27,7 +32,7 @@ const clientPostSchema = new Schema(
 clientPostSchema.index({ owner: 1, isDisplay: 1, createdAt: -1 });
 
 export interface ClientPostData {
-  owner: Types.ObjectId;
+  owner: Types.ObjectId | null;
   contactPerson: string;
   contactNo: string;
   email: string;
@@ -41,6 +46,11 @@ export interface ClientPostData {
   image: string;
   tag: string;
   description: string;
+  status: "pending" | "approved" | "rejected";
+  rejectionComment: string;
+  reviewedBy: Types.ObjectId | null;
+  reviewedByName: string;
+  reviewedAt: Date | null;
   isDisplay: boolean;
   deletedAt: Date | null;
   deletedBy: Types.ObjectId | null;

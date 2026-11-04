@@ -79,6 +79,10 @@ export interface ClientPost {
   tag: string;
   description: string;
   createdAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionComment: string;
+  reviewedByName?: string;
+  reviewedAt?: string | null;
 }
 
 export interface Vendor {

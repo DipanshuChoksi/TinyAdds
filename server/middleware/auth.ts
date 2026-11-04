@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 import { config } from "../config/index.js";
+import { User } from "../models/User.js";
 
 export const SESSION_COOKIE = "tinyadds_session";
 const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
@@ -67,10 +68,47 @@ export function requireAuth(request: Request, response: Response, next: NextFunc
   }
 }
 
+export async function requireAdmin(request: Request, response: Response, next: NextFunction): Promise<void> {
+  try {
+    const user = await User.findById(request.userId).select("email").lean();
+    if (!user || !config.adminEmails.includes(user.email.toLowerCase())) {
+      response.status(403).json({ success: false, error: { code: "FORBIDDEN", message: "Admin access is required" } });
+      return;
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function requireAdminAccess(request: Request, response: Response, next: NextFunction): void {
+  const remoteAddress = request.socket.remoteAddress;
+  const isLoopback = remoteAddress === "127.0.0.1" || remoteAddress === "::1" || remoteAddress === "::ffff:127.0.0.1";
+  const origin = request.get("origin");
+  const isLocalFrontend = origin === "http://localhost:3000"
+    || origin === "http://127.0.0.1:3000"
+    || origin === "http://localhost:3001"
+    || origin === "http://127.0.0.1:3001";
+  if (config.nodeEnv === "development" && (isLoopback || isLocalFrontend)) {
+    request.isLocalAdmin = true;
+    next();
+    return;
+  }
+
+  requireAuth(request, response, (error?: unknown) => {
+    if (error) {
+      next(error);
+      return;
+    }
+    void requireAdmin(request, response, next);
+  });
+}
+
 declare global {
   namespace Express {
     interface Request {
       userId: string;
+      isLocalAdmin?: boolean;
     }
   }
 }

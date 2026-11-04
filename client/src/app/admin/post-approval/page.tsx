@@ -1,8 +1,6 @@
-import PostApprovalView from '@/components/admin/PostApprovalView';
-import { getAdminPostApprovals } from '@/lib/api';
+import PostApprovalView from "@/src/components/admin/PostApprovalView";
 
-export default async function AdminPostApprovalPage() {
-  const approvals = await getAdminPostApprovals();
 
-  return <PostApprovalView initialApprovals={approvals} />;
+export default function AdminPostApprovalPage() {
+  return <PostApprovalView />;
 }
