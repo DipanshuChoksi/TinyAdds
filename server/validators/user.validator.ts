@@ -1,4 +1,41 @@
+import { Types } from "mongoose";
 import { BadRequestError } from "../utils/errors.js";
+
+export function validateObjectId(id: string, paramName = "id"): string {
+  if (!id || typeof id !== "string" || !Types.ObjectId.isValid(id)) {
+    throw new BadRequestError(`Invalid ${paramName}: must be a valid 24-character hexadecimal ObjectId`);
+  }
+  return id;
+}
+
+export function validatePagination(query: { page?: unknown; limit?: unknown }): { page: number; limit: number; skip: number } {
+  let page = 1;
+  let limit = 20;
+
+  if (query.page !== undefined) {
+    const parsedPage = parseInt(String(query.page), 10);
+    if (!isNaN(parsedPage) && parsedPage > 0) {
+      page = parsedPage;
+    } else {
+      throw new BadRequestError("Query parameter 'page' must be a positive integer");
+    }
+  }
+
+  if (query.limit !== undefined) {
+    const parsedLimit = parseInt(String(query.limit), 10);
+    if (!isNaN(parsedLimit) && parsedLimit > 0 && parsedLimit <= 100) {
+      limit = parsedLimit;
+    } else {
+      throw new BadRequestError("Query parameter 'limit' must be between 1 and 100");
+    }
+  }
+
+  return {
+    page,
+    limit,
+    skip: (page - 1) * limit,
+  };
+}
 
 export interface RegisterUserInput {
   firstName: string;

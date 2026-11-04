@@ -5,7 +5,9 @@ import { sendSuccess } from "../utils/response.js";
 import {
   validateEmail,
   validateLogin,
+  validateObjectId,
   validateOtp,
+  validatePagination,
   validatePasswordReset,
   validateProfileUpdate,
   validateRegistration,
@@ -67,6 +69,49 @@ export class UserController {
       await userService.resetPassword(input.email, input.password);
       res.status(200).json(sendSuccess({ message: "Password updated successfully" }));
     } catch (error) { next(error); }
+  }
+
+  /**
+   * Admin: List users
+   * GET /api/admin/users
+   */
+  async getAdminUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const pagination = validatePagination(req.query);
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const result = await userService.getAdminUsers(pagination, search);
+      res.status(200).json(sendSuccess(result.items, result.meta));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Admin: Get user by ID
+   * GET /api/admin/users/:id
+   */
+  async getUserById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = validateObjectId(req.params.id as string, "id");
+      const user = await userService.getUserById(id);
+      res.status(200).json(sendSuccess(user));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Admin: Soft delete user
+   * DELETE /api/admin/users/:id
+   */
+  async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = validateObjectId(req.params.id as string, "id");
+      await userService.softDeleteUser(id);
+      res.status(200).json(sendSuccess({ message: "User deleted successfully" }));
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

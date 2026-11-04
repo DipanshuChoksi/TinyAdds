@@ -16,6 +16,7 @@ import contactRoutes from "./routes/contact.routes.js";
 import adminContactRoutes from "./routes/adminContact.routes.js";
 import cmsRoutes from "./routes/cms.routes.js";
 import adminCmsRoutes from "./routes/adminCms.routes.js";
+import adminUserRoutes from "./routes/adminUser.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 const app: Application = express();
@@ -52,6 +53,8 @@ app.use("/api/admin/contacts", adminContactRoutes);
 
 app.use("/api/cms", cmsRoutes);
 app.use("/api/admin/cms", adminCmsRoutes);
+
+app.use("/api/admin/users", adminUserRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);

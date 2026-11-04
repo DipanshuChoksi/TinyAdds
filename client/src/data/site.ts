@@ -484,8 +484,6 @@ export const ADMIN_MASTER_ITEMS: AdminMasterItem[] = [
   { id: 'mi-11', type: 'tax-master', name: 'GST 18% (Standard Services)', slug: 'gst-18', status: 'active', itemCount: 18 },
   { id: 'mi-12', type: 'tax-master', name: 'GST 5% (Essential Services)', slug: 'gst-5', status: 'active', itemCount: 5 },
   { id: 'mi-13', type: 'success-stories', name: 'Shree Sai Motors 300% Growth Story', slug: 'shree-sai-motors', status: 'active', itemCount: 1 },
-  { id: 'mi-14', type: 'user', name: 'Kishan Dave (Vendor Admin)', slug: 'kishan-dave', status: 'active', itemCount: 12 },
-  { id: 'mi-15', type: 'user', name: 'Neha Joshi (Verified Merchant)', slug: 'neha-joshi', status: 'active', itemCount: 7 },
   { id: 'mi-16', type: 'country', name: 'India', slug: 'india', status: 'active', itemCount: 240 },
   { id: 'mi-17', type: 'country', name: 'United Arab Emirates', slug: 'uae', status: 'active', itemCount: 18 },
   { id: 'mi-18', type: 'state', name: 'Gujarat', slug: 'gujarat', status: 'active', itemCount: 185 },

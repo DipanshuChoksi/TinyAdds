@@ -116,6 +116,75 @@ export class UserService {
     user.resetOtpAttempts = 0;
     await user.save();
   }
+
+  /**
+   * Admin: List users with pagination and search
+   */
+  async getAdminUsers(pagination: { page: number; limit: number; skip: number }, search?: string) {
+    const filter: Record<string, unknown> = { isDisplay: true };
+
+    if (search && search.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      filter.$or = [
+        { firstName: regex },
+        { lastName: regex },
+        { email: regex },
+        { mobile: regex },
+        { city: regex },
+        { state: regex },
+        { country: regex },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      User.find(filter)
+        .select("-passwordHash -resetOtpHash -resetOtpExpiresAt -resetOtpVerifiedUntil -resetOtpSentAt -resetOtpAttempts")
+        .sort({ createdAt: -1 })
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .lean(),
+      User.countDocuments(filter),
+    ]);
+
+    return {
+      items,
+      meta: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages: Math.ceil(total / pagination.limit) || 1,
+      },
+    };
+  }
+
+  /**
+   * Admin: Get user by ID
+   */
+  async getUserById(id: string) {
+    const user = await User.findOne({ _id: id, isDisplay: true })
+      .select("-passwordHash -resetOtpHash -resetOtpExpiresAt -resetOtpVerifiedUntil -resetOtpSentAt -resetOtpAttempts")
+      .lean();
+
+    if (!user) {
+      throw new NotFoundError(`User with id '${id}' not found`);
+    }
+
+    return user;
+  }
+
+  /**
+   * Admin: Soft delete user
+   */
+  async softDeleteUser(id: string): Promise<void> {
+    const user = await User.findOneAndUpdate(
+      { _id: id, isDisplay: true },
+      { $set: { isDisplay: false, deletedAt: new Date() } }
+    );
+
+    if (!user) {
+      throw new NotFoundError(`User with id '${id}' not found`);
+    }
+  }
 }
 
 export const userService = new UserService();
