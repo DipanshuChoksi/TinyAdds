@@ -146,6 +146,7 @@ export interface AdminSearchTerm {
 
 export type MasterEntityType =
   | 'category'
+  | 'group'
   | 'emotion'
   | 'manage-cms'
   | 'manage-marquee'

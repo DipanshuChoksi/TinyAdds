@@ -80,5 +80,6 @@ export async function getAdminMasterItems(): Promise<AdminMasterItem[]> {
 export * from './emotionApi';
 export * from './contactApi';
 export * from './packageApi';
+export * from './groupApi';
 
 

@@ -19,6 +19,13 @@ export const MASTER_CATEGORY_META: Record<MasterEntityType, MasterCategoryMeta> 
     placeholder: 'e.g. Automotive, Healthcare, Education...',
     icon: 'bi-grid',
   },
+  group: {
+    label: 'Groups',
+    singular: 'Group',
+    description: 'Manage search groups and high-level groupings for postings and listings.',
+    placeholder: 'e.g. Property, Vehicles, Jobs, Services...',
+    icon: 'bi-collection',
+  },
   emotion: {
     label: 'Emotions',
     singular: 'Emotion',
