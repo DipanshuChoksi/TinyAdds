@@ -3750,3 +3750,207 @@ a.lb-post-media:hover img {
     width: 100%;
   }
 }
+
+/* ===== TinyAdds Admin Theme (Premium SaaS Product Aesthetic) ===== */
+.admin-shell {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #334155;
+  font-family: var(--bs-body-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Seamless Integrated Sidebar */
+.admin-sidebar {
+  width: 245px;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background-color: transparent;
+  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: none;
+  z-index: 1020;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.5rem;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.86rem;
+  letter-spacing: -0.01em;
+  transition: all 0.15s ease;
+}
+
+.admin-nav-link:hover {
+  background-color: rgba(241, 245, 249, 0.8);
+  color: #0f172a;
+}
+
+.admin-nav-link.active {
+  background-color: #ffffff;
+  color: #0f172a !important;
+  font-weight: 600;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.admin-nav-link.active i {
+  color: var(--lb-primary) !important;
+}
+
+/* Premium Soft Cards */
+.admin-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.admin-stat-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.875rem;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+}
+
+.admin-stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 0.95rem;
+  border: 1px solid #f1f5f9;
+}
+
+/* Clean Borderless Table with Subtle Dividers */
+.admin-table {
+  --bs-table-bg: transparent;
+  margin-bottom: 0;
+  font-size: 0.86rem;
+  width: 100%;
+}
+
+.admin-table thead th {
+  background-color: transparent !important;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-table tbody td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+  color: #334155;
+  transition: background-color 0.12s ease;
+}
+
+.admin-table tbody tr:hover td {
+  background-color: #fbfcfe;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-badge-pending {
+  background-color: #fffbeb;
+  color: #b45309;
+  font-weight: 500;
+  font-size: 0.72rem;
+  border: 1px solid #fef3c7;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+
+.admin-badge-approved,
+.admin-badge-resolved,
+.admin-badge-active {
+  background-color: #f0fdf4;
+  color: #15803d;
+  font-weight: 500;
+  font-size: 0.72rem;
+  border: 1px solid #dcfce7;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+
+.admin-badge-rejected,
+.admin-badge-inactive {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  font-weight: 500;
+  font-size: 0.72rem;
+  border: 1px solid #fee2e2;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+
+.admin-badge-progress {
+  background-color: #f0f9ff;
+  color: #0369a1;
+  font-weight: 500;
+  font-size: 0.72rem;
+  border: 1px solid #e0f2fe;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+
+.admin-search-input {
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.85rem;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-search-input:focus {
+  border-color: #cbd5e1;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+  background-color: #ffffff;
+}
+
+.admin-pill-btn {
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  font-weight: 500;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.lb-btn-neutral {
+  background-color: #ffffff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.lb-btn-neutral:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
