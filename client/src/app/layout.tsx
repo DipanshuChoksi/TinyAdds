@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-// @ts-expect-error CSS modules from third-party packages are not typed in this project
 import "bootstrap/dist/css/bootstrap.min.css";
-// @ts-expect-error CSS modules from third-party packages are not typed in this project
 import "bootstrap-icons/font/bootstrap-icons.min.css";
-// @ts-expect-error CSS imports are handled by the framework bundler
 import "./globals.css";
 import BootstrapClient from "@/components/BootstrapClient";
 import ScrollToTop from "@/components/ScrollToTop";

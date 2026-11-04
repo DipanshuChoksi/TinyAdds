@@ -63,6 +63,24 @@ export interface User {
   avatarLg: string;
 }
 
+export interface ClientPost {
+  id: string;
+  contactPerson: string;
+  contactNo: string;
+  email: string;
+  address: string;
+  banner: string;
+  emotion: string;
+  searchGroup: string;
+  searchCategory: string;
+  fromDate: string;
+  title: string;
+  image: string;
+  tag: string;
+  description: string;
+  createdAt: string;
+}
+
 export interface Vendor {
   id: string;
   name: string;

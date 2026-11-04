@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { CLIENT_MENU } from "@/data/clientAdmin";
 import { useConfirm, useToast } from "@/components/ui/UiProvider";
+import http from "@/lib/http";
 
 export default function ClientSidebar() {
   const pathname = usePathname();
@@ -21,9 +22,13 @@ export default function ClientSidebar() {
       cancelText: "Cancel",
     });
     if (!ok) return;
-    // TODO: clear session / token here
-    toast.success("Logged out successfully");
-    router.push("/login");
+    try {
+      await http.post("/auth/logout");
+      toast.success("Logged out successfully");
+      router.replace("/login");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to log out");
+    }
   };
 
   return (

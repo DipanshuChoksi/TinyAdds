@@ -1,36 +1,66 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BANNER_SECTIONS, EMOTIONS, SEARCH_CATEGORIES, SEARCH_GROUPS } from "@/data/clientAdmin";
 import { useToast } from "@/components/ui/UiProvider";
 import Dropdown from "@/components/ui/Dropdown";
 import RichTextEditor from "./RichTextEditor";
 import { compose, email, phone, required } from "@/lib/validators";
+import http from "@/lib/http";
+import type { ClientPost } from "@/types";
 
-const EMPTY = { contactPerson: "", contactNo: "", email: "", address: "", banner: "", emotion: "", searchGroup: "", searchCategory: "", fromDate: "", title: "", tag: "", description: "" };
+const EMPTY = { contactPerson: "", contactNo: "", email: "", address: "", banner: "", emotion: "", searchGroup: "", searchCategory: "", fromDate: "", title: "", image: "", tag: "", description: "" };
 type Values = typeof EMPTY;
 type Errors = Partial<Record<keyof Values | "file", string>>;
 
 export default function AddPostForm() {
   const toast = useToast();
+  const router = useRouter();
   const [values, setValues] = useState<Values>(EMPTY);
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [fileKey, setFileKey] = useState(0);
+  const [editId, setEditId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+  useEffect(() => {
+    let active = true;
+    const id = new URLSearchParams(window.location.search).get("edit");
+    if (!id) return () => { active = false; };
+    setEditId(id);
+    setLoading(true);
+    http.get<ClientPost>(`/client/posts/${encodeURIComponent(id)}`).then(({ data }) => {
+      if (active) setValues({ ...EMPTY, ...data });
+    }).catch((error: unknown) => {
+      if (active) toast.error(error instanceof Error ? error.message : "Unable to load post");
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [toast]);
 
   const set = (key: keyof Values) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setValues((v) => ({ ...v, [key]: e.target.value }));
 
   const handleFile = (f?: File) => {
-    if (preview) URL.revokeObjectURL(preview);
-    setFile(f ?? null);
-    setPreview(f ? URL.createObjectURL(f) : "");
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      setErrors((current) => ({ ...current, file: "Image must be 5 MB or smaller" }));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setValues((current) => ({ ...current, image: reader.result as string }));
+        setErrors((current) => ({ ...current, file: "" }));
+      }
+    };
+    reader.onerror = () => toast.error("Unable to read the selected image");
+    reader.readAsDataURL(f);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const next: Errors = {
       contactPerson: required("Contact person name")(values.contactPerson),
@@ -38,26 +68,39 @@ export default function AddPostForm() {
       email: compose(required("Email"), email)(values.email),
       fromDate: required("Available from date")(values.fromDate),
       title: required("Title name")(values.title),
-      file: file ? "" : "Please choose an image",
+      file: values.image ? "" : "Please choose an image",
     };
     setErrors(next);
     if (Object.values(next).some(Boolean)) {
       toast.error("Please fill all required fields");
       return;
     }
-    // TODO: call create-post API here (use FormData to send the image)
-    toast.success("Post created successfully!");
-    setValues(EMPTY);
-    handleFile(undefined);
-    setFileKey((k) => k + 1);
-    setErrors({});
+    setSaving(true);
+    try {
+      if (editId) {
+        await http.put<ClientPost, Values>(`/client/posts/${encodeURIComponent(editId)}`, values);
+        toast.success("Post updated successfully");
+        router.replace("/client-admin/view-post");
+      } else {
+        await http.post<ClientPost, Values>("/client/posts", values);
+        toast.success("Post created successfully");
+        setValues(EMPTY);
+        setFileKey((key) => key + 1);
+        setErrors({});
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to save post");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const err = (key: keyof Errors) => errors[key] && <small className="lb-ca-err">{errors[key]}</small>;
   return (
     <form className="lb-ca-card" onSubmit={handleSubmit} noValidate>
-      <div className="lb-ca-card-head">Add Post</div>
+      <div className="lb-ca-card-head">{editId ? "Edit Post" : "Add Post"}</div>
       <div className="lb-ca-card-body">
+        {loading && <p className="text-body-secondary">Loading post...</p>}
         <div className="row g-3">
           <div className="col-md-6"><label className="lb-ca-label">Contact Person Name</label><input className="form-control lb-ca-input" placeholder="Enter Name" value={values.contactPerson} onChange={set("contactPerson")} />{err("contactPerson")}</div>
           <div className="col-md-6"><label className="lb-ca-label">Contact No</label><input type="tel" className="form-control lb-ca-input" placeholder="Enter Number" value={values.contactNo} onChange={set("contactNo")} />{err("contactNo")}</div>
@@ -76,9 +119,9 @@ export default function AddPostForm() {
           </div>
           <div className="col-md-6">
             <div className="lb-ca-upload">
-              {preview ? (
+              {values.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={preview} alt="Upload preview" />
+                <img src={values.image} alt="Post preview" />
               ) : (
                 <span><i className="bi bi-cloud-arrow-up"></i>UPLOAD IMG</span>
               )}
@@ -87,7 +130,7 @@ export default function AddPostForm() {
           <div className="col-12"><label className="lb-ca-label">Tag</label><input className="form-control lb-ca-input" placeholder="e.g. auction, finance" value={values.tag} onChange={set("tag")} /></div>
           <div className="col-12"><label className="lb-ca-label">Description</label><RichTextEditor value={values.description} onChange={(html) => setValues((v) => ({ ...v, description: html }))} /></div>
         </div>
-        <div className="text-end mt-4"><button type="submit" className="btn lb-btn-primary">Add Post</button></div>
+        <div className="text-end mt-4"><button type="submit" className="btn lb-btn-primary" disabled={saving || loading}>{saving ? "Saving..." : editId ? "Update Post" : "Add Post"}</button></div>
       </div>
     </form>
   );

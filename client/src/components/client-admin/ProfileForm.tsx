@@ -1,20 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CLIENT_PROFILE, LOCATION_TREE } from "@/data/clientAdmin";
+import { LOCATION_TREE } from "@/data/clientAdmin";
 import { useToast } from "@/components/ui/UiProvider";
 import Dropdown from "@/components/ui/Dropdown";
 import { compose, email, phone, required } from "@/lib/validators";
+import http from "@/lib/http";
 
-type Values = typeof CLIENT_PROFILE;
+type Values = {
+  firstName: string;
+  lastName: string;
+  mobile: string;
+  email: string;
+  country: string;
+  state: string;
+  city: string;
+  profileImage: string;
+};
+
+const EMPTY: Values = { firstName: "", lastName: "", mobile: "", email: "", country: "", state: "", city: "", profileImage: "" };
 
 export default function ProfileForm() {
   const toast = useToast();
-  const [values, setValues] = useState<Values>(CLIENT_PROFILE);
+  const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({});
-  const [preview, setPreview] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+  useEffect(() => {
+    let active = true;
+    http.get<Values>("/auth/me").then(({ data }) => {
+      if (active) setValues(data);
+    }).catch((error: unknown) => {
+      toast.error(error instanceof Error ? error.message : "Unable to load profile");
+    });
+    return () => { active = false; };
+  }, [toast]);
 
   const set = (key: keyof Values, value: string) => setValues((v) => ({ ...v, [key]: value }));
 
@@ -28,11 +48,15 @@ export default function ProfileForm() {
   const changeState = (state: string) => setValues((v) => ({ ...v, state, city: LOCATION_TREE[v.country]?.[state]?.[0] ?? "" }));
 
   const handleFile = (file?: File) => {
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(file ? URL.createObjectURL(file) : "");
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") set("profileImage", reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const next = {
       firstName: required("First name")(values.firstName),
@@ -44,8 +68,16 @@ export default function ProfileForm() {
       toast.error("Please fix the highlighted fields");
       return;
     }
-    // TODO: call update-profile API here
-    toast.success("Profile updated successfully");
+    setSaving(true);
+    try {
+      const { data } = await http.patch<Values, Values>("/auth/profile", values);
+      setValues(data);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const err = (key: keyof Values) => errors[key] && <small className="lb-ca-err">{errors[key]}</small>;
@@ -53,9 +85,9 @@ export default function ProfileForm() {
   return (
     <form className="lb-ca-card" onSubmit={handleSubmit} noValidate>
       <div className="lb-ca-cover">
-        {preview ? (
+        {values.profileImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Profile preview" className="lb-ca-avatar" />
+          <img src={values.profileImage} alt="Profile" className="lb-ca-avatar" />
         ) : (
           <span className="lb-ca-avatar"><i className="bi bi-person-fill"></i></span>
         )}
@@ -73,7 +105,7 @@ export default function ProfileForm() {
             <tr><th>Profile Image :</th><td><input type="file" accept="image/*" className="form-control lb-ca-input" onChange={(e) => handleFile(e.target.files?.[0])} /></td></tr>
           </tbody>
         </table>
-        <div className="text-end mt-3"><button type="submit" className="btn lb-btn-primary">Submit</button></div>
+        <div className="text-end mt-3"><button type="submit" className="btn lb-btn-primary" disabled={saving}>{saving ? "Saving..." : "Submit"}</button></div>
       </div>
     </form>
   );

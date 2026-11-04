@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import ClientSidebar from "@/components/client-admin/ClientSidebar";
+import ClientAdminGuard from "@/components/client-admin/ClientAdminGuard";
 
 export default function ClientAdminLayout({ children }: { children: ReactNode }) {
   return (
+    <ClientAdminGuard>
     <main className="lb-ca">
       <div className="container">
         <nav aria-label="breadcrumb" className="lb-ca-crumbs">
@@ -15,5 +17,6 @@ export default function ClientAdminLayout({ children }: { children: ReactNode })
         </div>
       </div>
     </main>
+    </ClientAdminGuard>
   );
 }

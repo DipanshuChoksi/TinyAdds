@@ -1,4 +1,10 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, AxiosError } from "axios";
+export interface HttpRequestConfig {
+  headers?: Record<string, string>;
+  params?: Record<string, string | number | boolean | null | undefined>;
+  signal?: AbortSignal;
+  timeout?: number;
+  credentials?: RequestCredentials;
+}
 
 /**
  * Standard API Response envelope matching backend standard
@@ -20,72 +26,67 @@ export interface ApiResponse<T = unknown> {
 }
 
 class HttpClient {
-  private instance: AxiosInstance;
+  private readonly baseURL: string;
 
   constructor() {
-    this.instance = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      timeout: 15000,
+    this.baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  }
+
+  private async request<T, D = unknown>(
+    method: string,
+    url: string,
+    data?: D,
+    config: HttpRequestConfig = {}
+  ): Promise<ApiResponse<T>> {
+    const requestUrl = new URL(url.replace(/^\/+/, ""), `${this.baseURL.replace(/\/$/, "")}/`);
+    Object.entries(config.params ?? {}).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) requestUrl.searchParams.set(key, String(value));
     });
 
-    this.setupInterceptors();
-  }
+    const headers = new Headers({ "Content-Type": "application/json" });
+    new Headers(config.headers).forEach((value, key) => headers.set(key, value));
+    const controller = config.timeout ? new AbortController() : undefined;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), config.timeout) : undefined;
 
-  private setupInterceptors(): void {
-    // Request interceptor (e.g. for injecting Auth tokens or headers)
-    this.instance.interceptors.request.use(
-      (config) => {
-        // Can read localStorage/cookies in browser if token exists
-        if (typeof window !== "undefined") {
-          const token = localStorage.getItem("token");
-          if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
-          }
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor
-    this.instance.interceptors.response.use(
-      (response: AxiosResponse) => response,
-      (error: AxiosError<ApiResponse>) => {
-        const message =
-          error.response?.data?.error?.message ||
-          error.message ||
-          "An unexpected network error occurred";
-        return Promise.reject(new Error(message));
+    try {
+      const response = await fetch(requestUrl, {
+        method,
+        headers,
+        body: data === undefined ? undefined : JSON.stringify(data),
+        signal: config.signal ?? controller?.signal,
+        credentials: config.credentials ?? "include",
+      });
+      const result = (await response.json()) as ApiResponse<T>;
+      if (!response.ok) {
+        throw new Error(result?.error?.message || response.statusText || "An unexpected network error occurred");
       }
-    );
+      return result;
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      throw new Error("An unexpected network error occurred");
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
   }
 
-  public async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.get<ApiResponse<T>>(url, config);
-    return response.data;
+  public get<T>(url: string, config?: HttpRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>("GET", url, undefined, config);
   }
 
-  public async post<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.post<ApiResponse<T>>(url, data, config);
-    return response.data;
+  public post<T, D = unknown>(url: string, data?: D, config?: HttpRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T, D>("POST", url, data, config);
   }
 
-  public async put<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.put<ApiResponse<T>>(url, data, config);
-    return response.data;
+  public put<T, D = unknown>(url: string, data?: D, config?: HttpRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T, D>("PUT", url, data, config);
   }
 
-  public async patch<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.patch<ApiResponse<T>>(url, data, config);
-    return response.data;
+  public patch<T, D = unknown>(url: string, data?: D, config?: HttpRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T, D>("PATCH", url, data, config);
   }
 
-  public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.delete<ApiResponse<T>>(url, config);
-    return response.data;
+  public delete<T>(url: string, config?: HttpRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>("DELETE", url, undefined, config);
   }
 }
 

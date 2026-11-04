@@ -6,14 +6,18 @@ import { useRouter } from "next/navigation";
 import AuthShell from "./AuthShell";
 import AuthField from "./AuthField";
 import { compose, email, required } from "@/lib/validators";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/UiProvider";
 
 export default function LoginForm() {
   const router = useRouter();
+  const toast = useToast();
   const [emailValue, setEmailValue] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const next = {
       email: compose(required("Email"), email)(emailValue),
@@ -21,8 +25,16 @@ export default function LoginForm() {
     };
     setErrors(next);
     if (next.email || next.password) return;
-    // TODO: call login API here, then redirect
-    router.push("/");
+    setSubmitting(true);
+    try {
+      await http.post("/auth/login", { email: emailValue, password });
+      toast.success("Login successful");
+      router.push("/client-admin");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to log in");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -42,7 +54,7 @@ export default function LoginForm() {
           </div>
           <Link href="/forgot-password" className="lb-link">Forgot Password?</Link>
         </div>
-        <button type="submit" className="btn lb-btn-primary w-100">Login</button>
+        <button type="submit" className="btn lb-btn-primary w-100" disabled={submitting}>{submitting ? "Logging in..." : "Login"}</button>
       </form>
     </AuthShell>
   );

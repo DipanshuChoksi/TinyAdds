@@ -6,31 +6,49 @@ import { useRouter } from "next/navigation";
 import AuthShell from "./AuthShell";
 import AuthField from "./AuthField";
 import { compose, email, minLength, phone, required } from "@/lib/validators";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/UiProvider";
 
 const EMPTY = { firstName: "", lastName: "", email: "", mobile: "", password: "", confirm: "" };
 type Values = typeof EMPTY;
 
 export default function RegisterForm() {
   const router = useRouter();
+  const toast = useToast();
   const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<Values>(EMPTY);
+  const [submitting, setSubmitting] = useState(false);
 
   const set = (key: keyof Values) => (value: string) => setValues((v) => ({ ...v, [key]: value }));
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const next: Values = {
       firstName: required("First name")(values.firstName),
       lastName: required("Last name")(values.lastName),
       email: compose(required("Email"), email)(values.email),
       mobile: compose(required("Mobile no"), phone)(values.mobile),
-      password: compose(required("Password"), minLength(6))(values.password),
+      password: compose(required("Password"), minLength(8))(values.password),
       confirm: values.confirm !== values.password ? "Passwords do not match" : required("Confirm password")(values.confirm),
     };
     setErrors(next);
     if (Object.values(next).some(Boolean)) return;
-    // TODO: call register API here
-    router.push("/login");
+    setSubmitting(true);
+    try {
+      await http.post("/auth/register", {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        mobile: values.mobile,
+        password: values.password,
+      });
+      toast.success("Account created successfully");
+      router.push("/login");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to create account");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -50,7 +68,7 @@ export default function RegisterForm() {
           <div className="col-md-6"><AuthField label="Password" name="password" type="password" placeholder="Enter Password" autoComplete="new-password" value={values.password} error={errors.password} onChange={set("password")} /></div>
           <div className="col-md-6"><AuthField label="Confirm Password" name="confirm" type="password" placeholder="Enter Password" autoComplete="new-password" value={values.confirm} error={errors.confirm} onChange={set("confirm")} /></div>
         </div>
-        <button type="submit" className="btn lb-btn-primary px-5">Submit</button>
+        <button type="submit" className="btn lb-btn-primary px-5" disabled={submitting}>{submitting ? "Creating account..." : "Submit"}</button>
       </form>
     </AuthShell>
   );
