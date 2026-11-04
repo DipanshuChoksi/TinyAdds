@@ -23,14 +23,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { href: '/admin/post-approval', label: 'Post Approval', icon: 'bi-check2-circle' },
   { href: '/admin/manage-blogs', label: 'Manage Blogs', icon: 'bi-journal-richtext' },
   { href: '/admin/manage-package', label: 'Manage Package', icon: 'bi-box-seam' },
-  { href: '/admin/manage-search', label: 'Manage Search', icon: 'bi-search' },
   {
     href: '/admin/master-item',
     label: 'Master',
     icon: 'bi-database-gear',
     children: [
       { href: '/admin/master-item/emotions', label: 'Emotions' },
-      { href: '/admin/master-item/employee', label: 'Employee' },
       { href: '/admin/master-item/manage-cms', label: 'Manage CMS' },
       { href: '/admin/master-item/manage-marquee', label: 'Manage Marquee' },
       { href: '/admin/master-item/tax-master', label: 'TaxMaster' },
@@ -39,7 +37,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
       { href: '/admin/master-item/country', label: 'Country' },
       { href: '/admin/master-item/state', label: 'State' },
       { href: '/admin/master-item/cities', label: 'City' },
-      { href: '/admin/master-item/area', label: 'Area' },
       { href: '/admin/master-item/inquire-contact-us', label: 'Inquire Contact Us' },
     ],
   },
