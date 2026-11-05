@@ -29,6 +29,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: 'bi-database-gear',
     children: [
       { href: '/admin/master-item/groups', label: 'Groups' },
+      { href: '/admin/master-item/search-category', label: 'Search Category' },
       { href: '/admin/master-item/emotions', label: 'Emotions' },
       { href: '/admin/master-item/manage-cms', label: 'Manage CMS' },
       { href: '/admin/master-item/manage-marquee', label: 'Manage Marquee' },

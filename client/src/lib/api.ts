@@ -81,5 +81,6 @@ export * from './emotionApi';
 export * from './contactApi';
 export * from './packageApi';
 export * from './groupApi';
+export * from './searchCategoryApi';
 
 

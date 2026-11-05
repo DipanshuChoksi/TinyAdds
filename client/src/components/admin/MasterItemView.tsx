@@ -26,6 +26,13 @@ export const MASTER_CATEGORY_META: Record<MasterEntityType, MasterCategoryMeta> 
     placeholder: 'e.g. Property, Vehicles, Jobs, Services...',
     icon: 'bi-collection',
   },
+  'search-category': {
+    label: 'Search Categories',
+    singular: 'Search Category',
+    description: 'Manage specific search intentions and category actions across the platform.',
+    placeholder: 'e.g. Buy, Sell, Rent, Auction, Finance...',
+    icon: 'bi-search',
+  },
   emotion: {
     label: 'Emotions',
     singular: 'Emotion',
