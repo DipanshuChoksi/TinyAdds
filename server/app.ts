@@ -23,6 +23,8 @@ import groupRoutes from "./routes/group.routes.js";
 import adminGroupRoutes from "./routes/adminGroup.routes.js";
 import searchCategoryRoutes from "./routes/searchCategory.routes.js";
 import adminSearchCategoryRoutes from "./routes/adminSearchCategory.routes.js";
+import bannerSectionRoutes from "./routes/bannerSection.routes.js";
+import adminBannerSectionRoutes from "./routes/adminBannerSection.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 const app: Application = express();
@@ -70,6 +72,9 @@ app.use("/api/admin/groups", adminGroupRoutes);
 
 app.use("/api/search-categories", searchCategoryRoutes);
 app.use("/api/admin/search-categories", adminSearchCategoryRoutes);
+
+app.use("/api/banner-sections", bannerSectionRoutes);
+app.use("/api/admin/banner-sections", adminBannerSectionRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);

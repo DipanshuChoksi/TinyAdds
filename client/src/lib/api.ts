@@ -82,5 +82,6 @@ export * from './contactApi';
 export * from './packageApi';
 export * from './groupApi';
 export * from './searchCategoryApi';
+export * from './bannerSectionApi';
 
 

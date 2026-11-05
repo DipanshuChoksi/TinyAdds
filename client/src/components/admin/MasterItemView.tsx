@@ -33,6 +33,13 @@ export const MASTER_CATEGORY_META: Record<MasterEntityType, MasterCategoryMeta> 
     placeholder: 'e.g. Buy, Sell, Rent, Auction, Finance...',
     icon: 'bi-search',
   },
+  'banner-section': {
+    label: 'Banner Sections',
+    singular: 'Banner Section',
+    description: 'Manage advertising banner placement zones across the platform.',
+    placeholder: 'e.g. Home Top Banner, Sidebar Banner...',
+    icon: 'bi-layout-text-window-reverse',
+  },
   emotion: {
     label: 'Emotions',
     singular: 'Emotion',

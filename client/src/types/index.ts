@@ -148,6 +148,7 @@ export type MasterEntityType =
   | 'category'
   | 'group'
   | 'search-category'
+  | 'banner-section'
   | 'emotion'
   | 'manage-cms'
   | 'manage-marquee'
