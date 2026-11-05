@@ -30,7 +30,6 @@ export default function SubscriptionPackages() {
           <div className="lb-packages-heading text-center">
             <span className="lb-badge">Plans for growing businesses</span>
             <h1>Subscription Packages</h1>
-            <p>Pick the package that fits your business and reach more customers on TinyAdds.</p>
           </div>
 
           {loading && <div className="d-flex justify-content-center py-5" role="status" aria-live="polite"><LoadingIndicator label="Loading subscription packages" /></div>}
