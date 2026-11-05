@@ -41,6 +41,7 @@ export default function Header() {
   const onAbout = pathname === "/about-us";
   const onBlog = pathname === "/blog" || pathname.startsWith("/blog/");
   const onContact = pathname === "/contact";
+  const onPackages = pathname === "/subscription-packages";
 
 
   // Do not render public header on admin portal routes
@@ -79,6 +80,7 @@ export default function Header() {
                   <li className="nav-item"><Link className={`nav-link${pathname === "/" ? " active" : ""}`} href="/" onClick={closeDrawer}>Home</Link></li>
                   <li className="nav-item"><Link className={`nav-link${onAbout ? " active" : ""}`} href="/about-us" onClick={closeDrawer}>About Us</Link></li>
                   <li className="nav-item"><Link className={`nav-link${onBlog ? " active" : ""}`} href="/blog" onClick={closeDrawer}>Blog</Link></li>
+                  <li className="nav-item"><Link className={`nav-link${onPackages ? " active" : ""}`} href="/subscription-packages" onClick={closeDrawer}>Packages</Link></li>
                   <li className="nav-item"><Link className={`nav-link${onContact ? " active" : ""}`} href="/contact" onClick={closeDrawer}>Contact</Link></li>
                 </ul>
                 <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-2 gap-sm-3 mt-3 mt-xl-0">
