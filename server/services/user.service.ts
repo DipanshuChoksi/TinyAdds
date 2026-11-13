@@ -35,6 +35,7 @@ function publicUser(user: {
     state: user.state,
     city: user.city,
     profileImage: user.profileImage,
+    isAdmin: config.adminEmails.includes(user.email.toLowerCase()),
   };
 }
 

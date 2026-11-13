@@ -1,20 +1,43 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   getAdminMasterItems,
   getAdminPackages,
   getAdminPostApprovals,
-  getAdminSearchTerms,
   getBlogs,
 } from '@/lib/api';
+import type { AdminPostApproval, AdminPackage, BlogSummary } from '@/src/types';
 
-export default async function AdminDashboardPage() {
-  const [approvals, blogs, packages] = await Promise.all([
-    getAdminPostApprovals(),
-    getBlogs(),
-    getAdminPackages(),
-    getAdminSearchTerms(),
-    getAdminMasterItems(),
-  ]);
+export default function AdminDashboardPage() {
+  const [approvals, setApprovals] = useState<AdminPostApproval[]>([]);
+  const [blogs, setBlogs] = useState<BlogSummary[]>([]);
+  const [packages, setPackages] = useState<AdminPackage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      getAdminPostApprovals(),
+      getBlogs(),
+      getAdminPackages().catch(() => []),
+      getAdminMasterItems().catch(() => []),
+    ])
+      .then(([approvalsData, blogsData, packagesData]) => {
+        if (!active) return;
+        setApprovals(approvalsData || []);
+        setBlogs(blogsData || []);
+        setPackages((packagesData as unknown as AdminPackage[]) || []);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const pendingApprovals = approvals.filter((a) => a.status === 'pending').length;
 
@@ -88,7 +111,7 @@ export default async function AdminDashboardPage() {
                   </div>
                 </div>
                 <div className="h3 fw-bold mb-1" style={{ color: '#0f172a', lineHeight: 1, letterSpacing: '-0.03em' }}>
-                  {s.value}
+                  {loading ? '...' : s.value}
                 </div>
               </div>
               <div
@@ -110,99 +133,6 @@ export default async function AdminDashboardPage() {
           </div>
         ))}
       </div>
-
-      {/* Full-Width Recent Inquiries Table */}
-      {/* <div className="admin-card overflow-hidden p-0 mb-4">
-        <div
-          className="px-4 py-3 d-flex justify-content-between align-items-center"
-          style={{ borderBottom: '1px solid #f1f5f9' }}
-        >
-          <div>
-            <h2 className="fw-semibold mb-0" style={{ color: '#0f172a', fontSize: '0.95rem', letterSpacing: '-0.01em' }}>
-              Recent Inquiries
-            </h2>
-            <small style={{ color: '#64748b', fontSize: '0.78rem' }}>
-              Latest direct user requests for contractors
-            </small>
-          </div>
-          <Link
-            href="/admin/inquire"
-            className="btn btn-sm lb-btn-neutral rounded-pill py-1 px-3"
-            style={{ fontSize: '0.78rem' }}
-          >
-            View All ({inquiries.length})
-          </Link>
-        </div>
-        <div className="table-responsive">
-          <table className="table admin-table align-middle">
-            <thead>
-              <tr>
-                <th className="ps-4">Requester</th>
-                <th>Service Needed</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th className="text-end pe-4" style={{ width: '110px' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inquiries.slice(0, 6).map((inq) => (
-                <tr key={inq.id}>
-                  <td className="ps-4">
-                    <div className="fw-semibold" style={{ color: '#0f172a', fontSize: '0.85rem' }}>
-                      {inq.name}
-                    </div>
-                    <small className="d-block" style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                      {inq.email}
-                    </small>
-                    <small style={{ fontSize: '0.74rem', color: '#94a3b8' }}>
-                      {inq.phone}
-                    </small>
-                  </td>
-                  <td>
-                    <span
-                      className="badge rounded-pill mb-1 fw-normal"
-                      style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', fontSize: '0.72rem', padding: '0.2rem 0.6rem' }}
-                    >
-                      {inq.service}
-                    </span>
-                    <p
-                      className="small mb-0 text-truncate"
-                      style={{ maxWidth: 360, color: '#64748b', fontSize: '0.78rem' }}
-                    >
-                      {inq.message}
-                    </p>
-                  </td>
-                  <td className="small" style={{ color: '#64748b', fontSize: '0.82rem' }}>
-                    {inq.date}
-                  </td>
-                  <td>
-                    <span
-                      className={
-                        inq.status === 'pending'
-                          ? 'admin-badge-pending'
-                          : inq.status === 'in_progress'
-                          ? 'admin-badge-progress'
-                          : 'admin-badge-resolved'
-                      }
-                    >
-                      {inq.status === 'in_progress' ? 'In Progress' : inq.status.charAt(0).toUpperCase() + inq.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="text-end pe-4">
-                    <Link
-                      href="/admin/inquire"
-                      className="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 d-inline-flex align-items-center gap-1"
-                      style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', borderColor: '#e2e8f0', color: '#475569' }}
-                    >
-                      <span>Details</span>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div> */}
     </div>
   );
 }

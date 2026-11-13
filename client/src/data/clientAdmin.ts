@@ -8,7 +8,7 @@ export const CLIENT_MENU: ClientMenuItem[] = [
   { label: "Profile", href: "/client-admin/profile", icon: "bi-person" },
   { label: "Add Post", href: "/client-admin/add-post", icon: "bi-plus-square" },
   { label: "View Post", href: "/client-admin/view-post", icon: "bi-card-list" },
-  { label: "View Payment History", href: null, icon: "bi-receipt" },
+  // { label: "View Payment History", href: null, icon: "bi-receipt" },
 ];
 
 /** Top 3 stat cards. */

@@ -25,6 +25,7 @@ import searchCategoryRoutes from "./routes/searchCategory.routes.js";
 import adminSearchCategoryRoutes from "./routes/adminSearchCategory.routes.js";
 import bannerSectionRoutes from "./routes/bannerSection.routes.js";
 import adminBannerSectionRoutes from "./routes/adminBannerSection.routes.js";
+import { requireAdminAccess } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 const app: Application = express();
@@ -39,6 +40,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Health check / root route
+
+// Protect all admin endpoints under /api/admin/*
+app.use("/api/admin", requireAdminAccess);
 
 // Routes
 app.use("/api/emotions", emotionRoutes);

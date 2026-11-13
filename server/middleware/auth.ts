@@ -82,19 +82,6 @@ export async function requireAdmin(request: Request, response: Response, next: N
 }
 
 export function requireAdminAccess(request: Request, response: Response, next: NextFunction): void {
-  const remoteAddress = request.socket.remoteAddress;
-  const isLoopback = remoteAddress === "127.0.0.1" || remoteAddress === "::1" || remoteAddress === "::ffff:127.0.0.1";
-  const origin = request.get("origin");
-  const isLocalFrontend = origin === "http://localhost:3000"
-    || origin === "http://127.0.0.1:3000"
-    || origin === "http://localhost:3001"
-    || origin === "http://127.0.0.1:3001";
-  if (config.nodeEnv === "development" && (isLoopback || isLocalFrontend)) {
-    request.isLocalAdmin = true;
-    next();
-    return;
-  }
-
   requireAuth(request, response, (error?: unknown) => {
     if (error) {
       next(error);

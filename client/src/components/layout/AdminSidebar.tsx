@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import http from '@/lib/http';
 
 export interface AdminNavSubItem {
   href: string;
@@ -46,9 +47,23 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
     '/admin/master-item': true, // Keep open by default
   });
+
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await http.post('/auth/logout');
+    } catch {
+      // Proceed even if network error
+    } finally {
+      closeOffcanvas();
+      window.location.href = '/admin';
+    }
+  };
 
   const isExactActive = (href: string) => pathname === href;
 
@@ -228,23 +243,41 @@ export default function AdminSidebar() {
           <span style={{ fontSize: '0.82rem' }}>Public Site</span>
         </Link>
         <div
-          className="d-flex align-items-center gap-2 p-2 rounded-3"
+          className="d-flex align-items-center justify-content-between p-2 rounded-3"
           style={{ backgroundColor: '#f8fafc', border: '1px solid #edf0f2' }}
         >
-          <div
-            className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
-            style={{ width: 32, height: 32, backgroundColor: 'var(--lb-ink)', flexShrink: 0, fontSize: '0.78rem' }}
+          <div className="d-flex align-items-center gap-2 overflow-hidden">
+            <div
+              className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
+              style={{ width: 32, height: 32, backgroundColor: 'var(--lb-ink)', flexShrink: 0, fontSize: '0.78rem' }}
+            >
+              AD
+            </div>
+            <div className="overflow-hidden">
+              <div className="small fw-semibold text-truncate" style={{ color: '#1e293b', fontSize: '0.8rem' }}>
+                Administrator
+              </div>
+              <div className="text-truncate" style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                admin@tinyadds.com
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="btn btn-sm p-1 d-flex align-items-center justify-content-center rounded-2 border-0 text-muted"
+            title="Log Out"
+            style={{ width: 28, height: 28, transition: 'background-color 0.15s ease' }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fee2e2', e.currentTarget.style.color = '#dc2626')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent', e.currentTarget.style.color = '#64748b')}
           >
-            AD
-          </div>
-          <div className="overflow-hidden">
-            <div className="small fw-semibold text-truncate" style={{ color: '#1e293b', fontSize: '0.8rem' }}>
-              Administrator
-            </div>
-            <div className="text-truncate" style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-              admin@tinyadds.com
-            </div>
-          </div>
+            {loggingOut ? (
+              <span className="spinner-border spinner-border-sm" style={{ width: '0.85rem', height: '0.85rem' }} role="status" />
+            ) : (
+              <i className="bi bi-box-arrow-right fs-6" />
+            )}
+          </button>
         </div>
       </div>
     </>
