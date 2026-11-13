@@ -2,8 +2,8 @@ import AdminSidebar from '@/components/layout/AdminSidebar';
 import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Admin Control Panel | TinyAdds',
-  description: 'TinyAdds administrative portal and moderation dashboard',
+  title: 'Admin Control Panel',
+  robots: { index: false, follow: false },
 };
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

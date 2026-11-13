@@ -1217,13 +1217,22 @@ img {
 /* ===== Inner pages: banner ===== */
 .lb-banner {
   background: linear-gradient(180deg, #ffe3d1 0%, #fff 100%);
-  padding: 4.5rem 0 3.5rem;
+  padding: 2.5rem 0 2.5rem;
+  border-bottom: 2px solid rgba(212, 87, 43, .25);
+  box-shadow: 0 6px 16px rgba(59, 36, 24, .05);
+}
+
+.lb-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
 }
 
 .lb-banner-title {
   font-size: clamp(2rem, 4.5vw, 3rem);
   font-weight: 800;
-  margin: 0 0 .75rem;
+  margin: 0;
 }
 
 .lb-crumbs {
@@ -1258,6 +1267,14 @@ img {
 
 .lb-crumbs li[aria-current="page"] {
   color: var(--lb-primary);
+}
+
+@media (max-width: 575.98px) {
+  .lb-banner-content {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .75rem;
+  }
 }
 
 /* shared decorative blobs + inline heading image */
@@ -1602,15 +1619,8 @@ html.lb-loading {
 }
 
 .lb-loader-logo {
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: -.5px;
-  color: var(--lb-ink);
-  line-height: 1;
-}
-
-.lb-loader-logo span {
-  color: var(--lb-primary);
+  width: 200px;
+  height: auto;
 }
 
 /* wave "LOADING" text (tumhara loader, theme colour ke saath) */
@@ -1645,7 +1655,7 @@ html.lb-loading {
 
 @media (max-width: 575.98px) {
   .lb-loader-logo {
-    font-size: 2rem;
+    width: 170px;
   }
 
   .lb-wave {

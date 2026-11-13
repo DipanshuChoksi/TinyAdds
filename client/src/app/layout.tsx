@@ -8,10 +8,16 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Preloader from "@/components/Preloader";
 import UiProvider from "@/components/ui/UiProvider";
+import { SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "TinyAdds – Get daily thing in same platform",
-  description: "TinyAdds: a classified listing website and marketplace.",
+  metadataBase: SITE_URL,
+  title: {
+    default: "TinyAdds | Discover Local Listings & Services",
+    template: "%s | TinyAdds",
+  },
+  description:
+    "Discover local listings, businesses, products, and services on TinyAdds. Browse opportunities and connect with providers in your city.",
 };
 
 export default function RootLayout({

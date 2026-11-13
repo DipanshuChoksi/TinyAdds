@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import LoadingIndicator from "@/components/LoadingIndicator";
 
 /**
@@ -93,9 +94,7 @@ export default function Preloader() {
   return (
     <div className={`lb-loader${visible ? "" : " is-hidden"}`} role="status" aria-live="polite" aria-busy={visible}>
       <div className="lb-loader-box">
-        <div className="lb-loader-logo">
-          Tiny<span>Adds</span>
-        </div>
+        <Image className="lb-loader-logo" src="/logo-removebg.png" alt="TinyAdds" width={240} height={72} priority />
         <LoadingIndicator />
       </div>
     </div>

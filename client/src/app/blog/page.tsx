@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import PageBanner from '@/components/PageBanner';
 import BlogCard from '@/components/blog/BlogCard';
@@ -6,8 +5,14 @@ import BlogPagination from '@/components/blog/BlogPagination';
 import BlogSidebar from '@/components/blog/BlogSidebar';
 import { BLOG_PAGE_SIZE } from '@/data/site';
 import { searchBlogs } from '@/lib/api';
+import { createSeoMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = { title: 'Blog – TinyAdds' };
+export const metadata = createSeoMetadata({
+  title: 'Local Business & Listing Insights',
+  description:
+    'Read TinyAdds articles about local businesses, listings, services, and topics that help you discover more in your community.',
+  path: '/blog',
+});
 
 export default async function BlogPage({
   searchParams,
@@ -22,7 +27,7 @@ export default async function BlogPage({
 
   return (
     <main>
-      <PageBanner title="News Feeds" crumbs={[{ label: 'Home', href: '/' }, { label: 'Blog' }]} />
+      <PageBanner title="Blogs" crumbs={[{ label: 'Home', href: '/' }, { label: 'Blog' }]} />
       <section className="lb-section">
         <div className="container">
           <div className="row g-lg-5 g-0">

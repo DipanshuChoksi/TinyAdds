@@ -5,6 +5,7 @@ import BlogArticle from '@/components/blog/BlogArticle';
 import BlogComments from '@/components/blog/BlogComments';
 import BlogSidebar from '@/components/blog/BlogSidebar';
 import { getBlog, getBlogs } from '@/lib/api';
+import { createSeoMetadata } from '@/lib/seo';
 
 export async function generateStaticParams() {
   const blogs = await getBlogs();
@@ -14,7 +15,21 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlog(slug);
-  return { title: post ? `${post.title} – TinyAdds` : 'Blog – TinyAdds' };
+  if (!post) {
+    return {
+      title: 'Blog Article Not Found',
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const description = post.title.replace(/\\s+/g, ' ').trim().slice(0, 160);
+
+  return createSeoMetadata({
+    title: post.title,
+    description,
+    path: `/blog/${post.slug}`,
+    type: 'article',
+  });
 }
 
 export default async function BlogDetailsPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -3,6 +3,11 @@ import type { ReactNode } from "react";
 import ClientSidebar from "@/components/client-admin/ClientSidebar";
 import ClientAdminGuard from "@/components/client-admin/ClientAdminGuard";
 
+export const metadata = {
+  title: "My Account",
+  robots: { index: false, follow: false },
+};
+
 export default function ClientAdminLayout({ children }: { children: ReactNode }) {
   return (
     <ClientAdminGuard>

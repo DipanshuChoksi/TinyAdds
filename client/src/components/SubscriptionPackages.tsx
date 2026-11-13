@@ -10,6 +10,12 @@ export default function SubscriptionPackages() {
   const [packages, setPackages] = useState<PublicPackageResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const displayPackages = [...packages];
+  const popularIndex = displayPackages.findIndex((pkg) => pkg.isPopular);
+  if (displayPackages.length >= 3 && popularIndex !== -1 && popularIndex !== 1) {
+    const [popularPackage] = displayPackages.splice(popularIndex, 1);
+    displayPackages.splice(1, 0, popularPackage);
+  }
 
   useEffect(() => {
     let active = true;
@@ -42,9 +48,9 @@ export default function SubscriptionPackages() {
             </div>
           )}
 
-          {!loading && !error && packages.length > 0 && (
+          {!loading && !error && displayPackages.length > 0 && (
             <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 align-items-stretch">
-              {packages.map((pkg, index) => (
+              {displayPackages.map((pkg, index) => (
                 <div className="col" key={pkg._id}>
                   <article className={`lb-package-card${pkg.isPopular ? " is-popular" : ""}`} style={{ animationDelay: `${index * 80}ms` }}>
                     {pkg.isPopular && <span className="lb-package-popular">Most popular</span>}
