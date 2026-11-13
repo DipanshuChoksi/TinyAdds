@@ -2,6 +2,16 @@ import Link from 'next/link';
 import BlogMeta from '@/components/blog/BlogMeta';
 import type { BlogSummary } from '@/src/types';
 
+const BASE_URL = process.env.NEXT_PUBLIC_IMAGE_URL || 'http://localhost:5000';
+
+const getImageUrl = (src?: string) => {
+  if (!src) return '/assets/img/blog/v1/01.jpg';
+  if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+    return src;
+  }
+  return `${BASE_URL.replace(/\/$/, '')}/${src.replace(/^\//, '')}`;
+};
+
 interface Props {
   post: BlogSummary;
 }
@@ -33,7 +43,7 @@ export default function BlogCard({ post }: Props) {
             {slides.map((src, index) => (
               <div key={src} className={`carousel-item${index === 0 ? ' active' : ''}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt="" loading="lazy" />
+                <img src={getImageUrl(src)} alt="" loading="lazy" />
               </div>
             ))}
           </div>
@@ -49,14 +59,14 @@ export default function BlogCard({ post }: Props) {
       ) : (
         <Link href={href} className="lb-post-media">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.image} alt={post.title} loading="lazy" />
+          <img src={getImageUrl(post.image)} alt={post.title} loading="lazy" />
         </Link>
       )}
 
       <div className="lb-post-body">
         <BlogMeta post={post} />
         <h2 className="lb-post-title"><Link href={href}>{post.title}</Link></h2>
-        {post.excerpt && <p>{post.excerpt}</p>}
+        {/* {post.excerpt && <p>{post.excerpt}</p>} */}
         <Link href={href} className="btn lb-btn-primary">
           Read More <i className="bi bi-arrow-right ms-1"></i>
         </Link>

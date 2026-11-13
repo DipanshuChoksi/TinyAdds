@@ -43,6 +43,7 @@ export interface BlogQuote { text: string; name: string; role: string; avatar: s
 export interface BlogComment { name: string; date: string; avatar: string; text: string }
 
 export interface BlogPost extends BlogSummary {
+  content?: string;
   paragraphs: string[];
   inlineImage: string;
   quote: BlogQuote;

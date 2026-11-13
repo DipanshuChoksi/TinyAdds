@@ -46,7 +46,7 @@ export default async function BlogPage({
                   ))}
                 </div>
               ) : (
-                <div className="lb-empty">No posts found. Try another keyword.</div>
+                <div className="lb-empty">No posts found.</div>
               )}
               <BlogPagination page={page} totalPages={totalPages} query={q || undefined} />
             </div>

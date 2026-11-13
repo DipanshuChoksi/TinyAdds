@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PageBanner from '@/components/PageBanner';
 import BlogArticle from '@/components/blog/BlogArticle';
-import BlogComments from '@/components/blog/BlogComments';
+// import BlogComments from '@/components/blog/BlogComments';
 import BlogSidebar from '@/components/blog/BlogSidebar';
 import { getBlog, getBlogs } from '@/lib/api';
 import { createSeoMetadata } from '@/lib/seo';
@@ -52,7 +52,7 @@ export default async function BlogDetailsPage({ params }: { params: Promise<{ sl
           <div className="row g-lg-5 g-0">
             <div className="col-lg-8">
               <BlogArticle post={post} prev={prev} next={next} />
-              <BlogComments initialComments={post.commentList} />
+              {/* <BlogComments initialComments={post.commentList} /> */}
             </div>
             <div className="col-lg-4">
               <BlogSidebar />

@@ -1,52 +1,146 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import type { BlogSummary } from '@/src/types';
+import type { AdminBlogResponse } from '@/src/types/blog';
+import {
+  createAdminBlog,
+  updateAdminBlog,
+  deleteAdminBlog,
+} from '@/lib/blogApi';
 
 interface ManageBlogsViewProps {
-  initialBlogs: BlogSummary[];
+  initialBlogs: AdminBlogResponse[];
 }
 
 export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) {
-  const [blogs, setBlogs] = useState<BlogSummary[]>(initialBlogs);
+  const [blogs, setBlogs] = useState<AdminBlogResponse[]>(initialBlogs);
   const [search, setSearch] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newTag, setNewTag] = useState('Guide');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const filtered = blogs.filter(
-    (b) =>
-      b.title.toLowerCase().includes(search.toLowerCase()) ||
-      b.tag.toLowerCase().includes(search.toLowerCase())
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [editingBlog, setEditingBlog] = useState<AdminBlogResponse | null>(null);
+
+  // Form Fields
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [bannerImage, setBannerImage] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const filtered = blogs.filter((b) =>
+    b.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = (slug: string) => {
-    if (confirm('Are you sure you want to delete this blog post?')) {
-      setBlogs((prev) => prev.filter((b) => b.slug !== slug));
+  const handleOpenCreateModal = () => {
+    setEditingBlog(null);
+    setTitle('');
+    setContent('');
+    setBannerImage('');
+    setIsActive(true);
+    setFileError(null);
+    setActionError(null);
+    setShowModal(true);
+  };
+
+  const handleOpenEditModal = (blog: AdminBlogResponse) => {
+    setEditingBlog(blog);
+    setTitle(blog.title);
+    setContent(blog.content || '');
+    setBannerImage(blog.bannerImage || '');
+    setIsActive(blog.isActive);
+    setFileError(null);
+    setActionError(null);
+    setShowModal(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setFileError('Please select a valid image file (PNG, JPG, SVG, WebP, etc.)');
+      return;
+    }
+
+    const MAX_SIZE = 2 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setFileError('Image size exceeds 2MB. Please choose a smaller image.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setBannerImage(reader.result);
+      }
+    };
+    reader.onerror = () => {
+      setFileError('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleToggleStatus = async (blog: AdminBlogResponse) => {
+    try {
+      setActionError(null);
+      const newStatus = !blog.isActive;
+      const updated = await updateAdminBlog(blog._id, { isActive: newStatus });
+      setBlogs((prev) => prev.map((b) => (b._id === blog._id ? updated : b)));
+    } catch (err: unknown) {
+      console.error('Failed to toggle status:', err);
+      setActionError(err instanceof Error ? err.message : 'Failed to update status');
     }
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleDelete = async (blog: AdminBlogResponse) => {
+    if (!confirm(`Are you sure you want to delete blog post "${blog.title}"?`)) return;
+
+    try {
+      setActionError(null);
+      await deleteAdminBlog(blog._id);
+      setBlogs((prev) => prev.filter((b) => b._id !== blog._id));
+    } catch (err: unknown) {
+      console.error('Failed to delete blog:', err);
+      setActionError(err instanceof Error ? err.message : 'Failed to delete blog post');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (!title.trim()) return;
 
-    const newSlug = newTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
+    try {
+      setIsSubmitting(true);
+      setActionError(null);
 
-    const newEntry: BlogSummary = {
-      slug: newSlug || `blog-${Date.now()}`,
-      title: newTitle,
-      tag: newTag,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      image: '/assets/img/blog/v1/01.jpg',
-    };
+      if (editingBlog) {
+        const updated = await updateAdminBlog(editingBlog._id, {
+          title: title.trim(),
+          content: content.trim(),
+          bannerImage: bannerImage.trim(),
+          isActive,
+        });
+        setBlogs((prev) => prev.map((b) => (b._id === editingBlog._id ? updated : b)));
+      } else {
+        const created = await createAdminBlog({
+          title: title.trim(),
+          content: content.trim(),
+          bannerImage: bannerImage.trim(),
+          isActive,
+        });
+        setBlogs([created, ...blogs]);
+      }
 
-    setBlogs([newEntry, ...blogs]);
-    setNewTitle('');
-    setShowCreateModal(false);
+      setShowModal(false);
+    } catch (err: unknown) {
+      console.error('Failed to save blog:', err);
+      setActionError(err instanceof Error ? err.message : 'Failed to save blog post');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -66,13 +160,26 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
             type="button"
             className="btn btn-sm d-inline-flex align-items-center gap-2 py-1 px-3 text-white fw-medium rounded-pill shadow-sm"
             style={{ backgroundColor: 'var(--lb-primary)', fontSize: '0.82rem' }}
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleOpenCreateModal}
           >
             <i className="bi bi-plus-lg" />
             <span>New Article</span>
           </button>
         </div>
       </div>
+
+      {actionError && (
+        <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2" />
+          {actionError}
+          <button
+            type="button"
+            className="btn-close"
+            aria-label="Close"
+            onClick={() => setActionError(null)}
+          />
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="admin-card mb-4 p-3">
@@ -84,7 +191,7 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
           <input
             type="text"
             className="form-control admin-search-input ps-5"
-            placeholder="Search blogs by title or tag..."
+            placeholder="Search blogs by title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -107,11 +214,11 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
           <table className="table admin-table align-middle">
             <thead>
               <tr>
-                <th className="ps-4" style={{ width: 80 }}>Cover</th>
+                <th className="ps-4" style={{ width: 80 }}>Banner</th>
                 <th>Article Title</th>
-                <th>Tag</th>
-                <th>Date</th>
-                <th className="text-end pe-4" style={{ width: '130px' }}>Actions</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th className="text-end pe-4" style={{ width: '160px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -124,49 +231,70 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
                 </tr>
               ) : (
                 filtered.map((blog) => (
-                  <tr key={blog.slug}>
+                  <tr key={blog._id}>
                     <td className="ps-4">
                       <div
-                        className="position-relative rounded-2 overflow-hidden"
+                        className="position-relative rounded-2 overflow-hidden d-flex align-items-center justify-content-center"
                         style={{ width: 56, height: 40, backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0' }}
                       >
-                        <Image
-                          src={blog.image}
-                          alt={blog.title}
-                          fill
-                          className="object-fit-cover"
-                        />
+                        {blog.bannerImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={blog.bannerImage}
+                            alt={blog.title}
+                            className="w-100 h-100 object-fit-cover"
+                          />
+                        ) : (
+                          <i className="bi bi-image text-muted" style={{ fontSize: '1.2rem' }} />
+                        )}
                       </div>
                     </td>
                     <td>
-                      <div className="fw-semibold" style={{ color: '#0f172a' }}>{blog.title}</div>
-                      <small style={{ color: '#64748b', fontSize: '0.74rem' }}>slug: /{blog.slug}</small>
+                      <div className="fw-semibold text-truncate" style={{ color: '#0f172a', maxWidth: 350 }}>
+                        {blog.title}
+                      </div>
+                      <small style={{ color: '#64748b', fontSize: '0.74rem' }}>ID: {blog._id}</small>
                     </td>
                     <td>
-                      <span
-                        className="badge rounded-pill fw-normal"
-                        style={{ backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(blog)}
+                        className={`badge rounded-pill border-0 px-2.5 py-1 ${
+                          blog.isActive
+                            ? 'bg-success-subtle text-success'
+                            : 'bg-secondary-subtle text-secondary'
+                        }`}
+                        style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                        title="Click to toggle status"
                       >
-                        {blog.tag}
-                      </span>
+                        <i className={`bi ${blog.isActive ? 'bi-check-circle-fill' : 'bi-dash-circle'} me-1`} />
+                        {blog.isActive ? 'Active' : 'Inactive'}
+                      </button>
                     </td>
-                    <td className="small" style={{ color: '#64748b' }}>{blog.date}</td>
+                    <td className="small" style={{ color: '#64748b' }}>
+                      {new Date(blog.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </td>
                     <td className="text-end pe-4">
                       <div className="d-inline-flex align-items-center justify-content-end gap-1">
-                        <a
-                          href={`/blogs/${blog.slug}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-sm btn-outline-secondary rounded-2 py-1 px-2"
-                          style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary rounded-2 py-1 px-2"
+                          style={{ fontSize: '0.75rem' }}
+                          onClick={() => handleOpenEditModal(blog)}
+                          title="Edit article"
                         >
-                          <i className="bi bi-box-arrow-up-right me-1" /> View
-                        </a>
+                          <i className="bi bi-pencil" />
+                        </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-outline-danger rounded-2 py-1 px-2"
                           style={{ fontSize: '0.75rem' }}
-                          onClick={() => handleDelete(blog.slug)}
+                          onClick={() => handleDelete(blog)}
+                          title="Delete article"
                         >
                           <i className="bi bi-trash" />
                         </button>
@@ -180,57 +308,128 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
         </div>
       </div>
 
-      {/* Create Modal */}
-      {showCreateModal && (
+      {/* Create / Edit Modal */}
+      {showModal && (
         <div
           className="modal d-block"
           tabIndex={-1}
           style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(2px)', zIndex: 1050 }}
         >
-          <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
-              <form onSubmit={handleCreate}>
+              <form onSubmit={handleSubmit}>
                 <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
                   <h6 className="modal-title fw-bold mb-0" style={{ color: '#0f172a' }}>
-                    Create Blog Post
+                    {editingBlog ? 'Edit Blog Post' : 'Create Blog Post'}
                   </h6>
                   <button
                     type="button"
                     className="btn-close"
-                    onClick={() => setShowCreateModal(false)}
+                    onClick={() => setShowModal(false)}
                   />
                 </div>
                 <div className="modal-body p-4">
+                  {actionError && (
+                    <div className="alert alert-danger small mb-3">
+                      {actionError}
+                    </div>
+                  )}
+
+                  {/* Title */}
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Title</label>
+                    <label className="form-label small fw-semibold text-muted">Title *</label>
                     <input
                       type="text"
                       className="form-control rounded-2"
                       placeholder="e.g. 5 Tips to Choose the Right Contractor"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
                       required
+                      maxLength={300}
                     />
                   </div>
+
+                  {/* Banner Image Upload & URL */}
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">Category Tag</label>
-                    <select
-                      className="form-select rounded-2"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                    >
-                      <option value="Guide">Guide</option>
-                      <option value="Business">Business</option>
-                      <option value="Home & Living">Home & Living</option>
-                      <option value="Spotlight">Spotlight</option>
-                    </select>
+                    <label className="form-label small fw-semibold text-muted">Banner Image</label>
+                    <input
+                      type="file"
+                      className="form-control rounded-2 mb-2"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    {fileError && (
+                      <div className="text-danger small mb-2" style={{ fontSize: '0.78rem' }}>
+                        <i className="bi bi-exclamation-circle me-1" />
+                        {fileError}
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      className="form-control rounded-2"
+                      placeholder="Or enter banner image URL (e.g. /assets/img/blog/...)"
+                      value={bannerImage}
+                      onChange={(e) => setBannerImage(e.target.value)}
+                    />
+                    {bannerImage && (
+                      <div className="mt-2 p-2 border rounded-2 bg-light d-flex align-items-center gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={bannerImage}
+                          alt="Banner preview"
+                          style={{
+                            width: '90px',
+                            height: '50px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            border: '1px solid #e2e8f0',
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => setBannerImage('')}
+                        >
+                          Remove image
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold text-muted">Content</label>
+                    <textarea
+                      rows={6}
+                      className="form-control rounded-2"
+                      placeholder="Write blog article content here..."
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Active status */}
+                  <div className="form-check form-switch mb-2">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      id="blogActiveSwitch"
+                      checked={isActive}
+                      onChange={(e) => setIsActive(e.target.checked)}
+                    />
+                    <label className="form-check-label small text-muted" htmlFor="blogActiveSwitch">
+                      Active
+                    </label>
                   </div>
                 </div>
+
                 <div className="modal-footer p-3 bg-light border-top">
                   <button
                     type="button"
                     className="btn btn-sm btn-secondary rounded-2"
-                    onClick={() => setShowCreateModal(false)}
+                    onClick={() => setShowModal(false)}
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </button>
@@ -238,8 +437,9 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
                     type="submit"
                     className="btn btn-sm text-white rounded-2 px-3"
                     style={{ backgroundColor: 'var(--lb-primary)' }}
+                    disabled={isSubmitting}
                   >
-                    Save Article
+                    {isSubmitting ? 'Saving...' : editingBlog ? 'Update Article' : 'Save Article'}
                   </button>
                 </div>
               </form>

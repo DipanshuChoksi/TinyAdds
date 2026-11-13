@@ -1,4 +1,5 @@
-import express, { type Application, type Request, type Response } from "express";
+import express, { type Application } from "express";
+import path from "path";
 import cors from "cors";
 import emotionRoutes from "./routes/emotion.routes.js";
 import adminEmotionRoutes from "./routes/adminEmotion.routes.js";
@@ -25,6 +26,8 @@ import searchCategoryRoutes from "./routes/searchCategory.routes.js";
 import adminSearchCategoryRoutes from "./routes/adminSearchCategory.routes.js";
 import bannerSectionRoutes from "./routes/bannerSection.routes.js";
 import adminBannerSectionRoutes from "./routes/adminBannerSection.routes.js";
+import blogRoutes from "./routes/blog.routes.js";
+import adminBlogRoutes from "./routes/adminBlog.routes.js";
 import { requireAdminAccess } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
@@ -38,6 +41,10 @@ if (config.nodeEnv === "development") {
 app.use(cors({ origin: clientOrigins, credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// Static files (uploads)
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/Upload", express.static(path.join(process.cwd(), "uploads")));
 
 // Health check / root route
 
@@ -79,6 +86,9 @@ app.use("/api/admin/search-categories", adminSearchCategoryRoutes);
 
 app.use("/api/banner-sections", bannerSectionRoutes);
 app.use("/api/admin/banner-sections", adminBannerSectionRoutes);
+
+app.use("/api/blogs", blogRoutes);
+app.use("/api/admin/blogs", adminBlogRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);
