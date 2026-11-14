@@ -178,6 +178,44 @@ export class ClientPostService {
     );
     if (!post) throw new NotFoundError("Post not found");
   }
+
+  /**
+   * Public list of approved posts.
+   * If banner is specified, filters by banner section name.
+   * Only posts whose fromDate is <= today (or specified date) are active.
+   */
+  async getPublicPosts(query: { banner?: string | undefined; fromDate?: string | undefined; page?: number | undefined; limit?: number | undefined }) {
+    const page = Math.max(1, query.page || 1);
+    const limit = Math.max(1, Math.min(100, query.limit || 50));
+    const skip = (page - 1) * limit;
+
+    const filter: Record<string, unknown> = {
+      isDisplay: true,
+      status: "approved",
+    };
+
+    if (query.banner && query.banner.trim()) {
+      filter.banner = query.banner.trim();
+    }
+
+    // Date condition: ad starts when the date comes (fromDate <= today)
+    const targetDate = query.fromDate || new Date().toISOString().slice(0, 10);
+    filter.fromDate = { $lte: targetDate };
+
+    const [items, total] = await Promise.all([
+      ClientPost.find(filter)
+        .sort({ fromDate: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ClientPost.countDocuments(filter),
+    ]);
+
+    return {
+      items: items.map(serializePost),
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
+    };
+  }
 }
 
 export const clientPostService = new ClientPostService();

@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import SliderBannerCarousel from "@/components/SliderBannerCarousel";
 import SearchByLocation from "@/components/SearchByLocation";
 import Listings from "@/components/Listings";
 import PopularCategories from "@/components/PopularCategories";
@@ -18,12 +19,16 @@ export default function Home() {
   return (
     <>
       <main>
+        {/* Hero Section containing the Mascot, Standy Slider (Black Friday sale spot) & Slider Banner (Minimalist Facebook Ads spot) */}
         <Hero />
+        {/* Additional Slider Banner Carousel section */}
+        <SliderBannerCarousel />
         <SearchByLocation />
+        {/* Top Notch Items listing dynamically showing Listing ads */}
         <Listings />
-        <PopularCategories />
-        <Brands />
-        <Feedback />
+        {/* <PopularCategories /> */}
+        {/* <Brands /> */}
+        {/* <Feedback /> */}
         <Blogs />
       </main>
     </>

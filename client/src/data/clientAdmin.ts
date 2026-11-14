@@ -56,8 +56,17 @@ export const LOCATION_TREE: Record<string, Record<string, string[]>> = {
   },
 };
 
-/* Dropdown options for Add Post – placeholders, replace with API / master data. */
-export const BANNER_SECTIONS = ["Home Top Banner", "Home Middle Banner", "Sidebar Banner", "Footer Banner"];
+/* Dropdown options for Add Post – sync with Banner Section master items */
+export const BANNER_SECTIONS = [
+  "Standy slider",
+  "Slider banner",
+  "Section banner",
+  "Listing ads",
+  "Home Top Banner",
+  "Home Middle Banner",
+  "Sidebar Banner",
+  "Footer Banner",
+];
 export const EMOTIONS = ["Happy", "Excited", "Trusted", "Urgent"];
 export const SEARCH_GROUPS = ["Property", "Vehicles", "Jobs", "Services", "Electronics"];
 export const SEARCH_CATEGORIES = ["Buy", "Sell", "Rent", "Auction", "Finance"];

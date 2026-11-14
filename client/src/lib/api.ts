@@ -141,5 +141,6 @@ export * from './groupApi';
 export * from './searchCategoryApi';
 export * from './bannerSectionApi';
 export * from './blogApi';
+export * from './postApi';
 
 

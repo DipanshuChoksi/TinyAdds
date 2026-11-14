@@ -38,6 +38,18 @@ export class ClientPostController {
       res.status(200).json(sendSuccess({ message: "Post deleted" }));
     } catch (error) { next(error); }
   }
+
+  async publicList(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const banner = typeof req.query.banner === "string" ? req.query.banner : undefined;
+      const fromDate = typeof req.query.fromDate === "string" ? req.query.fromDate : undefined;
+      const page = typeof req.query.page === "string" ? parseInt(req.query.page, 10) : undefined;
+      const limit = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : undefined;
+
+      const result = await clientPostService.getPublicPosts({ banner, fromDate, page, limit });
+      res.status(200).json(sendSuccess(result.items, result.meta));
+    } catch (error) { next(error); }
+  }
 }
 
 export const clientPostController = new ClientPostController();

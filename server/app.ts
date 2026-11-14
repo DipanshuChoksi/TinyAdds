@@ -6,6 +6,7 @@ import adminEmotionRoutes from "./routes/adminEmotion.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import clientPostRoutes from "./routes/clientPost.routes.js";
 import adminPostRoutes from "./routes/adminPost.routes.js";
+import publicPostRoutes from "./routes/post.routes.js";
 import { config } from "./config/index.js";
 import countryRoutes from "./routes/country.routes.js";
 import adminCountryRoutes from "./routes/adminCountry.routes.js";
@@ -52,6 +53,7 @@ app.use("/Upload", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/admin", requireAdminAccess);
 
 // Routes
+app.use("/api/posts", publicPostRoutes);
 app.use("/api/emotions", emotionRoutes);
 app.use("/api/admin/emotions", adminEmotionRoutes);
 app.use("/api/auth", userRoutes);

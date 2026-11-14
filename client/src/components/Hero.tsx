@@ -1,51 +1,218 @@
+"use client";
+
+import { useEffect, useState, useRef, useCallback } from "react";
 import CategoryMarquee from "./CategoryMarquee";
-import CountUp from "./CountUp";
+import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 
 export default function Hero() {
+  const [standyAds, setStandyAds] = useState<PublicPost[]>([]);
+  const [sectionAds, setSectionAds] = useState<PublicPost[]>([]);
+  const [standyIndex, setStandyIndex] = useState(0);
+  const [sectionIndex, setSectionIndex] = useState(0);
+
+  const standyTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const sectionTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      getPublicPosts({ banner: "Standy slider", limit: 20 }),
+      getPublicPosts({ banner: "Section banner", limit: 20 }),
+    ])
+      .then(([standyRes, sectionRes]) => {
+        if (!active) return;
+        if (standyRes?.success && Array.isArray(standyRes.data)) {
+          setStandyAds(standyRes.data);
+        }
+        if (sectionRes?.success && Array.isArray(sectionRes.data)) {
+          setSectionAds(sectionRes.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load hero ads:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Standy auto-rotation
+  const nextStandy = useCallback(() => {
+    setStandyIndex((prev) => {
+      const total = standyAds.length > 0 ? standyAds.length : 1;
+      return (prev + 1) % total;
+    });
+  }, [standyAds.length]);
+
+  const prevStandy = useCallback(() => {
+    setStandyIndex((prev) => {
+      const total = standyAds.length > 0 ? standyAds.length : 1;
+      return (prev - 1 + total) % total;
+    });
+  }, [standyAds.length]);
+
+  useEffect(() => {
+    if (standyAds.length > 1) {
+      standyTimer.current = setInterval(nextStandy, 4000);
+      return () => {
+        if (standyTimer.current) clearInterval(standyTimer.current);
+      };
+    }
+  }, [standyAds.length, nextStandy]);
+
+  // Section banner auto-rotation
+  const nextSection = useCallback(() => {
+    setSectionIndex((prev) => {
+      const total = sectionAds.length > 0 ? sectionAds.length : 1;
+      return (prev + 1) % total;
+    });
+  }, [sectionAds.length]);
+
+  const prevSection = useCallback(() => {
+    setSectionIndex((prev) => {
+      const total = sectionAds.length > 0 ? sectionAds.length : 1;
+      return (prev - 1 + total) % total;
+    });
+  }, [sectionAds.length]);
+
+  useEffect(() => {
+    if (sectionAds.length > 1) {
+      sectionTimer.current = setInterval(nextSection, 4500);
+      return () => {
+        if (sectionTimer.current) clearInterval(sectionTimer.current);
+      };
+    }
+  }, [sectionAds.length, nextSection]);
+
+  const currentStandy = standyAds[standyIndex];
+  const currentSection = sectionAds[sectionIndex];
+
   return (
     <>
-      <section className="lb-hero">
-        <img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/shape-1-3.png" alt="" className="lb-shape lb-hero-shape-bg d-none d-lg-block" />
+      <section className="lb-hero pb-4">
+        <img
+          src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/shape-1-3.png"
+          alt=""
+          className="lb-shape lb-hero-shape-bg d-none d-lg-block"
+        />
         <div className="container position-relative">
           <CategoryMarquee />
 
-          <div className="row align-items-center g-lg-5 g-0 pt-4 pb-5">
-            <div className="col-lg-6">
-              <span className="lb-badge">TinyAdds</span>
-              <h1 className="lb-hero-title">Get daily thing in same platform</h1>
-              <ul className="nav lb-hero-tabs" role="tablist">
-      <li className="nav-item" role="presentation"><button className="nav-link active" data-bs-toggle="tab" data-bs-target="#hero-buy" type="button" role="tab" aria-selected="true">Buy</button></li>
-      <li className="nav-item" role="presentation"><button className="nav-link" data-bs-toggle="tab" data-bs-target="#hero-sell" type="button" role="tab" aria-selected="false">Sell</button></li>
-      <li className="nav-item" role="presentation"><button className="nav-link" data-bs-toggle="tab" data-bs-target="#hero-rent" type="button" role="tab" aria-selected="false">Rent</button></li>
-              </ul>
-              <p className="lb-hero-count"><em>50k+</em> thing is waiting for you</p>
-              <div className="tab-content">
-      <div className="tab-pane fade show active" id="hero-buy" role="tabpanel"><form className="lb-search" action="#">
-                    <div className="lb-search-field"><label htmlFor="find-buy">Find</label><input id="find-buy" type="text" placeholder="What are you looking for?" /></div>
-                    <div className="lb-search-field"><label htmlFor="where-buy">Where</label><input id="where-buy" type="text" placeholder="City or area" /></div>
-                    <button className="btn lb-btn-primary" type="submit"><i className="bi bi-search me-2"></i>Search Now</button>
-                  </form></div>
-      <div className="tab-pane fade" id="hero-sell" role="tabpanel"><form className="lb-search" action="#">
-                    <div className="lb-search-field"><label htmlFor="find-sell">Find</label><input id="find-sell" type="text" placeholder="What are you looking for?" /></div>
-                    <div className="lb-search-field"><label htmlFor="where-sell">Where</label><input id="where-sell" type="text" placeholder="City or area" /></div>
-                    <button className="btn lb-btn-primary" type="submit"><i className="bi bi-search me-2"></i>Search Now</button>
-                  </form></div>
-      <div className="tab-pane fade" id="hero-rent" role="tabpanel"><form className="lb-search" action="#">
-                    <div className="lb-search-field"><label htmlFor="find-rent">Find</label><input id="find-rent" type="text" placeholder="What are you looking for?" /></div>
-                    <div className="lb-search-field"><label htmlFor="where-rent">Where</label><input id="where-rent" type="text" placeholder="City or area" /></div>
-                    <button className="btn lb-btn-primary" type="submit"><i className="bi bi-search me-2"></i>Search Now</button>
-                  </form></div>
+          {/* Hero Ads Row matching tinyadds.com */}
+          <div className="row g-3 align-items-stretch pt-4 pb-2">
+            {/* Left Col: Mascot + Standy Slider (Black Friday spot) */}
+            <div className="col-12 col-lg-5">
+              <div className="row g-2 align-items-center h-100">
+                {/* Character */}
+                <div className="col-5 text-center">
+                  <img
+                    src="/ads/tinyadds-character.png"
+                    alt="TinyAdds Mascot"
+                    className="img-fluid"
+                    style={{ maxHeight: 420, objectFit: "contain" }}
+                  />
+                </div>
+
+                {/* Standy Slider */}
+                <div className="col-7">
+                  <div className="lb-standy-card position-relative overflow-hidden rounded-3 shadow-sm h-100">
+                    {currentStandy ? (
+                      <div className="lb-ad-slide">
+                        <img
+                          src={currentStandy.image || "/ads/black-friday-standy.png"}
+                          alt={currentStandy.title || "Standy ad"}
+                          className="w-100 d-block rounded-3"
+                          style={{ height: 420, objectFit: "cover" }}
+                        />
+                        <div className="lb-ad-overlay">
+                          <span className="badge bg-danger mb-1">Standy Ad</span>
+                          <h6 className="text-white mb-0 text-truncate">{currentStandy.title}</h6>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="lb-ad-slide">
+                        <img
+                          src="/ads/black-friday-standy.png"
+                          alt="Black Friday Sale"
+                          className="w-100 d-block rounded-3"
+                          style={{ height: 420, objectFit: "cover" }}
+                        />
+                      </div>
+                    )}
+
+                    {standyAds.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          className="lb-slider-arrow lb-arrow-prev"
+                          onClick={prevStandy}
+                          aria-label="Previous standy ad"
+                        >
+                          <i className="bi bi-chevron-left" />
+                        </button>
+                        <button
+                          type="button"
+                          className="lb-slider-arrow lb-arrow-next"
+                          onClick={nextStandy}
+                          aria-label="Next standy ad"
+                        >
+                          <i className="bi bi-chevron-right" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="col-lg-6">
-              <div className="lb-collage">
-                <img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/shape-1-1.png" alt="" className="lb-shape lb-collage-shape-1" />
-                <img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/shape-1-2.png" alt="" className="lb-shape lb-collage-shape-2" />
-                <img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/hero-1-1.jpg" alt="" className="lb-collage-a" />
-                <img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/hero-1-3.jpg" alt="" className="lb-collage-b" />
-                <img src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/hero-1-2.jpg" alt="" className="lb-collage-c" />
-                <div className="lb-counter"><h6><CountUp target={1500} />+</h6><p>Daily Ads Listing</p></div>
+            {/* Right Col: Section Banner (Minimalist Facebook Ads spot) */}
+            <div className="col-12 col-lg-7">
+              <div className="lb-slider-banner-card position-relative overflow-hidden rounded-3 shadow-sm h-100">
+                {currentSection ? (
+                  <div className="lb-ad-slide h-100">
+                    <img
+                      src={currentSection.image || "/ads/minimalist-fb-ad.png"}
+                      alt={currentSection.title || "Section banner ad"}
+                      className="w-100 h-100 d-block rounded-3"
+                      style={{ minHeight: 420, objectFit: "cover" }}
+                    />
+                    <div className="lb-ad-overlay">
+                      <span className="badge bg-primary mb-1">Section Banner</span>
+                      <h5 className="text-white mb-0 text-truncate">{currentSection.title}</h5>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="lb-ad-slide h-100">
+                    <img
+                      src="/ads/minimalist-fb-ad.png"
+                      alt="Minimalist Facebook Ads"
+                      className="w-100 h-100 d-block rounded-3"
+                      style={{ minHeight: 420, objectFit: "cover" }}
+                    />
+                  </div>
+                )}
+
+                {sectionAds.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="lb-slider-arrow lb-arrow-prev"
+                      onClick={prevSection}
+                      aria-label="Previous section ad"
+                    >
+                      <i className="bi bi-chevron-left" />
+                    </button>
+                    <button
+                      type="button"
+                      className="lb-slider-arrow lb-arrow-next"
+                      onClick={nextSection}
+                      aria-label="Next section ad"
+                    >
+                      <i className="bi bi-chevron-right" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
