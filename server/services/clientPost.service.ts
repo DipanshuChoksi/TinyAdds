@@ -94,6 +94,13 @@ export class ClientPostService {
     return serializePost(post);
   }
 
+  async getPublicPostById(postId: string) {
+    if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
+    const post = await ClientPost.findOne({ _id: postId, isDisplay: true, isActive: true, status: "approved" }).lean();
+    if (!post) throw new NotFoundError("Post not found");
+    return serializePost(post);
+  }
+
   async create(ownerId: string, input: ClientPostInput) {
     const post = await ClientPost.create({ ...input, owner: new Types.ObjectId(ownerId) });
     return serializePost(post);
@@ -184,7 +191,16 @@ export class ClientPostService {
    * If banner is specified, filters by banner section name.
    * Only posts whose fromDate is <= today (or specified date) are active.
    */
-  async getPublicPosts(query: { banner?: string | undefined; fromDate?: string | undefined; page?: number | undefined; limit?: number | undefined }) {
+  async getPublicPosts(query: {
+    banner?: string | undefined;
+    searchGroup?: string | undefined;
+    searchCategory?: string | undefined;
+    emotion?: string | undefined;
+    search?: string | undefined;
+    fromDate?: string | undefined;
+    page?: number | undefined;
+    limit?: number | undefined;
+  }) {
     const page = Math.max(1, query.page || 1);
     const limit = Math.max(1, Math.min(100, query.limit || 50));
     const skip = (page - 1) * limit;
@@ -196,6 +212,30 @@ export class ClientPostService {
 
     if (query.banner && query.banner.trim()) {
       filter.banner = query.banner.trim();
+    }
+
+    if (query.searchGroup && query.searchGroup.trim()) {
+      filter.searchGroup = query.searchGroup.trim();
+    }
+
+    if (query.searchCategory && query.searchCategory.trim()) {
+      filter.searchCategory = query.searchCategory.trim();
+    }
+
+    if (query.emotion && query.emotion.trim()) {
+      filter.emotion = query.emotion.trim();
+    }
+
+    if (query.search && query.search.trim()) {
+      const searchRegex = new RegExp(query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { address: searchRegex },
+        { tag: searchRegex },
+        { searchGroup: searchRegex },
+        { searchCategory: searchRegex },
+      ];
     }
 
     // Date condition: ad starts when the date comes (fromDate <= today)

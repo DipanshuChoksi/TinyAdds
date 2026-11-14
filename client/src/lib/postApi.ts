@@ -21,6 +21,10 @@ export interface PublicPost {
 
 export async function getPublicPosts(params?: {
   banner?: string;
+  searchGroup?: string;
+  searchCategory?: string;
+  emotion?: string;
+  search?: string;
   fromDate?: string;
   page?: number;
   limit?: number;
@@ -28,9 +32,17 @@ export async function getPublicPosts(params?: {
   return await http.get<PublicPost[]>("/posts", {
     params: {
       banner: params?.banner,
+      searchGroup: params?.searchGroup,
+      searchCategory: params?.searchCategory,
+      emotion: params?.emotion,
+      search: params?.search,
       fromDate: params?.fromDate,
       page: params?.page,
       limit: params?.limit,
     },
   });
+}
+
+export async function getPublicPostById(id: string): Promise<ApiResponse<PublicPost>> {
+  return await http.get<PublicPost>(`/posts/${id}`);
 }

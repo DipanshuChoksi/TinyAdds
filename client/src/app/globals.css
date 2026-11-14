@@ -1258,7 +1258,7 @@ img {
 
 /* ===== Mobile nav: side drawer (offcanvas) ===== */
 .lb-drawer {
-  --bs-offcanvas-width: 300px;
+  --bs-offcanvas-width: 320px;
 }
 
 .lb-drawer .offcanvas-header {

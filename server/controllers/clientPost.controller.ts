@@ -42,12 +42,31 @@ export class ClientPostController {
   async publicList(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const banner = typeof req.query.banner === "string" ? req.query.banner : undefined;
+      const searchGroup = typeof req.query.searchGroup === "string" ? req.query.searchGroup : undefined;
+      const searchCategory = typeof req.query.searchCategory === "string" ? req.query.searchCategory : undefined;
+      const emotion = typeof req.query.emotion === "string" ? req.query.emotion : undefined;
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
       const fromDate = typeof req.query.fromDate === "string" ? req.query.fromDate : undefined;
       const page = typeof req.query.page === "string" ? parseInt(req.query.page, 10) : undefined;
       const limit = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : undefined;
 
-      const result = await clientPostService.getPublicPosts({ banner, fromDate, page, limit });
+      const result = await clientPostService.getPublicPosts({
+        banner,
+        searchGroup,
+        searchCategory,
+        emotion,
+        search,
+        fromDate,
+        page,
+        limit,
+      });
       res.status(200).json(sendSuccess(result.items, result.meta));
+    } catch (error) { next(error); }
+  }
+
+  async publicGet(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      res.status(200).json(sendSuccess(await clientPostService.getPublicPostById(postId(req))));
     } catch (error) { next(error); }
   }
 }
