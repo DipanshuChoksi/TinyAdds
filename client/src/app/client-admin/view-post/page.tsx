@@ -5,9 +5,6 @@ export const metadata: Metadata = { title: "View Post – TinyAdds" };
 
 export default function ClientViewPost() {
   return (
-    <>
-      <h6 className="lb-ca-title">View Product</h6>
-      <PostTable />
-    </>
+    <PostTable title={<h6 className="lb-ca-title mb-0">View Product</h6>} />
   );
 }

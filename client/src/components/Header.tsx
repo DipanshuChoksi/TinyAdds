@@ -18,6 +18,8 @@ export default function Header() {
   const [locOpen, setLocOpen] = useState(false);
   const [city, setCity] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     try { setCity(localStorage.getItem("tinyadds:city") ?? ""); } catch { /* ignore */ }
@@ -25,10 +27,20 @@ export default function Header() {
 
   useEffect(() => {
     let active = true;
-    http.get<{ firstName: string; lastName: string }>("/auth/me").then(({ data }) => {
-      if (active) setAccountName(`${data.firstName} ${data.lastName}`.trim());
+    http.get<{ firstName: string; lastName: string; profileImage?: string }>("/auth/me").then(({ data }) => {
+      if (active) {
+        const rawFirst = (data.firstName || "").trim().split(/\s+/)[0] || "";
+        const formattedName = rawFirst.slice(0, 10);
+        setAccountName(formattedName);
+        setProfileImage(data.profileImage || "");
+        setImgError(false);
+      }
     }).catch(() => {
-      if (active) setAccountName("");
+      if (active) {
+        setAccountName("");
+        setProfileImage("");
+        setImgError(false);
+      }
     });
     return () => { active = false; };
   }, [pathname]);
@@ -87,7 +99,25 @@ export default function Header() {
                   <button type="button" className="lb-city-btn" onClick={() => setLocOpen(true)} aria-label="Select location">
                     <i className="bi bi-geo-alt-fill"></i>{city && <span>{city}</span>}
                   </button>
-                  <Link href={accountName ? "/client-admin" : "/login"} className="lb-signin" onClick={closeDrawer}><i className="bi bi-person-circle me-2"></i>{accountName || "Sign In"}</Link>
+                  <Link
+                    href={accountName ? "/client-admin" : "/login"}
+                    className="lb-signin d-inline-flex align-items-center gap-2"
+                    onClick={closeDrawer}
+                  >
+                    {profileImage && !imgError ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={profileImage}
+                        alt={accountName || "User"}
+                        className="rounded-circle object-fit-cover"
+                        style={{ width: "26px", height: "26px" }}
+                        onError={() => setImgError(true)}
+                      />
+                    ) : (
+                      <i className="bi bi-person-circle"></i>
+                    )}
+                    <span>{accountName || "Sign In"}</span>
+                  </Link>
                   <Link href="/client-admin" className="btn lb-btn-primary" onClick={closeDrawer}><i className="bi bi-plus-circle me-2"></i>Post Your Ad</Link>
                 </div>
               </div>

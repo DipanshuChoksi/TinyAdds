@@ -13,13 +13,14 @@ type SortField = "title" | "fromDate" | "createdAt" | "status";
 interface Props {
   mode?: "client" | "admin";
   onEdit?: (post: ClientPost) => void;
+  title?: React.ReactNode;
 }
 
 function descriptionText(html: string): string {
   return new DOMParser().parseFromString(html, "text/html").body.textContent?.trim() ?? "";
 }
 
-export default function PostTable({ mode = "client", onEdit }: Props = {}) {
+export default function PostTable({ mode = "client", onEdit, title }: Props = {}) {
   const isAdmin = mode === "admin";
   const confirm = useConfirm();
   const toast = useToast();
@@ -141,7 +142,8 @@ export default function PostTable({ mode = "client", onEdit }: Props = {}) {
 
   return (
     <div className="table-responsive">
-      <div className="d-flex justify-content-end mb-3">
+      <div className={`d-flex ${title ? "justify-content-between align-items-center" : "justify-content-end"} mb-3 flex-wrap gap-2`}>
+        {title && <div>{title}</div>}
         <div className="input-group" style={{ maxWidth: 320 }}>
           <span className="input-group-text bg-white"><i className="bi bi-search" aria-hidden="true" /></span>
           <input type="search" className="form-control" placeholder="Search posts" aria-label="Search posts" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />

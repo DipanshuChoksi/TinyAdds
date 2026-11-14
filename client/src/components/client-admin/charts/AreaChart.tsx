@@ -3,16 +3,17 @@ import { formatNumber, niceMax } from "./chartUtils";
 
 const W = 900, H = 260, PAD = { l: 46, r: 20, t: 14, b: 32 };
 
-export default function AreaChart({ data }: { data: ChartPoint[] }) {
-  const max = niceMax(Math.max(...data.map((d) => d.value)));
+export default function AreaChart({ data = [] }: { data?: ChartPoint[] }) {
+  const safeData = Array.isArray(data) && data.length > 0 ? data : [{ label: "", value: 0 }];
+  const max = niceMax(Math.max(...safeData.map((d) => d.value)));
   const iw = W - PAD.l - PAD.r;
   const ih = H - PAD.t - PAD.b;
-  const x = (i: number) => PAD.l + (data.length === 1 ? iw / 2 : (iw / (data.length - 1)) * i);
+  const x = (i: number) => PAD.l + (safeData.length === 1 ? iw / 2 : (iw / (safeData.length - 1)) * i);
   const y = (v: number) => PAD.t + ih - (v / max) * ih;
   const ticks = [0, 1, 2, 3, 4].map((i) => (max / 4) * i);
 
-  const line = data.map((d, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(d.value)}`).join(" ");
-  const area = `${line} L${x(data.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
+  const line = safeData.map((d, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(d.value)}`).join(" ");
+  const area = `${line} L${x(safeData.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="lb-ca-svg" role="img" aria-label="Line chart">
@@ -30,8 +31,8 @@ export default function AreaChart({ data }: { data: ChartPoint[] }) {
       ))}
       <path d={area} fill="url(#lbCaArea)" />
       <path d={line} className="lb-ca-line" />
-      {data.map((d, i) => (
-        <g key={d.label} className="lb-ca-dot">
+      {safeData.map((d, i) => (
+        <g key={d.label || i} className="lb-ca-dot">
           <circle cx={x(i)} cy={y(d.value)} r={5}><title>{`${d.label}: ${d.value.toLocaleString()}`}</title></circle>
           <text x={x(i)} y={H - 10} textAnchor="middle" className="lb-ca-axis">{d.label}</text>
         </g>
