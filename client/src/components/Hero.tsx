@@ -88,137 +88,85 @@ export default function Hero() {
 
   const currentStandy = standyAds[standyIndex];
   const currentSection = sectionAds[sectionIndex];
+  const standyImage = currentStandy?.image || "/ads/black-friday-standy.png";
+  const sectionImage = currentSection?.image || "/ads/minimalist-fb-ad.png";
 
   return (
-    <>
-      <section className="lb-hero pb-4">
-        <img
-          src="https://html.aqlova.com/listbnb-prv/listbnb/assets/img/hero/shape-1-3.png"
-          alt=""
-          className="lb-shape lb-hero-shape-bg d-none d-lg-block"
-        />
-        <div className="container position-relative">
-          <CategoryMarquee />
+    <section className="lb-hero lb-hero--showcase">
+      <div className="container position-relative">
+        <CategoryMarquee />
 
-          {/* Hero Ads Row matching tinyadds.com */}
-          <div className="row g-3 align-items-stretch pt-4 pb-2">
-            {/* Left Col: Mascot + Standy Slider (Black Friday spot) */}
-            <div className="col-12 col-lg-5">
-              <div className="row g-2 align-items-center h-100">
-                {/* Character */}
-                {/* <div className="col-5 text-center">
-                  <img
-                    src="/ads/tinyadds-character.png"
-                    alt="TinyAdds Mascot"
-                    className="img-fluid"
-                    style={{ maxHeight: 420, objectFit: "contain" }}
-                  />
-                </div> */}
-
-                {/* Standy Slider */}
-                <div className="col-7">
-                  <div className="lb-standy-card position-relative overflow-hidden rounded-3 shadow-sm h-100">
-                    {currentStandy ? (
-                      <Link href={`/listings/${currentStandy.id}`} className="lb-ad-slide text-decoration-none d-block">
-                        <img
-                          src={currentStandy.image || "/ads/black-friday-standy.png"}
-                          alt={currentStandy.title || "Standy ad"}
-                          className="w-100 d-block rounded-3"
-                          style={{ height: 420, objectFit: "cover" }}
-                        />
-                        <div className="lb-ad-overlay">
-                          <span className="badge bg-danger mb-1">Standy Ad</span>
-                          <h6 className="text-white mb-0 text-truncate">{currentStandy.title}</h6>
-                        </div>
-                      </Link>
-                    ) : (
-                      <div className="lb-ad-slide">
-                        <img
-                          src="/ads/black-friday-standy.png"
-                          alt="Black Friday Sale"
-                          className="w-100 d-block rounded-3"
-                          style={{ height: 420, objectFit: "cover" }}
-                        />
-                      </div>
-                    )}
-
-                    {standyAds.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          className="lb-slider-arrow lb-arrow-prev"
-                          onClick={prevStandy}
-                          aria-label="Previous standy ad"
-                        >
-                          <i className="bi bi-chevron-left" />
-                        </button>
-                        <button
-                          type="button"
-                          className="lb-slider-arrow lb-arrow-next"
-                          onClick={nextStandy}
-                          aria-label="Next standy ad"
-                        >
-                          <i className="bi bi-chevron-right" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
+        <div className="row align-items-center g-4 g-lg-5 pt-4 pb-4">
+          <div className="col-12 col-lg-5">
+            <div className="lb-hero-copy">
+              <span className="lb-hero-kicker">
+                <i className="bi bi-geo-alt-fill" aria-hidden="true" />
+                Your local marketplace
+              </span>
+              <h1 className="lb-hero-title">
+                Good finds.
+                <span> Great local deals.</span>
+              </h1>
+              <p className="lb-hero-description">
+                Discover businesses, products, and services around you. Buy, sell, and rent with TinyAdds.
+              </p>
+              <a href="/listings" className="btn lb-btn-primary lb-hero-cta">
+                Explore listings
+                <i className="bi bi-arrow-up-right" aria-hidden="true" />
+              </a>
+              <div className="lb-hero-highlights" aria-label="Marketplace options">
+                <span>Buy</span>
+                <span>Sell</span>
+                <span>Rent</span>
               </div>
             </div>
+          </div>
 
-            {/* Right Col: Section Banner (Minimalist Facebook Ads spot) */}
-            <div className="col-12 col-lg-7">
-              <div className="lb-slider-banner-card position-relative overflow-hidden rounded-3 shadow-sm h-100">
-                {currentSection ? (
-                  <Link href={`/listings/${currentSection.id}`} className="lb-ad-slide h-100 text-decoration-none d-block">
-                    <img
-                      src={currentSection.image || "/ads/minimalist-fb-ad.png"}
-                      alt={currentSection.title || "Section banner ad"}
-                      className="w-100 h-100 d-block rounded-3"
-                      style={{ minHeight: 420, objectFit: "cover" }}
-                    />
-                    <div className="lb-ad-overlay">
-                      <span className="badge bg-primary mb-1">Section Banner</span>
-                      <h5 className="text-white mb-0 text-truncate">{currentSection.title}</h5>
+          <div className="col-12 col-lg-7">
+            <div className="lb-hero-showcase">
+              <div className="lb-showcase-stack">
+                <div className="lb-showcase-ad lb-showcase-ad--section">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    key={currentSection?.id || "section-fallback"}
+                    src={sectionImage}
+                    alt={currentSection?.title || "Featured local business"}
+                  />
+                  {sectionAds.length > 1 && (
+                    <div className="lb-showcase-controls">
+                      <button type="button" onClick={prevSection} aria-label="Previous local spotlight">
+                        <i className="bi bi-chevron-left" />
+                      </button>
+                      <button type="button" onClick={nextSection} aria-label="Next local spotlight">
+                        <i className="bi bi-chevron-right" />
+                      </button>
                     </div>
-                  </Link>
-                ) : (
-                  <div className="lb-ad-slide h-100">
-                    <img
-                      src="/ads/minimalist-fb-ad.png"
-                      alt="Minimalist Facebook Ads"
-                      className="w-100 h-100 d-block rounded-3"
-                      style={{ minHeight: 420, objectFit: "cover" }}
-                    />
-                  </div>
-                )}
+                  )}
+                </div>
 
-                {sectionAds.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      className="lb-slider-arrow lb-arrow-prev"
-                      onClick={prevSection}
-                      aria-label="Previous section ad"
-                    >
-                      <i className="bi bi-chevron-left" />
-                    </button>
-                    <button
-                      type="button"
-                      className="lb-slider-arrow lb-arrow-next"
-                      onClick={nextSection}
-                      aria-label="Next section ad"
-                    >
-                      <i className="bi bi-chevron-right" />
-                    </button>
-                  </>
-                )}
+                <div className="lb-showcase-ad lb-showcase-ad--standy">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    key={currentStandy?.id || "standy-fallback"}
+                    src={standyImage}
+                    alt={currentStandy?.title || "Featured TinyAdds ad"}
+                  />
+                  {standyAds.length > 1 && (
+                    <div className="lb-showcase-controls">
+                      <button type="button" onClick={prevStandy} aria-label="Previous featured ad">
+                        <i className="bi bi-chevron-left" />
+                      </button>
+                      <button type="button" onClick={nextStandy} aria-label="Next featured ad">
+                        <i className="bi bi-chevron-right" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
