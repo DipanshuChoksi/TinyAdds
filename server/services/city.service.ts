@@ -8,12 +8,13 @@ import type { PaginationParams, PaginationResult } from "./country.service.js";
 
 export class CityService {
   /**
-   * Public list: filter by isDisplay: true AND isActive: true, optional countryId and stateId
+   * Public list: filter by isDisplay: true AND isActive: true, optional countryId, stateId, showOnHome
    */
   async getPublicCities(
     pagination: PaginationParams,
     countryId?: number,
-    stateId?: number
+    stateId?: number,
+    showOnHome?: boolean
   ): Promise<PaginationResult<CityDocument>> {
     const filter: Record<string, unknown> = { isDisplay: true, isActive: true };
     if (countryId !== undefined) {
@@ -22,10 +23,13 @@ export class CityService {
     if (stateId !== undefined) {
       filter.stateId = stateId;
     }
+    if (showOnHome !== undefined) {
+      filter.showOnHome = showOnHome;
+    }
 
     const [items, total] = await Promise.all([
       City.find(filter)
-        .select("id name countryId stateId createdAt updatedAt")
+        .select("id name countryId stateId showOnHome image createdAt updatedAt")
         .sort({ name: 1 })
         .skip(pagination.skip)
         .limit(pagination.limit)
@@ -142,6 +146,8 @@ export class CityService {
       countryId: data.countryId,
       stateId: data.stateId,
       isActive: data.isActive !== undefined ? data.isActive : true,
+      showOnHome: data.showOnHome !== undefined ? data.showOnHome : false,
+      image: data.image !== undefined ? data.image : "",
       isDisplay: true,
       deletedAt: null,
     });

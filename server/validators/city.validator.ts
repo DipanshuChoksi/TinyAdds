@@ -8,6 +8,8 @@ export interface CreateCityInput {
   countryId: number;
   stateId: number;
   isActive?: boolean;
+  showOnHome?: boolean;
+  image?: string;
 }
 
 export interface UpdateCityInput {
@@ -15,6 +17,8 @@ export interface UpdateCityInput {
   countryId?: number;
   stateId?: number;
   isActive?: boolean;
+  showOnHome?: boolean;
+  image?: string;
 }
 
 export function validateCreateCity(body: unknown): CreateCityInput {
@@ -22,7 +26,7 @@ export function validateCreateCity(body: unknown): CreateCityInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, countryId, stateId, isActive } = body as Record<string, unknown>;
+  const { name, countryId, stateId, isActive, showOnHome, image } = body as Record<string, unknown>;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     throw new BadRequestError("City 'name' is required and must be a non-empty string");
@@ -52,6 +56,20 @@ export function validateCreateCity(body: unknown): CreateCityInput {
     result.isActive = isActive;
   }
 
+  if (showOnHome !== undefined) {
+    if (typeof showOnHome !== "boolean") {
+      throw new BadRequestError("'showOnHome' must be a boolean");
+    }
+    result.showOnHome = showOnHome;
+  }
+
+  if (image !== undefined) {
+    if (typeof image !== "string") {
+      throw new BadRequestError("'image' must be a string");
+    }
+    result.image = image.trim();
+  }
+
   return result;
 }
 
@@ -60,7 +78,7 @@ export function validateUpdateCity(body: unknown): UpdateCityInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, countryId, stateId, isActive } = body as Record<string, unknown>;
+  const { name, countryId, stateId, isActive, showOnHome, image } = body as Record<string, unknown>;
   const result: UpdateCityInput = {};
 
   if (name !== undefined) {
@@ -85,8 +103,22 @@ export function validateUpdateCity(body: unknown): UpdateCityInput {
     result.isActive = isActive;
   }
 
+  if (showOnHome !== undefined) {
+    if (typeof showOnHome !== "boolean") {
+      throw new BadRequestError("'showOnHome' must be a boolean");
+    }
+    result.showOnHome = showOnHome;
+  }
+
+  if (image !== undefined) {
+    if (typeof image !== "string") {
+      throw new BadRequestError("'image' must be a string");
+    }
+    result.image = image.trim();
+  }
+
   if (Object.keys(result).length === 0) {
-    throw new BadRequestError("At least one field ('name', 'countryId', 'stateId', or 'isActive') must be provided to update");
+    throw new BadRequestError("At least one field ('name', 'countryId', 'stateId', 'isActive', 'showOnHome', or 'image') must be provided to update");
   }
 
   return result;

@@ -18,6 +18,8 @@ interface CityFormValues {
   name: string;
   countryId: number | '';
   stateId: number | '';
+  showOnHome: boolean;
+  image: string;
 }
 
 export default function AdminMasterCitiesPage() {
@@ -36,6 +38,8 @@ export default function AdminMasterCitiesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<AdminCityResponse | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [modalImage, setModalImage] = useState<string>('');
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const {
     register,
@@ -49,6 +53,8 @@ export default function AdminMasterCitiesPage() {
       name: '',
       countryId: '',
       stateId: '',
+      showOnHome: false,
+      image: '',
     },
   });
 
@@ -125,18 +131,25 @@ export default function AdminMasterCitiesPage() {
       name: '',
       countryId: initialCountry,
       stateId: initialState,
+      showOnHome: false,
+      image: '',
     });
-
+    setModalImage('');
+    setFileError(null);
     setShowModal(true);
   }
 
   function openEditModal(city: AdminCityResponse) {
     setEditingItem(city);
     setFormError(null);
+    setFileError(null);
+    setModalImage(city.image || '');
     reset({
       name: city.name,
       countryId: city.countryId,
       stateId: city.stateId,
+      showOnHome: Boolean(city.showOnHome),
+      image: city.image || '',
     });
     setShowModal(true);
   }
@@ -145,12 +158,48 @@ export default function AdminMasterCitiesPage() {
     setShowModal(false);
     setEditingItem(null);
     setFormError(null);
+    setFileError(null);
+    setModalImage('');
     reset({
       name: '',
       countryId: '',
       stateId: '',
+      showOnHome: false,
+      image: '',
     });
   }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setFileError('Please select a valid image file (PNG, JPG, SVG, WebP, etc.)');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setFileError('Image size exceeds 2MB. Please choose a smaller image.');
+      return;
+    }
+
+    setFileError(null);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setModalImage(base64);
+      setValue('image', base64);
+    };
+    reader.onerror = () => {
+      setFileError('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setModalImage('');
+    setValue('image', '');
+  };
 
   const onSubmit = async (values: CityFormValues) => {
     try {
@@ -163,10 +212,18 @@ export default function AdminMasterCitiesPage() {
           name: values.name.trim(),
           countryId: cId,
           stateId: sId,
+          showOnHome: Boolean(values.showOnHome),
+          image: modalImage.trim(),
         });
         setCities((prev) => prev.map((c) => (c.id === editingItem.id ? updated : c)));
       } else {
-        const created = await createAdminCity(values.name.trim(), cId, sId);
+        const created = await createAdminCity(
+          values.name.trim(),
+          cId,
+          sId,
+          Boolean(values.showOnHome),
+          modalImage.trim()
+        );
         setCities((prev) => [...prev, created]);
       }
       closeModal();
@@ -313,10 +370,12 @@ export default function AdminMasterCitiesPage() {
           <table className="table admin-table align-middle">
             <thead>
               <tr>
-                <th className="ps-4" style={{ width: '90px' }}>ID</th>
+                <th className="ps-4" style={{ width: '80px' }}>ID</th>
+                <th style={{ width: '70px' }}>Image</th>
                 <th>City Name</th>
                 <th>State</th>
                 <th>Country</th>
+                <th>Show on Home</th>
                 <th>Status</th>
                 <th className="text-end pe-4" style={{ width: '120px' }}>Action</th>
               </tr>
@@ -324,14 +383,14 @@ export default function AdminMasterCitiesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-5 text-muted">
+                  <td colSpan={8} className="text-center py-5 text-muted">
                     <span className="spinner-border spinner-border-sm me-2" role="status" />
                     Loading cities from backend...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-5 text-muted">
+                  <td colSpan={8} className="text-center py-5 text-muted">
                     <i className="bi bi-buildings fs-2 d-block mb-2 text-secondary" />
                     No cities found.
                   </td>
@@ -341,6 +400,23 @@ export default function AdminMasterCitiesPage() {
                   <tr key={c.id}>
                     <td className="ps-4 fw-bold text-secondary">
                       #{c.id}
+                    </td>
+                    <td>
+                      {c.image ? (
+                        <img
+                          src={c.image}
+                          alt={c.name}
+                          className="rounded-2 object-fit-cover border"
+                          style={{ width: '40px', height: '40px' }}
+                        />
+                      ) : (
+                        <div
+                          className="rounded-2 bg-light border d-flex align-items-center justify-content-center text-muted"
+                          style={{ width: '40px', height: '40px', fontSize: '1.1rem' }}
+                        >
+                          <i className="bi bi-image" />
+                        </div>
+                      )}
                     </td>
                     <td className="fw-semibold" style={{ color: '#0f172a' }}>
                       {c.name}
@@ -353,6 +429,15 @@ export default function AdminMasterCitiesPage() {
                     <td>
                       <span className="badge rounded-pill bg-light text-secondary border">
                         {getCountryName(c.countryId)}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge rounded-pill px-2 py-1 fw-medium ${
+                          c.showOnHome ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-light text-muted border'
+                        }`}
+                      >
+                        {c.showOnHome ? 'Yes' : 'No'}
                       </span>
                     </td>
                     <td>
@@ -492,6 +577,67 @@ export default function AdminMasterCitiesPage() {
                     {errors.name && (
                       <div className="invalid-feedback small">
                         {errors.name.message}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Show on Home Checkbox */}
+                  <div className="mb-3">
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="showOnHomeSwitch"
+                        {...register('showOnHome')}
+                      />
+                      <label className="form-check-label small fw-semibold text-dark" htmlFor="showOnHomeSwitch">
+                        Show on Homepage (Location Showcase)
+                      </label>
+                    </div>
+                    <div className="form-text small text-muted">
+                      When enabled, this city will be highlighted on the homepage 'Search by location' section.
+                    </div>
+                  </div>
+
+                  {/* Image Upload */}
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold text-muted">
+                      City Image / Thumbnail
+                    </label>
+                    <input
+                      type="file"
+                      className={`form-control rounded-2 ${fileError ? 'is-invalid' : ''}`}
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                    {fileError && <div className="invalid-feedback small">{fileError}</div>}
+
+                    {modalImage ? (
+                      <div className="mt-2 d-flex align-items-center gap-2 p-2 bg-light rounded-2 border">
+                        <img
+                          src={modalImage}
+                          alt="City Preview"
+                          className="rounded-2 object-fit-cover border"
+                          style={{ width: '60px', height: '60px' }}
+                        />
+                        <div className="flex-grow-1 overflow-hidden">
+                          <span className="small text-muted d-block text-truncate">
+                            Image attached ({modalImage.startsWith('data:') ? 'Encoded Base64' : modalImage})
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={removeImage}
+                          title="Remove image"
+                        >
+                          <i className="bi bi-trash" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="form-text small text-muted">
+                        Upload an image (PNG, JPG, SVG, WebP, max 2MB) for the city card.
                       </div>
                     )}
                   </div>

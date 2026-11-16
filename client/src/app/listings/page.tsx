@@ -9,6 +9,8 @@ import { getPublicBannerSections } from "@/lib/bannerSectionApi";
 import { getPublicGroups } from "@/lib/groupApi";
 import { getPublicSearchCategories } from "@/lib/searchCategoryApi";
 import { getPublicEmotions } from "@/lib/emotionApi";
+import { getPublicCities } from "@/lib/cityApi";
+import type { PublicCityResponse } from "@/types/city";
 
 const PAGE_SIZE = 12;
 
@@ -23,6 +25,8 @@ function ListingsContent() {
   const group = searchParams.get("group") || "";
   const category = searchParams.get("category") || "";
   const emotion = searchParams.get("emotion") || "";
+  const cityIdParam = searchParams.get("cityId") || "";
+  const cityId = cityIdParam && !isNaN(Number(cityIdParam)) ? Number(cityIdParam) : undefined;
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 
@@ -34,6 +38,7 @@ function ListingsContent() {
   const [groupOptions, setGroupOptions] = useState<string[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const [emotionOptions, setEmotionOptions] = useState<string[]>([]);
+  const [cityOptions, setCityOptions] = useState<PublicCityResponse[]>([]);
 
   // Post items & pagination state
   const [posts, setPosts] = useState<PublicPost[]>([]);
@@ -53,7 +58,8 @@ function ListingsContent() {
       getPublicGroups().catch(() => null),
       getPublicSearchCategories().catch(() => null),
       getPublicEmotions().catch(() => null),
-    ]).then(([bannerRes, groupRes, catRes, emotionRes]) => {
+      getPublicCities().catch(() => null),
+    ]).then(([bannerRes, groupRes, catRes, emotionRes, cityRes]) => {
       if (bannerRes?.success && Array.isArray(bannerRes.data)) {
         setBannerOptions(bannerRes.data.map((b) => b.name).filter(Boolean));
       }
@@ -65,6 +71,9 @@ function ListingsContent() {
       }
       if (emotionRes?.success && Array.isArray(emotionRes.data)) {
         setEmotionOptions(emotionRes.data.map((e) => e.name).filter(Boolean));
+      }
+      if (cityRes?.success && Array.isArray(cityRes.data)) {
+        setCityOptions(cityRes.data);
       }
     });
   }, []);
@@ -99,6 +108,7 @@ function ListingsContent() {
       searchGroup: group || undefined,
       searchCategory: category || undefined,
       emotion: emotion || undefined,
+      cityId: cityId,
       page: currentPage,
       limit: PAGE_SIZE,
     })
@@ -130,7 +140,7 @@ function ListingsContent() {
     return () => {
       active = false;
     };
-  }, [search, banner, group, category, emotion, currentPage]);
+  }, [search, banner, group, category, emotion, cityId, currentPage]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,7 +154,7 @@ function ListingsContent() {
     });
   };
 
-  const hasActiveFilters = Boolean(search || banner || group || category || emotion);
+  const hasActiveFilters = Boolean(search || banner || group || category || emotion || cityId !== undefined);
 
   return (
     <section className="lb-section py-5">
@@ -231,6 +241,25 @@ function ListingsContent() {
                     ))}
                   </select>
                 </div> */}
+
+                {/* City Filter */}
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
+                    Location / City
+                  </label>
+                  <select
+                    className="form-select"
+                    value={cityId !== undefined ? String(cityId) : ""}
+                    onChange={(e) => updateParams({ cityId: e.target.value || null, page: 1 })}
+                  >
+                    <option value="">All Locations</option>
+                    {cityOptions.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 {/* Emotion Filter */}
                 <div className="mb-2">

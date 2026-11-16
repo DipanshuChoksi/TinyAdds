@@ -15,6 +15,8 @@ export interface PublicPost {
   contactNo: string;
   email: string;
   address: string;
+  cityId?: number | null;
+  cityName?: string;
   status: string;
   createdAt: string;
 }
@@ -24,6 +26,7 @@ export async function getPublicPosts(params?: {
   searchGroup?: string;
   searchCategory?: string;
   emotion?: string;
+  cityId?: number;
   search?: string;
   fromDate?: string;
   page?: number;
@@ -35,6 +38,7 @@ export async function getPublicPosts(params?: {
       searchGroup: params?.searchGroup,
       searchCategory: params?.searchCategory,
       emotion: params?.emotion,
+      cityId: params?.cityId,
       search: params?.search,
       fromDate: params?.fromDate,
       page: params?.page,

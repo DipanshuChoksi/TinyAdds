@@ -11,14 +11,15 @@ import { sendSuccess } from "../utils/response.js";
 export class CityController {
   /**
    * GET /api/cities
-   * Public list of active cities (optional ?countryId=&stateId=)
+   * Public list of active cities (optional ?countryId=&stateId=&showOnHome=)
    */
   async getPublicCities(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const pagination = validatePagination(req.query);
       const countryId = req.query.countryId ? validateNumericId(req.query.countryId, "countryId") : undefined;
       const stateId = req.query.stateId ? validateNumericId(req.query.stateId, "stateId") : undefined;
-      const result = await cityService.getPublicCities(pagination, countryId, stateId);
+      const showOnHome = req.query.showOnHome !== undefined ? req.query.showOnHome === "true" : undefined;
+      const result = await cityService.getPublicCities(pagination, countryId, stateId, showOnHome);
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) {
       next(error);

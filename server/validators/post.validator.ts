@@ -5,6 +5,8 @@ export interface ClientPostInput {
   contactNo: string;
   email: string;
   address: string;
+  cityId?: number | null;
+  cityName?: string;
   banner: string;
   emotion: string;
   searchGroup: string;
@@ -29,11 +31,21 @@ export function validatePost(body: unknown): ClientPostInput {
   };
   const email = get("email", 254, true).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestError("Enter a valid email address");
+
+  let parsedCityId: number | null = null;
+  if (input.cityId !== undefined && input.cityId !== null && input.cityId !== "") {
+    const num = Number(input.cityId);
+    if (!Number.isInteger(num) || num < 1) throw new BadRequestError("cityId must be a positive integer");
+    parsedCityId = num;
+  }
+
   return {
     contactPerson: get("contactPerson", 160, true),
     contactNo: get("contactNo", 20, true),
     email,
     address: get("address", 500),
+    cityId: parsedCityId,
+    cityName: typeof input.cityName === "string" ? input.cityName.trim().slice(0, 100) : "",
     banner: get("banner", 100),
     emotion: get("emotion", 100),
     searchGroup: get("searchGroup", 100),

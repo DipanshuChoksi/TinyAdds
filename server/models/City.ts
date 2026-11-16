@@ -34,6 +34,16 @@ const citySchema = new Schema(
       default: true,
       index: true,
     },
+    showOnHome: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    image: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     deletedAt: {
       type: Date,
       default: null,
@@ -46,6 +56,7 @@ const citySchema = new Schema(
 
 // Compound indexes
 citySchema.index({ isDisplay: 1, isActive: 1 });
+citySchema.index({ isDisplay: 1, isActive: 1, showOnHome: 1 });
 citySchema.index({ isDisplay: 1, stateId: 1, name: 1 });
 citySchema.index({ isDisplay: 1, countryId: 1 });
 citySchema.index({ isDisplay: 1, id: 1 });

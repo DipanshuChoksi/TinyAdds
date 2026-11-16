@@ -13,6 +13,7 @@ export class ClientPostController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await clientPostService.list(req.userId, validatePostListQuery(req.query));
+      // return result;
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) { next(error); }
   }
@@ -45,6 +46,7 @@ export class ClientPostController {
       const searchGroup = typeof req.query.searchGroup === "string" ? req.query.searchGroup : undefined;
       const searchCategory = typeof req.query.searchCategory === "string" ? req.query.searchCategory : undefined;
       const emotion = typeof req.query.emotion === "string" ? req.query.emotion : undefined;
+      const cityId = req.query.cityId && !isNaN(Number(req.query.cityId)) ? Number(req.query.cityId) : undefined;
       const search = typeof req.query.search === "string" ? req.query.search : undefined;
       const fromDate = typeof req.query.fromDate === "string" ? req.query.fromDate : undefined;
       const page = typeof req.query.page === "string" ? parseInt(req.query.page, 10) : undefined;
@@ -55,11 +57,13 @@ export class ClientPostController {
         searchGroup,
         searchCategory,
         emotion,
+        cityId,
         search,
         fromDate,
         page,
         limit,
       });
+      // res.status(500).json(result);
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) { next(error); }
   }

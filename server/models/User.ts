@@ -6,10 +6,12 @@ const userSchema = new Schema(
     lastName: { type: String, required: [true, "Last name is required"], trim: true, maxlength: [80, "Last name cannot exceed 80 characters"] },
     email: { type: String, required: [true, "Email is required"], unique: true, lowercase: true, trim: true, maxlength: [254, "Email cannot exceed 254 characters"] },
     mobile: { type: String, required: [true, "Mobile number is required"], trim: true, maxlength: [20, "Mobile number cannot exceed 20 characters"] },
+
+    country: { type: Schema.Types.ObjectId, ref: "Country", default: null },
+    state: { type: Schema.Types.ObjectId, ref: "State", default: null },
+    city: { type: Schema.Types.ObjectId, ref: "City", default: null },
+    
     passwordHash: { type: String, required: true, select: false },
-    country: { type: String, default: "", trim: true, maxlength: [80, "Country cannot exceed 80 characters"] },
-    state: { type: String, default: "", trim: true, maxlength: [80, "State cannot exceed 80 characters"] },
-    city: { type: String, default: "", trim: true, maxlength: [80, "City cannot exceed 80 characters"] },
     profileImage: { type: String, default: "", maxlength: 8_000_000 },
     resetOtpHash: { type: String, default: "", select: false },
     resetOtpExpiresAt: { type: Date, default: null, select: false },

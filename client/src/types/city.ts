@@ -4,6 +4,8 @@ export interface PublicCityResponse {
   name: string;
   countryId: number;
   stateId: number;
+  showOnHome?: boolean;
+  image?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,6 +18,8 @@ export interface AdminCityResponse {
   stateId: number;
   isActive: boolean;
   isDisplay: boolean;
+  showOnHome?: boolean;
+  image?: string;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +30,8 @@ export interface CreateCityPayload {
   countryId: number;
   stateId: number;
   isActive?: boolean;
+  showOnHome?: boolean;
+  image?: string;
 }
 
 export interface UpdateCityPayload {
@@ -33,4 +39,6 @@ export interface UpdateCityPayload {
   countryId?: number;
   stateId?: number;
   isActive?: boolean;
+  showOnHome?: boolean;
+  image?: string;
 }

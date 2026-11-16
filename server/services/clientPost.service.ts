@@ -1,13 +1,33 @@
 import { Types } from "mongoose";
 import { ClientPost, type ClientPostData } from "../models/ClientPost.js";
 import { User } from "../models/User.js";
+import { City } from "../models/City.js";
 import { BadRequestError, NotFoundError } from "../utils/errors.js";
 import type { ClientPostInput } from "../validators/post.validator.js";
 import type { PostListQuery } from "../validators/postQuery.validator.js";
 
-type PostRecord = Pick<ClientPostData, "contactPerson" | "contactNo" | "email" | "address" | "banner" | "emotion" | "searchGroup" | "searchCategory" | "fromDate" | "title" | "image" | "tag" | "description"> & Partial<Pick<ClientPostData, "status" | "rejectionComment" | "reviewedByName" | "reviewedAt">> & {
-  _id: Types.ObjectId;
+type PostRecord = {
+  _id: Types.ObjectId | string;
+  contactPerson: string;
+  contactNo: string;
+  email: string;
+  address: string;
+  cityId?: number | null | undefined;
+  cityName?: string | undefined;
+  banner: string;
+  emotion: string;
+  searchGroup: string;
+  searchCategory: string;
+  fromDate: string;
+  title: string;
+  image: string;
+  tag: string;
+  description: string;
   createdAt: Date;
+  status?: "pending" | "approved" | "rejected" | undefined;
+  rejectionComment?: string | undefined;
+  reviewedByName?: string | undefined;
+  reviewedAt?: Date | null | undefined;
 };
 
 function serializePost(post: PostRecord) {
@@ -17,6 +37,8 @@ function serializePost(post: PostRecord) {
     contactNo: post.contactNo,
     email: post.email,
     address: post.address,
+    cityId: post.cityId ?? null,
+    cityName: post.cityName ?? "",
     banner: post.banner,
     emotion: post.emotion,
     searchGroup: post.searchGroup,
@@ -196,6 +218,7 @@ export class ClientPostService {
     searchGroup?: string | undefined;
     searchCategory?: string | undefined;
     emotion?: string | undefined;
+    cityId?: number | undefined;
     search?: string | undefined;
     fromDate?: string | undefined;
     page?: number | undefined;
@@ -205,42 +228,67 @@ export class ClientPostService {
     const limit = Math.max(1, Math.min(100, query.limit || 50));
     const skip = (page - 1) * limit;
 
-    const filter: Record<string, unknown> = {
-      isDisplay: true,
-      status: "approved",
-    };
+    const conditions: Record<string, unknown>[] = [
+      { isDisplay: true },
+      { status: "approved" },
+    ];
+
+    if (query.cityId !== undefined && query.cityId !== null) {
+      // Find the City document to get its ObjectId
+      const cityDoc = await City.findOne({ id: query.cityId, isDisplay: true }).select("_id").lean();
+      
+      const cityConditions: Record<string, unknown>[] = [{ cityId: query.cityId }];
+      if (cityDoc) {
+        // Users who have this city assigned in their profile (not deleted)
+        const matchingUsers = await User.find({
+          city: cityDoc._id,
+          isDisplay: { $ne: false },
+          deletedAt: null,
+        }).select("_id").lean();
+        if (matchingUsers.length > 0) {
+          const userIds = matchingUsers.map((u) => u._id);
+          cityConditions.push({ owner: { $in: userIds } });
+        }
+      }
+
+      conditions.push({ $or: cityConditions });
+    }
 
     if (query.banner && query.banner.trim()) {
-      filter.banner = query.banner.trim();
+      conditions.push({ banner: query.banner.trim() });
     }
 
     if (query.searchGroup && query.searchGroup.trim()) {
-      filter.searchGroup = query.searchGroup.trim();
+      conditions.push({ searchGroup: query.searchGroup.trim() });
     }
 
     if (query.searchCategory && query.searchCategory.trim()) {
-      filter.searchCategory = query.searchCategory.trim();
+      conditions.push({ searchCategory: query.searchCategory.trim() });
     }
 
     if (query.emotion && query.emotion.trim()) {
-      filter.emotion = query.emotion.trim();
+      conditions.push({ emotion: query.emotion.trim() });
     }
 
     if (query.search && query.search.trim()) {
       const searchRegex = new RegExp(query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-      filter.$or = [
-        { title: searchRegex },
-        { description: searchRegex },
-        { address: searchRegex },
-        { tag: searchRegex },
-        { searchGroup: searchRegex },
-        { searchCategory: searchRegex },
-      ];
+      conditions.push({
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { address: searchRegex },
+          { tag: searchRegex },
+          { searchGroup: searchRegex },
+          { searchCategory: searchRegex },
+        ],
+      });
     }
 
     // Date condition: ad starts when the date comes (fromDate <= today)
     const targetDate = query.fromDate || new Date().toISOString().slice(0, 10);
-    filter.fromDate = { $lte: targetDate };
+    conditions.push({ fromDate: { $lte: targetDate } });
+
+    const filter = conditions.length > 1 ? { $and: conditions } : (conditions[0] || {});
 
     const [items, total] = await Promise.all([
       ClientPost.find(filter)

@@ -1,5 +1,8 @@
 import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 import { User } from "../models/User.js";
+import "../models/Country.js";
+import "../models/State.js";
+import "../models/City.js";
 import { AppError, ConflictError, NotFoundError } from "../utils/errors.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { sendPasswordOtp } from "../utils/email.js";
@@ -14,15 +17,28 @@ function otpHash(otp: string): string {
   return createHash("sha256").update(`${config.sessionSecret}:${otp}`).digest("hex");
 }
 
+function formatLocationField(value: unknown): unknown {
+  if (!value) return "";
+  if (typeof value === "object" && value !== null) {
+    if ("name" in value) {
+      return (value as { name: string }).name;
+    }
+    if ("_id" in value) {
+      return String((value as { _id: unknown })._id);
+    }
+  }
+  return String(value);
+}
+
 function publicUser(user: {
   _id: unknown;
   firstName: string;
   lastName: string;
   email: string;
   mobile: string;
-  country: string;
-  state: string;
-  city: string;
+  country?: unknown;
+  state?: unknown;
+  city?: unknown;
   profileImage: string;
 }) {
   return {
@@ -31,9 +47,12 @@ function publicUser(user: {
     lastName: user.lastName,
     email: user.email,
     mobile: user.mobile,
-    country: user.country,
-    state: user.state,
-    city: user.city,
+    country: formatLocationField(user.country),
+    state: formatLocationField(user.state),
+    city: formatLocationField(user.city),
+    countryId: user.country && typeof user.country === "object" && "_id" in user.country ? String((user.country as { _id: unknown })._id) : (user.country ? String(user.country) : ""),
+    stateId: user.state && typeof user.state === "object" && "_id" in user.state ? String((user.state as { _id: unknown })._id) : (user.state ? String(user.state) : ""),
+    cityId: user.city && typeof user.city === "object" && "_id" in user.city ? String((user.city as { _id: unknown })._id) : (user.city ? String(user.city) : ""),
     profileImage: user.profileImage,
     isAdmin: config.adminEmails.includes(user.email.toLowerCase()),
   };
@@ -56,7 +75,10 @@ export class UserService {
   }
 
   async getProfile(userId: string) {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
+      .populate("country", "name id")
+      .populate("state", "name id")
+      .populate("city", "name id");
     if (!user) throw new NotFoundError("Account not found");
     return publicUser(user);
   }
@@ -64,7 +86,10 @@ export class UserService {
   async updateProfile(userId: string, input: ProfileUpdateInput) {
     const duplicate = await User.exists({ email: input.email, _id: { $ne: userId } });
     if (duplicate) throw new ConflictError("An account with this email already exists");
-    const user = await User.findByIdAndUpdate(userId, { $set: input }, { new: true, runValidators: true });
+    const user = await User.findByIdAndUpdate(userId, { $set: input }, { new: true, runValidators: true })
+      .populate("country", "name id")
+      .populate("state", "name id")
+      .populate("city", "name id");
     if (!user) throw new NotFoundError("Account not found");
     return publicUser(user);
   }
@@ -140,6 +165,9 @@ export class UserService {
     const [items, total] = await Promise.all([
       User.find(filter)
         .select("-passwordHash -resetOtpHash -resetOtpExpiresAt -resetOtpVerifiedUntil -resetOtpSentAt -resetOtpAttempts")
+        .populate("country", "name id")
+        .populate("state", "name id")
+        .populate("city", "name id")
         .sort({ createdAt: -1 })
         .skip(pagination.skip)
         .limit(pagination.limit)
@@ -147,8 +175,15 @@ export class UserService {
       User.countDocuments(filter),
     ]);
 
+    const formattedItems = items.map((u) => ({
+      ...u,
+      country: formatLocationField(u.country),
+      state: formatLocationField(u.state),
+      city: formatLocationField(u.city),
+    }));
+
     return {
-      items,
+      items: formattedItems,
       meta: {
         page: pagination.page,
         limit: pagination.limit,
@@ -164,13 +199,21 @@ export class UserService {
   async getUserById(id: string) {
     const user = await User.findOne({ _id: id, isDisplay: true })
       .select("-passwordHash -resetOtpHash -resetOtpExpiresAt -resetOtpVerifiedUntil -resetOtpSentAt -resetOtpAttempts")
+      .populate("country", "name id")
+      .populate("state", "name id")
+      .populate("city", "name id")
       .lean();
 
     if (!user) {
       throw new NotFoundError(`User with id '${id}' not found`);
     }
 
-    return user;
+    return {
+      ...user,
+      country: formatLocationField(user.country),
+      state: formatLocationField(user.state),
+      city: formatLocationField(user.city),
+    };
   }
 
   /**

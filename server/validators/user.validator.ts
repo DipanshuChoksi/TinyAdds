@@ -50,9 +50,9 @@ export interface ProfileUpdateInput {
   lastName: string;
   email: string;
   mobile: string;
-  country: string;
-  state: string;
-  city: string;
+  country: string | null;
+  state: string | null;
+  city: string | null;
   profileImage: string;
 }
 
@@ -99,6 +99,14 @@ export function validateLogin(body: unknown): { email: string; password: string 
   return { email: emailAddress(input.email), password: text(input.password, "Password", 128, true) };
 }
 
+function optionalObjectId(value: unknown, name: string): string | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string" || !Types.ObjectId.isValid(value)) {
+    throw new BadRequestError(`Invalid ${name}: must be a valid 24-character hexadecimal ObjectId`);
+  }
+  return value;
+}
+
 export function validateProfileUpdate(body: unknown): ProfileUpdateInput {
   const input = record(body);
   return {
@@ -106,9 +114,9 @@ export function validateProfileUpdate(body: unknown): ProfileUpdateInput {
     lastName: text(input.lastName, "Last name", 80),
     email: emailAddress(input.email),
     mobile: mobileNumber(input.mobile),
-    country: text(input.country ?? "", "Country", 80),
-    state: text(input.state ?? "", "State", 80),
-    city: text(input.city ?? "", "City", 80),
+    country: optionalObjectId(input.country, "Country"),
+    state: optionalObjectId(input.state, "State"),
+    city: optionalObjectId(input.city, "City"),
     profileImage: text(input.profileImage ?? "", "Profile image", 8_000_000),
   };
 }

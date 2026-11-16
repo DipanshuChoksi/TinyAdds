@@ -7,6 +7,8 @@ const clientPostSchema = new Schema(
     contactNo: { type: String, required: true, trim: true, maxlength: 20 },
     email: { type: String, required: true, lowercase: true, trim: true, maxlength: 254 },
     address: { type: String, default: "", trim: true, maxlength: 500 },
+    cityId: { type: Number, default: null, index: true },
+    cityName: { type: String, default: "", trim: true, maxlength: 100 },
     banner: { type: String, default: "", trim: true, maxlength: 100 },
     emotion: { type: String, default: "", trim: true, maxlength: 100 },
     searchGroup: { type: String, default: "", trim: true, maxlength: 100 },
@@ -37,6 +39,8 @@ export interface ClientPostData {
   contactNo: string;
   email: string;
   address: string;
+  cityId: number | null;
+  cityName: string;
   banner: string;
   emotion: string;
   searchGroup: string;

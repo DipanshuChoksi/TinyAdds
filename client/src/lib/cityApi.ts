@@ -7,13 +7,14 @@ import type {
 } from '@/src/types/city';
 
 /**
- * Fetch public active cities (optional countryId and stateId filters)
+ * Fetch public active cities (optional filters: countryId, stateId, showOnHome, page, limit)
  */
 export async function getPublicCities(
   countryId?: number,
   stateId?: number,
   page = 1,
-  limit = 100
+  limit = 100,
+  showOnHome?: boolean
 ): Promise<ApiResponse<PublicCityResponse[]>> {
   return await http.get<PublicCityResponse[]>('/cities', {
     params: {
@@ -21,6 +22,7 @@ export async function getPublicCities(
       limit,
       ...(countryId !== undefined ? { countryId } : {}),
       ...(stateId !== undefined ? { stateId } : {}),
+      ...(showOnHome !== undefined ? { showOnHome } : {}),
     },
   });
 }
@@ -63,9 +65,18 @@ export async function getAdminCities(
 export async function createAdminCity(
   name: string,
   countryId: number,
-  stateId: number
+  stateId: number,
+  showOnHome?: boolean,
+  image?: string
 ): Promise<AdminCityResponse> {
-  const payload: CreateCityPayload = { name, countryId, stateId, isActive: true };
+  const payload: CreateCityPayload = {
+    name,
+    countryId,
+    stateId,
+    isActive: true,
+    ...(showOnHome !== undefined ? { showOnHome } : {}),
+    ...(image !== undefined ? { image } : {}),
+  };
   const response = await http.post<AdminCityResponse, CreateCityPayload>('/admin/cities', payload);
   return response.data;
 }
