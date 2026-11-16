@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import CategoryMarquee from "./CategoryMarquee";
 import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 
@@ -105,20 +106,20 @@ export default function Hero() {
             <div className="col-12 col-lg-5">
               <div className="row g-2 align-items-center h-100">
                 {/* Character */}
-                <div className="col-5 text-center">
+                {/* <div className="col-5 text-center">
                   <img
                     src="/ads/tinyadds-character.png"
                     alt="TinyAdds Mascot"
                     className="img-fluid"
                     style={{ maxHeight: 420, objectFit: "contain" }}
                   />
-                </div>
+                </div> */}
 
                 {/* Standy Slider */}
                 <div className="col-7">
                   <div className="lb-standy-card position-relative overflow-hidden rounded-3 shadow-sm h-100">
                     {currentStandy ? (
-                      <div className="lb-ad-slide">
+                      <Link href={`/listings/${currentStandy.id}`} className="lb-ad-slide text-decoration-none d-block">
                         <img
                           src={currentStandy.image || "/ads/black-friday-standy.png"}
                           alt={currentStandy.title || "Standy ad"}
@@ -129,7 +130,7 @@ export default function Hero() {
                           <span className="badge bg-danger mb-1">Standy Ad</span>
                           <h6 className="text-white mb-0 text-truncate">{currentStandy.title}</h6>
                         </div>
-                      </div>
+                      </Link>
                     ) : (
                       <div className="lb-ad-slide">
                         <img
@@ -170,7 +171,7 @@ export default function Hero() {
             <div className="col-12 col-lg-7">
               <div className="lb-slider-banner-card position-relative overflow-hidden rounded-3 shadow-sm h-100">
                 {currentSection ? (
-                  <div className="lb-ad-slide h-100">
+                  <Link href={`/listings/${currentSection.id}`} className="lb-ad-slide h-100 text-decoration-none d-block">
                     <img
                       src={currentSection.image || "/ads/minimalist-fb-ad.png"}
                       alt={currentSection.title || "Section banner ad"}
@@ -181,7 +182,7 @@ export default function Hero() {
                       <span className="badge bg-primary mb-1">Section Banner</span>
                       <h5 className="text-white mb-0 text-truncate">{currentSection.title}</h5>
                     </div>
-                  </div>
+                  </Link>
                 ) : (
                   <div className="lb-ad-slide h-100">
                     <img

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 
 function extractText(html: string): string {
@@ -142,66 +143,130 @@ export default function SliderBannerCarousel() {
 
         {/* Carousel Container */}
         <div className="position-relative overflow-hidden lb-slider-single-wrap">
-          <div
-            key={currentSlide.id + index}
-            className={`lb-theme-carousel-card position-relative shadow-sm mx-1 ${
-              animating
-                ? slideDirection === "next"
-                  ? "lb-slide-in-right"
-                  : "lb-slide-in-left"
-                : ""
-            }`}
-          >
-            <div className="row g-0 align-items-center">
-              {/* Left Image */}
-              <div className="col-12 col-md-5 col-lg-5 p-3 p-md-4">
-                <div className="lb-theme-carousel-img-box">
-                  <img
-                    src={currentSlide.image}
-                    alt={currentSlide.title || currentSlide.author}
-                    className="lb-theme-carousel-img"
-                  />
-                </div>
-              </div>
-
-              {/* Right Information */}
-              <div className="col-12 col-md-7 col-lg-7 p-4 p-lg-5 d-flex flex-column justify-content-between h-100">
-                <div>
-                  {currentSlide.emotion && (
-                    <div className="mb-3">
-                      <span className="badge lb-emotion-badge">
-                        {currentSlide.emotion}
-                      </span>
-                    </div>
-                  )}
-
-                  <h3 className="lb-theme-carousel-title mb-3">
-                    {currentSlide.title}
-                  </h3>
-
-                  <blockquote className="lb-theme-carousel-quote mb-4">
-                    {currentSlide.quote && currentSlide.quote.length > 250
-                      ? `${currentSlide.quote.slice(0, 250).trim()}...`
-                      : currentSlide.quote}
-                  </blockquote>
+          {currentSlide.id.startsWith("fb-") ? (
+            <div
+              key={currentSlide.id + index}
+              className={`lb-theme-carousel-card position-relative shadow-sm mx-1 ${
+                animating
+                  ? slideDirection === "next"
+                    ? "lb-slide-in-right"
+                    : "lb-slide-in-left"
+                  : ""
+              }`}
+            >
+              <div className="row g-0 align-items-center">
+                {/* Left Image */}
+                <div className="col-12 col-md-5 col-lg-5 p-3 p-md-4">
+                  <div className="lb-theme-carousel-img-box">
+                    <img
+                      src={currentSlide.image}
+                      alt={currentSlide.title || currentSlide.author}
+                      className="lb-theme-carousel-img"
+                    />
+                  </div>
                 </div>
 
-                <div className="pt-2">
-                  <div className="lb-theme-carousel-divider mb-3" />
-                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div className="lb-theme-carousel-brand">
-                      <span className="lb-brand-mark">{currentSlide.company}</span>
-                    </div>
+                {/* Right Information */}
+                <div className="col-12 col-md-7 col-lg-7 p-4 p-lg-5 d-flex flex-column justify-content-between h-100">
+                  <div>
+                    {currentSlide.emotion && (
+                      <div className="mb-3">
+                        <span className="badge lb-emotion-badge">
+                          {currentSlide.emotion}
+                        </span>
+                      </div>
+                    )}
 
-                    <div className="text-end">
-                      <h6 className="mb-0 fw-bold lb-author-name">{currentSlide.author}</h6>
-                      <small className="lb-author-role text-muted">{currentSlide.role}</small>
+                    <h3 className="lb-theme-carousel-title mb-3">
+                      {currentSlide.title}
+                    </h3>
+
+                    <blockquote className="lb-theme-carousel-quote mb-4">
+                      {currentSlide.quote && currentSlide.quote.length > 250
+                        ? `${currentSlide.quote.slice(0, 250).trim()}...`
+                        : currentSlide.quote}
+                    </blockquote>
+                  </div>
+
+                  <div className="pt-2">
+                    <div className="lb-theme-carousel-divider mb-3" />
+                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                      <div className="lb-theme-carousel-brand">
+                        <span className="lb-brand-mark">{currentSlide.company}</span>
+                      </div>
+
+                      <div className="text-end">
+                        <h6 className="mb-0 fw-bold lb-author-name">{currentSlide.author}</h6>
+                        <small className="lb-author-role text-muted">{currentSlide.role}</small>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <Link
+              href={`/listings/${currentSlide.id}`}
+              key={currentSlide.id + index}
+              className={`lb-theme-carousel-card position-relative shadow-sm mx-1 text-decoration-none d-block text-reset ${
+                animating
+                  ? slideDirection === "next"
+                    ? "lb-slide-in-right"
+                    : "lb-slide-in-left"
+                  : ""
+              }`}
+            >
+              <div className="row g-0 align-items-center">
+                {/* Left Image */}
+                <div className="col-12 col-md-5 col-lg-5 p-3 p-md-4">
+                  <div className="lb-theme-carousel-img-box">
+                    <img
+                      src={currentSlide.image}
+                      alt={currentSlide.title || currentSlide.author}
+                      className="lb-theme-carousel-img"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Information */}
+                <div className="col-12 col-md-7 col-lg-7 p-4 p-lg-5 d-flex flex-column justify-content-between h-100">
+                  <div>
+                    {currentSlide.emotion && (
+                      <div className="mb-3">
+                        <span className="badge lb-emotion-badge">
+                          {currentSlide.emotion}
+                        </span>
+                      </div>
+                    )}
+
+                    <h3 className="lb-theme-carousel-title mb-3">
+                      {currentSlide.title}
+                    </h3>
+
+                    <blockquote className="lb-theme-carousel-quote mb-4">
+                      {currentSlide.quote && currentSlide.quote.length > 250
+                        ? `${currentSlide.quote.slice(0, 250).trim()}...`
+                        : currentSlide.quote}
+                    </blockquote>
+                  </div>
+
+                  <div className="pt-2">
+                    <div className="lb-theme-carousel-divider mb-3" />
+                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                      <div className="lb-theme-carousel-brand">
+                        <span className="lb-brand-mark">{currentSlide.company}</span>
+                      </div>
+
+                      <div className="text-end">
+                        <h6 className="mb-0 fw-bold lb-author-name">{currentSlide.author}</h6>
+                        <small className="lb-author-role text-muted">{currentSlide.role}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )}
 
           {/* Navigation Controls */}
           {total > 1 && (

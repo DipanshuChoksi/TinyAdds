@@ -15,7 +15,7 @@ const closeDrawer = () => {
 
 export default function Header() {
   const pathname = usePathname();
-  const [locOpen, setLocOpen] = useState(false);
+  // const [locOpen, setLocOpen] = useState(false);
   const [city, setCity] = useState("");
   const [accountName, setAccountName] = useState("");
   const [profileImage, setProfileImage] = useState("");
@@ -45,10 +45,10 @@ export default function Header() {
     return () => { active = false; };
   }, [pathname]);
 
-  const selectCity = (value: string) => {
-    setCity(value);
-    try { localStorage.setItem("tinyadds:city", value); } catch { /* ignore */ }
-  };
+  // const selectCity = (value: string) => {
+  //   setCity(value);
+  //   try { localStorage.setItem("tinyadds:city", value); } catch { /* ignore */ }
+  // };
 
   const onAbout = pathname === "/about-us";
   const onBlog = pathname === "/blog" || pathname.startsWith("/blog/");
@@ -98,9 +98,9 @@ export default function Header() {
                 </ul>
                 <div className="d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center gap-3 mt-4 mt-xl-0 pt-3 pt-xl-0  md:border-top border-xl-0">
                   <div className="d-flex align-items-center justify-content-between justify-content-xl-start gap-3">
-                    <button type="button" className="lb-city-btn" onClick={() => setLocOpen(true)} aria-label="Select location">
+                    {/* <button type="button" className="lb-city-btn" onClick={() => setLocOpen(true)} aria-label="Select location">
                       <i className="bi bi-geo-alt-fill"></i>{city && <span>{city}</span>}
-                    </button>
+                    </button> */}
                     <Link
                       href={accountName ? "/client-admin" : "/login"}
                       className="lb-signin d-inline-flex align-items-center gap-2"
@@ -137,7 +137,7 @@ export default function Header() {
         </nav>
       </header>
 
-      <LocationModal open={locOpen} current={city} onClose={() => setLocOpen(false)} onSelect={selectCity} />
+      {/* <LocationModal open={locOpen} current={city} onClose={() => setLocOpen(false)} onSelect={selectCity} /> */}
     </>
   );
 }

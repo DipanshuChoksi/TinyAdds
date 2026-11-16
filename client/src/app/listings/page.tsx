@@ -154,21 +154,10 @@ function ListingsContent() {
           <aside className="col-lg-4 col-xl-3">
             <div className="lb-side">
               {/* Search Box */}
-              <div className="lb-side-box">
+              {/* <div className="lb-side-box">
                 <h3 className="lb-side-title">Search Ads</h3>
-                <form onSubmit={handleSearchSubmit} className="lb-side-search">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Keyword, title, tag..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                  />
-                  <button type="submit" aria-label="Search">
-                    <i className="bi bi-search" />
-                  </button>
-                </form>
-              </div>
+               
+              </div> */}
 
               {/* Filters Box */}
               <div className="lb-side-box">
@@ -225,7 +214,7 @@ function ListingsContent() {
                 </div>
 
                 {/* Search Category Filter */}
-                <div className="mb-3">
+                {/* <div className="mb-3">
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Category
                   </label>
@@ -241,7 +230,7 @@ function ListingsContent() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
 
                 {/* Emotion Filter */}
                 <div className="mb-2">
@@ -287,7 +276,7 @@ function ListingsContent() {
                 </p>
               </div>
 
-              {hasActiveFilters && (
+              {/* {hasActiveFilters && (
                 <div className="d-flex flex-wrap align-items-center gap-2">
                   {search && (
                     <span className="badge bg-light text-dark border d-flex align-items-center gap-1 py-2 px-3">
@@ -345,7 +334,19 @@ function ListingsContent() {
                     </span>
                   )}
                 </div>
-              )}
+              )} */}
+               <form onSubmit={handleSearchSubmit} className="lb-side-search">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Keyword, title, tag..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                  <button type="submit" aria-label="Search">
+                    <i className="bi bi-search" />
+                  </button>
+                </form>
             </div>
 
             {/* Grid content */}
