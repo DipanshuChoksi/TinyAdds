@@ -34,7 +34,12 @@ import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 const app: Application = express();
 
 // Middleware
-app.use(cors({credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => callback(null, true),
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
@@ -43,6 +48,9 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/Upload", express.static(path.join(process.cwd(), "uploads")));
 
 // Health check / root route
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
 // Protect all admin endpoints under /api/admin/*
 app.use("/api/admin", requireAdminAccess);

@@ -1,17 +1,13 @@
 "use client";
 
-import { Editor } from "@tinymce/tinymce-react";
+import BundledEditor from "@/components/BundledEditor";
 
 type Props = { value: string; onChange: (html: string) => void; placeholder?: string };
 
 export default function RichTextEditor({ value, onChange, placeholder = "Write description..." }: Props) {
-  const apiKey = process.env.VITE_TINYMCE_API_KEY ?? "";
-
   return (
     <div className="lb-ca-editor">
-      <Editor
-        apiKey={apiKey}
-        tinymceScriptSrc={`https://cdn.tiny.cloud/1/${apiKey}/tinymce/7/tinymce.min.js`}
+      <BundledEditor
         value={value}
         onEditorChange={onChange}
         init={{
@@ -27,3 +23,4 @@ export default function RichTextEditor({ value, onChange, placeholder = "Write d
     </div>
   );
 }
+

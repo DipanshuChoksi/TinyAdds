@@ -53,14 +53,14 @@ export default function Footer() {
               <li><a href="#">Sitemap</a></li>
               <li><a href="#">Terms of Service</a></li>
               <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Live Chat</a></li>
               <li><a href="#">FAQ Page</a></li>
+              {/* <li><a href="#">Live Chat</a></li>
               <li><a href="#">How to Stay Safe</a></li>
-              <li><a href="#">Terms &amp; Conditions</a></li>
+              <li><a href="#">Terms &amp; Conditions</a></li> */}
               <li><Link href="/contact">Contact Us</Link></li>
             </ul>
           </div>
-
+ 
           {/* About */}
           <div className="col-md-6 col-lg-4">
             <p className="lb-footer-about">
