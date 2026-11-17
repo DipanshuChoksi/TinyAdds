@@ -7,7 +7,6 @@ import userRoutes from "./routes/user.routes.js";
 import clientPostRoutes from "./routes/clientPost.routes.js";
 import adminPostRoutes from "./routes/adminPost.routes.js";
 import publicPostRoutes from "./routes/post.routes.js";
-import { config } from "./config/index.js";
 import countryRoutes from "./routes/country.routes.js";
 import adminCountryRoutes from "./routes/adminCountry.routes.js";
 import stateRoutes from "./routes/state.routes.js";
@@ -33,13 +32,9 @@ import { requireAdminAccess } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 const app: Application = express();
-const clientOrigins = config.clientOrigin.split(",").map((origin) => origin.trim()).filter(Boolean);
-if (config.nodeEnv === "development") {
-	clientOrigins.push("http://localhost:3001", "http://127.0.0.1:3001");
-}
 
 // Middleware
-app.use(cors({ origin: clientOrigins, credentials: true }));
+app.use(cors({credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
