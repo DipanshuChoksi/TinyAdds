@@ -49,6 +49,22 @@ export class AnalyticsService {
       resolvedInquiries,
     };
   }
+
+  async getUserAnalytics(userId: string) {
+    const [totalPosts, pendingPosts, approvedPosts, rejectedPosts] = await Promise.all([
+      ClientPost.countDocuments({ owner: userId, isDisplay: true }),
+      ClientPost.countDocuments({ owner: userId, isDisplay: true, status: "pending" }),
+      ClientPost.countDocuments({ owner: userId, isDisplay: true, status: "approved" }),
+      ClientPost.countDocuments({ owner: userId, isDisplay: true, status: "rejected" }),
+    ]);
+
+    return {
+      totalPosts,
+      pendingPosts,
+      approvedPosts,
+      rejectedPosts,
+    };
+  }
 }
 
 export const analyticsService = new AnalyticsService();

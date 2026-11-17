@@ -39,3 +39,27 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsResponse> {
 
   return response.data;
 }
+
+export interface UserAnalyticsResponse {
+  totalPosts: number;
+  pendingPosts: number;
+  approvedPosts: number;
+  rejectedPosts: number;
+}
+
+const emptyUserAnalytics: UserAnalyticsResponse = {
+  totalPosts: 0,
+  pendingPosts: 0,
+  approvedPosts: 0,
+  rejectedPosts: 0,
+};
+
+export async function getUserAnalytics(): Promise<UserAnalyticsResponse> {
+  const response = await http.get<UserAnalyticsResponse>('/auth/analytics');
+
+  if (!response.success || !response.data) {
+    return emptyUserAnalytics;
+  }
+
+  return response.data;
+}

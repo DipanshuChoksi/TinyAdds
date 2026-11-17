@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { userController } from "../controllers/user.controller.js";
+import { analyticsController } from "../controllers/analytics.controller.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
@@ -10,6 +11,7 @@ router.post("/forgot-password", (req, res, next) => userController.requestPasswo
 router.post("/verify-otp", (req, res, next) => userController.verifyPasswordResetOtp(req, res, next));
 router.post("/reset-password", (req, res, next) => userController.resetPassword(req, res, next));
 router.get("/me", requireAuth, (req, res, next) => userController.getMe(req, res, next));
+router.get("/analytics", requireAuth, (req, res, next) => analyticsController.getUserAnalytics(req, res, next));
 router.patch("/profile", requireAuth, (req, res, next) => userController.updateProfile(req, res, next));
 
 export default router;

@@ -11,6 +11,15 @@ export class AnalyticsController {
       next(error);
     }
   }
+
+  async getUserAnalytics(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const analytics = await analyticsService.getUserAnalytics(req.userId);
+      res.status(200).json(sendSuccess(analytics));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const analyticsController = new AnalyticsController();
