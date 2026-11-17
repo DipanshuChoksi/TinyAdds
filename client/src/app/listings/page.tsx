@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import LoadingIndicator from "@/components/LoadingIndicator";
 import PageBanner from "@/components/PageBanner";
 import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 import { getPublicBannerSections } from "@/lib/bannerSectionApi";
@@ -380,11 +381,8 @@ function ListingsContent() {
 
             {/* Grid content */}
             {loading ? (
-              <div className="text-center py-5 my-5">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading ads...</span>
-                </div>
-                <p className="text-muted mt-3">Fetching listings, please wait...</p>
+              <div className="text-center py-5 my-5" role="status" aria-live="polite">
+                <LoadingIndicator label="Loading listings" />
               </div>
             ) : posts.length === 0 ? (
               <div className="text-center py-5 my-5 bg-light rounded-4 border p-4">

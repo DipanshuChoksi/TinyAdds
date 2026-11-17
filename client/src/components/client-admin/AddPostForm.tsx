@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/UiProvider";
 import Dropdown from "@/components/ui/Dropdown";
 import RichTextEditor from "./RichTextEditor";
+import LinkedInImageCropper from "./LinkedInImageCropper";
 import { compose, email, phone, required } from "@/lib/validators";
 import http from "@/lib/http";
 import { getPublicBannerSections } from "@/lib/bannerSectionApi";
@@ -34,6 +35,8 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
   const [bannerOptions, setBannerOptions] = useState<string[]>([]);
   const [emotionOptions, setEmotionOptions] = useState<string[]>([]);
   const [searchGroupOptions, setSearchGroupOptions] = useState<string[]>([]);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState<string>("");
   const endpoint = mode === "admin" ? "/admin/posts" : "/client/posts";
 
   useEffect(() => {
@@ -91,19 +94,26 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
 
   const handleFile = (f?: File) => {
     if (!f) return;
-    if (f.size > 5 * 1024 * 1024) {
-      setErrors((current) => ({ ...current, file: "Image must be 5 MB or smaller" }));
+    if (f.size > 15 * 1024 * 1024) {
+      setErrors((current) => ({ ...current, file: "Image must be 15 MB or smaller" }));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
-        setValues((current) => ({ ...current, image: reader.result as string }));
+        setRawImageSrc(reader.result);
+        setCropperOpen(true);
         setErrors((current) => ({ ...current, file: "" }));
       }
     };
     reader.onerror = () => toast.error("Unable to read the selected image");
     reader.readAsDataURL(f);
+  };
+
+  const handleCropApply = (processedDataUrl: string) => {
+    setValues((current) => ({ ...current, image: processedDataUrl }));
+    setCropperOpen(false);
+    toast.success("Dimensions set & TinyAdds logo added to top-left!");
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -164,11 +174,27 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
           <div className="col-md-6"><label className="lb-ca-label">Available From Date</label><input type="date" className="form-control lb-ca-input" value={values.fromDate} onChange={set("fromDate")} />{err("fromDate")}</div>
           <div className="col-md-6">
             <label className="lb-ca-label">Choose file</label>
-            <input key={fileKey} type="file" accept="image/*" className="form-control lb-ca-input" onChange={(e) => handleFile(e.target.files?.[0])} />
+            <input
+              key={fileKey}
+              type="file"
+              accept="image/*"
+              className="form-control lb-ca-input"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+            />
             {err("file")}
           </div>
           <div className="col-md-6">
-            <div className="lb-ca-upload">
+            <div
+              className="lb-ca-upload position-relative"
+              style={{ cursor: values.image ? "pointer" : "default" }}
+              onClick={() => {
+                if (values.image) {
+                  setRawImageSrc(rawImageSrc || values.image);
+                  setCropperOpen(true);
+                }
+              }}
+              title={values.image ? "Click image to adjust dimensions" : undefined}
+            >
               {values.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={values.image} alt="Post preview" />
@@ -182,6 +208,15 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
         </div>
         <div className="text-end mt-4"><button type="submit" className="btn lb-btn-primary" disabled={saving || loading}>{saving ? "Saving..." : editId ? "Update Post" : "Add Post"}</button></div>
       </div>
+
+      {/* LinkedIn-Style Image Dimension & Cropper Modal */}
+      <LinkedInImageCropper
+        isOpen={cropperOpen}
+        imageSrc={rawImageSrc}
+        bannerContext={values.banner}
+        onApply={handleCropApply}
+        onCancel={() => setCropperOpen(false)}
+      />
     </form>
   );
 }

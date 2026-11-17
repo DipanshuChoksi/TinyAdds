@@ -118,7 +118,7 @@ export class ClientPostService {
 
   async getPublicPostById(postId: string) {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
-    const post = await ClientPost.findOne({ _id: postId, isDisplay: true, isActive: true, status: "approved" }).lean();
+    const post = await ClientPost.findOne({ _id: postId, isDisplay: true, status: "approved" }).lean();
     if (!post) throw new NotFoundError("Post not found");
     return serializePost(post);
   }

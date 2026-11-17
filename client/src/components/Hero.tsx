@@ -5,14 +5,43 @@ import Link from "next/link";
 import CategoryMarquee from "./CategoryMarquee";
 import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 
+type SectionSlide = {
+  id: string;
+  title: string;
+  image: string;
+  tag?: string;
+  link?: string;
+};
+
+const FALLBACK_SECTION_SLIDES: SectionSlide[] = [
+  {
+    id: "fb-sec-1",
+    title: "Minimalist Modern Advertising",
+    image: "/ads/minimalist-fb-ad.png",
+    tag: "Trending Spotlight",
+    link: "/listings",
+  },
+  {
+    id: "fb-sec-2",
+    title: "Special Festive Offers & Discounts",
+    image: "/ads/section-banner-sale.png",
+    tag: "Exclusive Deals",
+    link: "/listings",
+  },
+];
+
 export default function Hero() {
   const [standyAds, setStandyAds] = useState<PublicPost[]>([]);
   const [sectionAds, setSectionAds] = useState<PublicPost[]>([]);
   const [standyIndex, setStandyIndex] = useState(0);
   const [sectionIndex, setSectionIndex] = useState(0);
+  const [sectionAnimating, setSectionAnimating] = useState(false);
+  const [sectionDirection, setSectionDirection] = useState<"next" | "prev">("next");
+  const [isSectionPaused, setIsSectionPaused] = useState(false);
 
   const standyTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const sectionTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const animTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -38,6 +67,99 @@ export default function Hero() {
     };
   }, []);
 
+  // Build section slides list (ensuring at least 2 slides so carousel & manual arrows always work)
+  const sectionSlides: SectionSlide[] = (() => {
+    if (sectionAds.length > 1) {
+      return sectionAds.map((post) => ({
+        id: post.id,
+        title: post.title,
+        image: post.image || "/ads/minimalist-fb-ad.png",
+        tag: post.tag || post.searchCategory || "Featured Deal",
+        link: `/listings/${post.id}`,
+      }));
+    }
+    if (sectionAds.length === 1) {
+      return [
+        {
+          id: sectionAds[0].id,
+          title: sectionAds[0].title,
+          image: sectionAds[0].image || "/ads/minimalist-fb-ad.png",
+          tag: sectionAds[0].tag || sectionAds[0].searchCategory || "Featured Deal",
+          link: `/listings/${sectionAds[0].id}`,
+        },
+        FALLBACK_SECTION_SLIDES[1],
+      ];
+    }
+    return FALLBACK_SECTION_SLIDES;
+  })();
+
+  const totalSectionSlides = sectionSlides.length;
+
+  // Section Banner navigation
+  const goToSection = useCallback(
+    (dir: 1 | -1) => {
+      if (totalSectionSlides <= 1) return;
+      setSectionDirection(dir === 1 ? "next" : "prev");
+      setSectionAnimating(true);
+      setSectionIndex((prev) => (prev + dir + totalSectionSlides) % totalSectionSlides);
+
+      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+      animTimeoutRef.current = setTimeout(() => {
+        setSectionAnimating(false);
+      }, 400);
+    },
+    [totalSectionSlides]
+  );
+
+  const goToSectionIndex = useCallback(
+    (targetIdx: number) => {
+      if (targetIdx === sectionIndex || targetIdx < 0 || targetIdx >= totalSectionSlides) return;
+      setSectionDirection(targetIdx > sectionIndex ? "next" : "prev");
+      setSectionAnimating(true);
+      setSectionIndex(targetIdx);
+
+      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+      animTimeoutRef.current = setTimeout(() => {
+        setSectionAnimating(false);
+      }, 400);
+    },
+    [sectionIndex, totalSectionSlides]
+  );
+
+  // Auto-rotation timer for Section Carousel (pauses on hover)
+  useEffect(() => {
+    if (sectionTimer.current) clearInterval(sectionTimer.current);
+    if (totalSectionSlides <= 1 || isSectionPaused) return;
+
+    sectionTimer.current = setInterval(() => {
+      if (!document.hidden) {
+        goToSection(1);
+      }
+    }, 4000);
+
+    return () => {
+      if (sectionTimer.current) clearInterval(sectionTimer.current);
+    };
+  }, [goToSection, isSectionPaused, totalSectionSlides]);
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    goToSection(-1);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    goToSection(1);
+  };
+
+  const handleDotClick = (e: React.MouseEvent, idx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    goToSectionIndex(idx);
+  };
+
   // Standy auto-rotation
   const nextStandy = useCallback(() => {
     setStandyIndex((prev) => {
@@ -55,113 +177,140 @@ export default function Hero() {
 
   useEffect(() => {
     if (standyAds.length > 1) {
-      standyTimer.current = setInterval(nextStandy, 4000);
+      standyTimer.current = setInterval(nextStandy, 4500);
       return () => {
         if (standyTimer.current) clearInterval(standyTimer.current);
       };
     }
   }, [standyAds.length, nextStandy]);
 
-  // Section banner auto-rotation
-  const nextSection = useCallback(() => {
-    setSectionIndex((prev) => {
-      const total = sectionAds.length > 0 ? sectionAds.length : 1;
-      return (prev + 1) % total;
-    });
-  }, [sectionAds.length]);
-
-  const prevSection = useCallback(() => {
-    setSectionIndex((prev) => {
-      const total = sectionAds.length > 0 ? sectionAds.length : 1;
-      return (prev - 1 + total) % total;
-    });
-  }, [sectionAds.length]);
-
-  useEffect(() => {
-    if (sectionAds.length > 1) {
-      sectionTimer.current = setInterval(nextSection, 4500);
-      return () => {
-        if (sectionTimer.current) clearInterval(sectionTimer.current);
-      };
-    }
-  }, [sectionAds.length, nextSection]);
-
   const currentStandy = standyAds[standyIndex];
-  const currentSection = sectionAds[sectionIndex];
   const standyImage = currentStandy?.image || "/ads/black-friday-standy.png";
-  const sectionImage = currentSection?.image || "/ads/minimalist-fb-ad.png";
+  const currentSlide = sectionSlides[sectionIndex] || sectionSlides[0];
 
   return (
     <section className="lb-hero lb-hero--showcase">
       <div className="container position-relative">
         <CategoryMarquee />
 
-        <div className="row align-items-center g-4 g-lg-5 pt-4 pb-4">
-          <div className="col-12 col-lg-5">
-            <div className="lb-hero-copy">
-              <span className="lb-hero-kicker">
-                <i className="bi bi-geo-alt-fill" aria-hidden="true" />
-                Your local marketplace
-              </span>
-              <h1 className="lb-hero-title">
-                Good finds.
-                <span> Great local deals.</span>
-              </h1>
-              <p className="lb-hero-description">
-                Discover businesses, products, and services around you. Buy, sell, and rent with TinyAdds.
-              </p>
-              <a href="/listings" className="btn lb-btn-primary lb-hero-cta">
-                Explore listings
-                <i className="bi bi-arrow-up-right" aria-hidden="true" />
-              </a>
-              <div className="lb-hero-highlights" aria-label="Marketplace options">
-                <span>Buy</span>
-                <span>Sell</span>
-                <span>Rent</span>
+        <div className="row align-items-center g-4 pt-4 pb-4">
+          {/* Left Column: Carousel (Wider width, same height as sell standy) */}
+          <div className="col-12 col-lg-7 col-xl-8">
+            <div
+              className="lb-hero-main-carousel"
+              onMouseEnter={() => setIsSectionPaused(true)}
+              onMouseLeave={() => setIsSectionPaused(false)}
+            >
+              <div className="lb-hero-main-carousel-track">
+                <Link
+                  href={currentSlide.link || "/listings"}
+                  key={currentSlide.id + sectionIndex}
+                  className={`lb-hero-main-carousel-slide ${
+                    sectionAnimating
+                      ? sectionDirection === "next"
+                        ? "lb-slide-in-right"
+                        : "lb-slide-in-left"
+                      : ""
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentSlide.image}
+                    alt={currentSlide.title}
+                  />
+                  {currentSlide.tag && (
+                    <span className="lb-hero-main-carousel-badge">
+                      <i className="bi bi-stars" aria-hidden="true" />
+                      {currentSlide.tag}
+                    </span>
+                  )}
+                </Link>
               </div>
+
+              {/* Navigation Controls: Left & Right Arrows for manual handling */}
+              {totalSectionSlides > 1 && (
+                <div className="lb-hero-main-carousel-controls">
+                  <button
+                    type="button"
+                    className="lb-hero-main-carousel-btn lb-hero-main-carousel-btn--prev"
+                    onClick={handlePrev}
+                    aria-label="Previous banner slide"
+                  >
+                    <i className="bi bi-chevron-left" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="lb-hero-main-carousel-btn lb-hero-main-carousel-btn--next"
+                    onClick={handleNext}
+                    aria-label="Next banner slide"
+                  >
+                    <i className="bi bi-chevron-right" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
+
+              {/* Slide Dots Indicator */}
+              {totalSectionSlides > 1 && (
+                <div className="lb-hero-main-carousel-dots">
+                  {sectionSlides.map((slide, idx) => (
+                    <button
+                      key={slide.id + idx}
+                      type="button"
+                      className={`lb-hero-main-carousel-dot ${
+                        idx === sectionIndex ? "active" : ""
+                      }`}
+                      onClick={(e) => handleDotClick(e, idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="col-12 col-lg-7">
+          {/* Right Column: Sell Vala Img (Standy Banner), same height */}
+          <div className="col-12 col-lg-5 col-xl-4">
             <div className="lb-hero-showcase">
-              <div className="lb-showcase-stack">
-                <div className="lb-showcase-ad lb-showcase-ad--section">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+              <div className="lb-showcase-ad lb-showcase-ad--standy">
+                {currentStandy ? (
+                  <Link
+                    href={`/listings/${currentStandy.id}`}
+                    className="d-block w-100 h-100 text-decoration-none"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      key={currentStandy.id}
+                      src={standyImage}
+                      alt={currentStandy.title || "Featured TinyAdds ad"}
+                    />
+                  </Link>
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    key={currentSection?.id || "section-fallback"}
-                    src={sectionImage}
-                    alt={currentSection?.title || "Featured local business"}
-                  />
-                  {sectionAds.length > 1 && (
-                    <div className="lb-showcase-controls">
-                      <button type="button" onClick={prevSection} aria-label="Previous local spotlight">
-                        <i className="bi bi-chevron-left" />
-                      </button>
-                      <button type="button" onClick={nextSection} aria-label="Next local spotlight">
-                        <i className="bi bi-chevron-right" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="lb-showcase-ad lb-showcase-ad--standy">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    key={currentStandy?.id || "standy-fallback"}
+                    key="standy-fallback"
                     src={standyImage}
-                    alt={currentStandy?.title || "Featured TinyAdds ad"}
+                    alt="Featured TinyAdds sale ad"
                   />
-                  {standyAds.length > 1 && (
-                    <div className="lb-showcase-controls">
-                      <button type="button" onClick={prevStandy} aria-label="Previous featured ad">
-                        <i className="bi bi-chevron-left" />
-                      </button>
-                      <button type="button" onClick={nextStandy} aria-label="Next featured ad">
-                        <i className="bi bi-chevron-right" />
-                      </button>
-                    </div>
-                  )}
-                </div>
+                )}
+
+                {standyAds.length > 1 && (
+                  <div className="lb-showcase-controls">
+                    <button
+                      type="button"
+                      onClick={prevStandy}
+                      aria-label="Previous featured ad"
+                    >
+                      <i className="bi bi-chevron-left" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={nextStandy}
+                      aria-label="Next featured ad"
+                    >
+                      <i className="bi bi-chevron-right" aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

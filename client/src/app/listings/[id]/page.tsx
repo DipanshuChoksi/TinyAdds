@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import LoadingIndicator from "@/components/LoadingIndicator";
 import PageBanner from "@/components/PageBanner";
 import { getPublicPostById, type PublicPost } from "@/lib/postApi";
 
@@ -55,11 +56,8 @@ export default function ListingDetailPage() {
             { label: "Details" },
           ]}
         />
-        <div className="container py-5 text-center my-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading listing details...</span>
-          </div>
-          <p className="text-muted mt-3">Fetching ad details...</p>
+        <div className="container py-5 text-center my-5" role="status" aria-live="polite">
+          <LoadingIndicator label="Loading ad details" />
         </div>
       </main>
     );
@@ -133,7 +131,7 @@ export default function ListingDetailPage() {
                   />
                   {post.banner && (
                     <span
-                      className="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 text-white py-2 px-3"
+                      className="position-absolute top-0 end-0 m-3 badge bg-dark bg-opacity-75 text-white py-2 px-3"
                       style={{ fontSize: "0.85rem", backdropFilter: "blur(4px)" }}
                     >
                       {post.banner}
