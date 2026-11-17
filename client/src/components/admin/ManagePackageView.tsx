@@ -30,7 +30,7 @@ export default function ManagePackageView({
   const [price, setPrice] = useState(999);
   const [period, setPeriod] = useState<'month' | 'year'>('month');
   const [listingLimit, setListingLimit] = useState(10);
-  const [featuresText, setFeaturesText] = useState('Featured Placement\nDirect Leads\nEmail Support');
+  const [featuresText, setFeaturesText] = useState('');
   const [isPopular, setIsPopular] = useState(false);
 
   const openCreateModal = () => {
@@ -39,7 +39,7 @@ export default function ManagePackageView({
     setPrice(999);
     setPeriod('month');
     setListingLimit(10);
-    setFeaturesText('Featured Placement\nDirect Leads\nEmail Support');
+    setFeaturesText('');
     setIsPopular(false);
     setErrorMessage(null);
     setShowModal(true);

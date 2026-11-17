@@ -165,7 +165,6 @@ export interface AdminMasterItem {
   id: string;
   type: MasterEntityType;
   name: string;
-  slug?: string;
   status: 'active' | 'inactive';
   itemCount: number;
   image?: string;

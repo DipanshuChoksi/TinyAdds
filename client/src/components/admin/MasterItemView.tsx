@@ -209,10 +209,12 @@ export default function MasterItemView({
 
   const filtered = items.filter((item) => {
     const matchesCategory = item.type === defaultCategory;
-    const matchesSearch =
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      (item.slug ? item.slug.toLowerCase().includes(search.toLowerCase()) : false);
-    return matchesCategory && matchesSearch;
+    // const matchesSearch =
+    //   item.name.toLowerCase().includes(search.toLowerCase()) ||
+    //   (item.slug ? item.slug.toLowerCase().includes(search.toLowerCase()) : false);
+    // return matchesCategory && matchesSearch;
+    return matchesCategory;
+
   });
 
   const toggleStatus = async (id: string) => {
@@ -272,16 +274,15 @@ export default function MasterItemView({
           const created = await onCreateItem(name.trim(), image.trim());
           setItems((prev) => [...prev, created]);
         } else {
-          const slug = name
-            .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)+/g, '');
+          // const slug = name
+          //   .toLowerCase()
+          //   .trim()
+          //   .replace(/[^a-z0-9]+/g, '-')
+          //   .replace(/(^-|-$)+/g, '');
 
           const newItem: AdminMasterItem = {
             id: `mi-${Date.now()}`,
             name: name.trim(),
-            slug,
             type: defaultCategory,
             status: 'active',
             itemCount: 0,
@@ -390,7 +391,7 @@ export default function MasterItemView({
               <tr>
                 <th className="ps-4">Name</th>
                 {defaultCategory === 'emotion' && <th>Image</th>}
-                {defaultCategory !== 'emotion' && <th>Slug (URL Key)</th>}
+                {/* {defaultCategory !== 'emotion' && <th>Slug (URL Key)</th>} */}
                 {defaultCategory !== 'emotion' && <th>Assigned Items</th>}
                 <th>Status</th>
                 <th className="text-end pe-4" style={{ width: '100px' }}>Action</th>
@@ -431,11 +432,11 @@ export default function MasterItemView({
                         )}
                       </td>
                     )}
-                    {defaultCategory !== 'emotion' && (
+                    {/* {defaultCategory !== 'emotion' && (
                       <td className="small" style={{ color: '#64748b' }}>
                         {item.slug ? `/${item.slug}` : '-'}
                       </td>
-                    )}
+                    )} */}
                     {defaultCategory !== 'emotion' && (
                       <td>
                         <span
