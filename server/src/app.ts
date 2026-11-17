@@ -28,6 +28,7 @@ import bannerSectionRoutes from "./routes/bannerSection.routes.js";
 import adminBannerSectionRoutes from "./routes/adminBannerSection.routes.js";
 import blogRoutes from "./routes/blog.routes.js";
 import adminBlogRoutes from "./routes/adminBlog.routes.js";
+import adminAnalyticsRoutes from "./routes/adminAnalytics.routes.js";
 import { requireAdminAccess } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
@@ -94,6 +95,7 @@ app.use("/api/admin/banner-sections", adminBannerSectionRoutes);
 
 app.use("/api/blogs", blogRoutes);
 app.use("/api/admin/blogs", adminBlogRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 // 404 Handler
 app.use(notFoundHandler);

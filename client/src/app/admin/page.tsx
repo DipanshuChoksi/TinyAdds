@@ -3,17 +3,20 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
+  getAdminAnalytics,
   getAdminMasterItems,
   getAdminPackages,
   getAdminPostApprovals,
   getBlogs,
 } from '@/lib/api';
 import type { AdminPostApproval, AdminPackage, BlogSummary } from '@/src/types';
+import type { AdminAnalyticsResponse } from '@/src/lib/analyticsApi';
 
 export default function AdminDashboardPage() {
   const [approvals, setApprovals] = useState<AdminPostApproval[]>([]);
   const [blogs, setBlogs] = useState<BlogSummary[]>([]);
   const [packages, setPackages] = useState<AdminPackage[]>([]);
+  const [analytics, setAnalytics] = useState<AdminAnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +26,14 @@ export default function AdminDashboardPage() {
       getBlogs(),
       getAdminPackages().catch(() => []),
       getAdminMasterItems().catch(() => []),
+      getAdminAnalytics(),
     ])
-      .then(([approvalsData, blogsData, packagesData]) => {
+      .then(([approvalsData, blogsData, packagesData, _masterItemsData, analyticsData]) => {
         if (!active) return;
         setApprovals(approvalsData || []);
         setBlogs(blogsData || []);
         setPackages((packagesData as unknown as AdminPackage[]) || []);
+        setAnalytics(analyticsData || null);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -44,7 +49,7 @@ export default function AdminDashboardPage() {
   const STATS = [
     {
       title: 'Pending Inquiries',
-      value: 0,
+      value: analytics?.pendingInquiries ?? 0,
       icon: 'bi-envelope-paper',
       href: '/admin/inquire',
       label: 'Needs direct response',
@@ -58,14 +63,14 @@ export default function AdminDashboardPage() {
     },
     {
       title: 'Active Packages',
-      value: packages.length,
+      value: analytics?.activePackages ?? packages.length,
       icon: 'bi-box-seam',
       href: '/admin/manage-package',
       label: 'Live monetization plans',
     },
     {
       title: 'Published Blogs',
-      value: blogs.length,
+      value: analytics?.totalBlogs ?? blogs.length,
       icon: 'bi-journal-richtext',
       href: '/admin/manage-blogs',
       label: 'Content articles',
