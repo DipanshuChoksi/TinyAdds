@@ -154,53 +154,13 @@ export default function SliderBannerCarousel() {
                   : ""
               }`}
             >
-              <div className="row g-0 align-items-center">
-                {/* Left Image */}
-                <div className="col-12 col-md-5 col-lg-5 p-3 p-md-4">
-                  <div className="lb-theme-carousel-img-box">
-                    <img
-                      src={currentSlide.image}
-                      alt={currentSlide.title || currentSlide.author}
-                      className="lb-theme-carousel-img"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Information */}
-                <div className="col-12 col-md-7 col-lg-7 p-4 p-lg-5 d-flex flex-column justify-content-between h-100">
-                  <div>
-                    {currentSlide.emotion && (
-                      <div className="mb-3">
-                        <span className="badge lb-emotion-badge">
-                          {currentSlide.emotion}
-                        </span>
-                      </div>
-                    )}
-
-                    <h3 className="lb-theme-carousel-title mb-3">
-                      {currentSlide.title}
-                    </h3>
-
-                    <blockquote className="lb-theme-carousel-quote mb-4">
-                      {currentSlide.quote && currentSlide.quote.length > 250
-                        ? `${currentSlide.quote.slice(0, 250).trim()}...`
-                        : currentSlide.quote}
-                    </blockquote>
-                  </div>
-
-                  <div className="pt-2">
-                    <div className="lb-theme-carousel-divider mb-3" />
-                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                      <div className="lb-theme-carousel-brand">
-                        <span className="lb-brand-mark">{currentSlide.company}</span>
-                      </div>
-
-                      <div className="text-end">
-                        <h6 className="mb-0 fw-bold lb-author-name">{currentSlide.author}</h6>
-                        <small className="lb-author-role text-muted">{currentSlide.role}</small>
-                      </div>
-                    </div>
-                  </div>
+              <div className="w-100 p-2 p-md-3">
+                <div className="lb-theme-carousel-img-box">
+                  <img
+                    src={currentSlide.image}
+                    alt={currentSlide.title || currentSlide.author}
+                    className="lb-theme-carousel-img"
+                  />
                 </div>
               </div>
             </div>
@@ -216,53 +176,13 @@ export default function SliderBannerCarousel() {
                   : ""
               }`}
             >
-              <div className="row g-0 align-items-center">
-                {/* Left Image */}
-                <div className="col-12 col-md-5 col-lg-5 p-3 p-md-4">
-                  <div className="lb-theme-carousel-img-box">
-                    <img
-                      src={currentSlide.image}
-                      alt={currentSlide.title || currentSlide.author}
-                      className="lb-theme-carousel-img"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Information */}
-                <div className="col-12 col-md-7 col-lg-7 p-4 p-lg-5 d-flex flex-column justify-content-between h-100">
-                  <div>
-                    {currentSlide.emotion && (
-                      <div className="mb-3">
-                        <span className="badge lb-emotion-badge">
-                          {currentSlide.emotion}
-                        </span>
-                      </div>
-                    )}
-
-                    <h3 className="lb-theme-carousel-title mb-3">
-                      {currentSlide.title}
-                    </h3>
-
-                    <blockquote className="lb-theme-carousel-quote mb-4">
-                      {currentSlide.quote && currentSlide.quote.length > 250
-                        ? `${currentSlide.quote.slice(0, 250).trim()}...`
-                        : currentSlide.quote}
-                    </blockquote>
-                  </div>
-
-                  <div className="pt-2">
-                    <div className="lb-theme-carousel-divider mb-3" />
-                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                      <div className="lb-theme-carousel-brand">
-                        <span className="lb-brand-mark">{currentSlide.company}</span>
-                      </div>
-
-                      <div className="text-end">
-                        <h6 className="mb-0 fw-bold lb-author-name">{currentSlide.author}</h6>
-                        <small className="lb-author-role text-muted">{currentSlide.role}</small>
-                      </div>
-                    </div>
-                  </div>
+              <div className="w-100 p-2 p-md-3">
+                <div className="lb-theme-carousel-img-box">
+                  <img
+                    src={currentSlide.image}
+                    alt={currentSlide.title || currentSlide.author}
+                    className="lb-theme-carousel-img"
+                  />
                 </div>
               </div>
             </Link>

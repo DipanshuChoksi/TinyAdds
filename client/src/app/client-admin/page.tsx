@@ -48,7 +48,7 @@ export default function ClientDashboard() {
     <>
       <h6 className="lb-ca-title">Dashboard</h6>
 
-      <div className="lb-ca-stats">
+      {/* <div className="lb-ca-stats">
         {stats.map((s) => <StatCard key={s.title} {...s} />)}
       </div>
 
@@ -62,7 +62,7 @@ export default function ClientDashboard() {
         <ChartCard title="Total Review" subtitle="Reviews per month" className="span-3">
           <AreaChart data={REVIEWS_MONTHLY} />
         </ChartCard>
-      </div>
+      </div> */}
     </>
   );
 }

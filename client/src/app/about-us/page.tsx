@@ -16,8 +16,8 @@ export default function AboutUs() {
     <main>
       <PageBanner title="About Us" crumbs={[{ label: "Home", href: "/" }, { label: "Pages" }, { label: "About Us" }]} />
       <AboutIntro />
-      <CompanyJourney />
-      <Team />
+      {/* <CompanyJourney /> */}
+      {/* <Team /> */}
     </main>
   );
 }

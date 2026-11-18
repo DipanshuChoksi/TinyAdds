@@ -12,7 +12,7 @@ export const metadata = createSeoMetadata({
 export default function Contact() {
   return (
     <main>
-      <PageBanner title="Get In Touch" crumbs={[{ label: "Home", href: "/" }, { label: "Pages" }, { label: "Contact" }]} />
+      <PageBanner title="Get In Touch" crumbs={[{ label: "Home", href: "/" }, { label: "Contact" }]} />
       <ContactInfo />
     </main>
   );

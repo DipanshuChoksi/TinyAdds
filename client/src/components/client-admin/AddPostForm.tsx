@@ -14,13 +14,19 @@ import { getPublicEmotions } from "@/lib/emotionApi";
 import { getPublicGroups } from "@/lib/groupApi";
 import type { ClientPost } from "@/types";
 
-const EMPTY = { contactPerson: "", contactNo: "", email: "", address: "", banner: "", emotion: "", searchGroup: "", searchCategory: "", fromDate: "", title: "", image: "", tag: "", description: "" };
+const EMPTY = { contactPerson: "", contactNo: "", email: "", address: "", banner: "", emotion: "", searchGroup: "", searchCategory: "", fromDate: todayISO(), title: "", image: "", tag: "", description: "" };
 type Values = typeof EMPTY;
 type Errors = Partial<Record<keyof Values | "file", string>>;
 interface Props {
   mode?: "client" | "admin";
   postId?: string;
   onSaved?: () => void;
+}
+
+function todayISO(): string {
+  const d = new Date();
+  const tzOffset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
 }
 
 export default function AddPostForm({ mode = "client", postId, onSaved }: Props = {}) {
@@ -151,6 +157,10 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
     }
   };
 
+  const selectedBannerObj = bannerOptions.find((b) => b.value === values.banner);
+  const selectedBannerName = (selectedBannerObj?.label || values.banner || "").trim().toLowerCase();
+  const isListingAds = selectedBannerName === "listing ads" || values.banner === "6af6ec5ada18ee7ad2da4e33";
+
   const err = (key: keyof Errors) => errors[key] && <small className="lb-ca-err">{errors[key]}</small>;
   return (
     <form className="lb-ca-card" onSubmit={handleSubmit} noValidate>
@@ -163,11 +173,33 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
           <div className="col-md-6"><label className="lb-ca-label">Contact No</label><input type="tel" className="form-control lb-ca-input" placeholder="Enter Number" value={values.contactNo} onChange={set("contactNo")} />{err("contactNo")}</div>
           <div className="col-md-6"><label className="lb-ca-label">Email ID</label><input type="email" className="form-control lb-ca-input" placeholder="Enter Email" value={values.email} onChange={set("email")} />{err("email")}</div>
           {/* <div className="col-md-6"><label className="lb-ca-label">Address</label><textarea rows={1} className="form-control lb-ca-input" placeholder="Enter Address" value={values.address} onChange={set("address")} /></div> */}
-          <div className="col-md-6"><label className="lb-ca-label">Banner Section</label><Dropdown ariaLabel="Banner Section" value={values.banner} onChange={(v) => setValues((x) => ({ ...x, banner: v }))} options={bannerOptions} placeholder="-- Select Banner Section --" allowEmpty /></div>
-          <div className="col-md-6"><label className="lb-ca-label">Emotion</label><Dropdown ariaLabel="Emotion" value={values.emotion} onChange={(v) => setValues((x) => ({ ...x, emotion: v }))} options={emotionOptions} placeholder="-- Select Emotion --" allowEmpty /></div>
-          <div className="col-md-6"><label className="lb-ca-label">Search Group</label><Dropdown ariaLabel="Search Group" value={values.searchGroup} onChange={(v) => setValues((x) => ({ ...x, searchGroup: v }))} options={searchGroupOptions} placeholder="-- Select Search Group --" allowEmpty /></div>
+          <div className="col-md-6">
+            <label className="lb-ca-label">Banner Section</label>
+            <Dropdown
+              ariaLabel="Banner Section"
+              value={values.banner}
+              onChange={(v) =>
+                setValues((x) => {
+                  const bObj = bannerOptions.find((b) => b.value === v);
+                  const bName = (bObj?.label || v || "").trim().toLowerCase();
+                  const isListing = bName === "listing ads" || v === "6af6ec5ada18ee7ad2da4e33";
+                  return {
+                    ...x,
+                    banner: v,
+                    emotion: isListing ? x.emotion : "",
+                    searchGroup: isListing ? x.searchGroup : "",
+                  };
+                })
+              }
+              options={bannerOptions}
+              placeholder="-- Select Banner Section --"
+              allowEmpty
+            />
+          </div>
+          <div className="col-md-6"><label className="lb-ca-label">Available From Date</label><input type="date" className="form-control lb-ca-input" value={values.fromDate || Date.now()} onChange={set("fromDate")} />{err("fromDate")}</div>
+          <div className="col-md-6"><label className="lb-ca-label">Emotion</label><Dropdown ariaLabel="Emotion" value={values.emotion} onChange={(v) => setValues((x) => ({ ...x, emotion: v }))} options={emotionOptions} placeholder="-- Select Emotion --" allowEmpty disabled={!isListingAds} /></div>
+          <div className="col-md-6"><label className="lb-ca-label">Search Group</label><Dropdown ariaLabel="Search Group" value={values.searchGroup} onChange={(v) => setValues((x) => ({ ...x, searchGroup: v }))} options={searchGroupOptions} placeholder="-- Select Search Group --" allowEmpty disabled={!isListingAds} /></div>
           {/* <div className="col-md-6"><label className="lb-ca-label">Search Category</label><Dropdown ariaLabel="Search Category" value={values.searchCategory} onChange={(v) => setValues((x) => ({ ...x, searchCategory: v }))} options={SEARCH_CATEGORIES} placeholder="-- Select Search Category --" allowEmpty /></div> */}
-          <div className="col-md-6"><label className="lb-ca-label">Available From Date</label><input type="date" className="form-control lb-ca-input" value={values.fromDate} onChange={set("fromDate")} />{err("fromDate")}</div>
           <div className="col-md-6">
             <label className="lb-ca-label">Choose file</label>
             <input

@@ -278,10 +278,10 @@ export default function ListingDetailPage() {
                   <table className="table table-borderless table-sm small mb-0">
                     <tbody>
                       <tr>
-                        <td className="text-muted py-2">Reference ID:</td>
-                        <td className="fw-semibold text-end text-dark font-monospace py-2">
+                        {/* <td className="text-muted py-2">Reference ID:</td> */}
+                        {/* <td className="fw-semibold text-end text-dark font-monospace py-2">
                           {post.id.slice(0, 10)}...
-                        </td>
+                        </td> */}
                       </tr>
                       {post.banner && (
                         <tr>

@@ -551,7 +551,7 @@ function ListingsContent() {
             {/* Pagination */}
             {!loading && totalPages > 1 && (
               <nav aria-label="Listings pagination" className="mt-5">
-                <ul className="pagination lb-pagination justify-content-center flex-wrap">
+                <ul className="pagination lb-pagination justify-content-center flex-wrap align-items-center">
                   <li
                     className={`page-item${
                       currentPage === 1 ? " disabled" : ""
@@ -575,28 +575,54 @@ function ListingsContent() {
                     )}
                   </li>
 
-                  {Array.from(
-                    { length: totalPages },
-                    (_, idx) => idx + 1
-                  ).map((num) => (
-                    <li
-                      key={num}
-                      className={`page-item${
-                        num === currentPage ? " active" : ""
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        className="page-link"
-                        onClick={() => updateParams({ page: num })}
-                        aria-current={
-                          num === currentPage ? "page" : undefined
-                        }
+                  {(() => {
+                    if (totalPages <= 7) {
+                      return Array.from({ length: totalPages }, (_, i) => i + 1);
+                    }
+                    const items: (number | "ellipsis-start" | "ellipsis-end")[] = [1];
+                    const showStartEllipsis = currentPage > 4;
+                    const showEndEllipsis = currentPage < totalPages - 3;
+                    if (showStartEllipsis) items.push("ellipsis-start");
+
+                    const start = Math.max(2, currentPage - 1);
+                    const end = Math.min(totalPages - 1, currentPage + 1);
+                    const middleStart = !showStartEllipsis ? 2 : (showEndEllipsis ? start : totalPages - 4);
+                    const middleEnd = !showEndEllipsis ? totalPages - 1 : (!showStartEllipsis ? 5 : end);
+
+                    for (let i = middleStart; i <= middleEnd; i++) {
+                      items.push(i);
+                    }
+                    if (showEndEllipsis) items.push("ellipsis-end");
+                    items.push(totalPages);
+                    return items;
+                  })().map((item, idx) => {
+                    if (typeof item === "string") {
+                      return (
+                        <li key={`${item}-${idx}`} className="page-item disabled">
+                          <span className="page-link border-0 bg-transparent text-muted px-2">...</span>
+                        </li>
+                      );
+                    }
+                    return (
+                      <li
+                        key={item}
+                        className={`page-item${
+                          item === currentPage ? " active" : ""
+                        }`}
                       >
-                        {num}
-                      </button>
-                    </li>
-                  ))}
+                        <button
+                          type="button"
+                          className="page-link"
+                          onClick={() => updateParams({ page: item })}
+                          aria-current={
+                            item === currentPage ? "page" : undefined
+                          }
+                        >
+                          {item}
+                        </button>
+                      </li>
+                    );
+                  })}
 
                   <li
                     className={`page-item${
