@@ -35,14 +35,14 @@ export async function getPublicCityById(id: number): Promise<ApiResponse<PublicC
 }
 
 /**
- * Fetch cities for admin panel (optional countryId and stateId filters)
+ * Fetch cities for admin panel (optional countryId and stateId filters) with pagination
  */
 export async function getAdminCities(
   countryId?: number,
   stateId?: number,
   page = 1,
-  limit = 200
-): Promise<AdminCityResponse[]> {
+  limit = 10
+): Promise<{ items: AdminCityResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminCityResponse[]>('/admin/cities', {
     params: {
       page,
@@ -53,10 +53,13 @@ export async function getAdminCities(
   });
 
   if (!response.success || !Array.isArray(response.data)) {
-    return [];
+    return { items: [], meta: undefined };
   }
 
-  return response.data;
+  return {
+    items: response.data,
+    meta: response.meta as { page: number; limit: number; total: number; totalPages: number } | undefined,
+  };
 }
 
 /**

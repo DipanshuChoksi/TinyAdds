@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AdminBlogResponse } from '@/src/types/blog';
+import Pagination from '@/components/ui/Pagination';
 import {
   createAdminBlog,
   updateAdminBlog,
@@ -10,11 +11,28 @@ import {
 
 interface ManageBlogsViewProps {
   initialBlogs: AdminBlogResponse[];
+  page?: number;
+  totalPages?: number;
+  total?: number;
+  onPageChange?: (page: number) => void;
+  onRefresh?: () => void;
 }
 
-export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) {
+export default function ManageBlogsView({
+  initialBlogs,
+  page = 1,
+  totalPages = 1,
+  total = 0,
+  onPageChange,
+  onRefresh,
+}: ManageBlogsViewProps) {
   const [blogs, setBlogs] = useState<AdminBlogResponse[]>(initialBlogs);
   const [search, setSearch] = useState('');
+
+  // Keep blogs state in sync when initialBlogs changes (e.g. on page change)
+  useEffect(() => {
+    setBlogs(initialBlogs);
+  }, [initialBlogs]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -306,6 +324,21 @@ export default function ManageBlogsView({ initialBlogs }: ManageBlogsViewProps) 
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && onPageChange && (
+          <div className="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <span className="small text-muted">
+              Page {page} of {totalPages} {total > 0 && `(${total} total articles)`}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              ariaLabel="Blog posts pagination"
+            />
+          </div>
+        )}
       </div>
 
       {/* Create / Edit Modal */}

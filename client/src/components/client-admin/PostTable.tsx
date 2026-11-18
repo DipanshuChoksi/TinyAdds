@@ -6,8 +6,9 @@ import type { ClientPost } from "@/types";
 import { useConfirm, useToast } from "@/components/ui/UiProvider";
 import http from "@/lib/http";
 import LoadingIndicator from "@/components/LoadingIndicator";
+import Pagination from "@/components/ui/Pagination";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 2;
 type SortField = "title" | "fromDate" | "createdAt" | "status";
 
 interface Props {
@@ -188,11 +189,19 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
           {loading && <tr><td colSpan={7} className="py-4 text-center"><div className="d-inline-flex flex-column align-items-center" role="status" aria-live="polite"><LoadingIndicator label="Loading posts" compact /></div></td></tr>}
         </tbody>
       </table>
-      {totalPages > 1 && <nav className="d-flex justify-content-end align-items-center gap-2 mt-3" aria-label="Post pages">
-        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1}>Previous</button>
-        <span aria-live="polite">Page {page} of {totalPages}</span>
-        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page === totalPages}>Next</button>
-      </nav>}
+      {totalPages > 1 && (
+        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4">
+          <span className="small text-muted" aria-live="polite">
+            Page {page} of {totalPages}
+          </span>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={(p) => setPage(p)}
+            ariaLabel="Post pages"
+          />
+        </div>
+      )}
       {selectedPost && <div className="modal d-block" role="dialog" aria-modal="true" aria-label={`Post details: ${selectedPost.title}`} onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedPost(null); }} style={{ backgroundColor: "rgba(15, 23, 42, 0.45)", zIndex: 1050 }}>
         <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
           <div className="modal-content border-0 shadow rounded-3">

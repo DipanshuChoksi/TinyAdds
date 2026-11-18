@@ -25,12 +25,12 @@ import type {
  * Data access layer. Right now it reads static data;
  * swap each function body with fetch() to your backend later – pages won't change.
  */
-export async function getCategory(slug: string): Promise<Category | null> {
-  return CATEGORIES.find((c) => c.slug === slug) ?? null;
-}
-export async function getEmotion(slug: string): Promise<Emotion | null> {
-  return EMOTIONS.find((e) => e.slug === slug) ?? null;
-}
+// export async function getCategory(slug: string): Promise<Category | null> {
+//   return CATEGORIES.find((c) => c.slug === slug) ?? null;
+// }
+// export async function getEmotion(slug: string): Promise<Emotion | null> {
+//   return EMOTIONS.find((e) => e.slug === slug) ?? null;
+// }
 export async function getListings(categorySlug: string): Promise<Listing[]> {
   return buildListings(categorySlug);
 }

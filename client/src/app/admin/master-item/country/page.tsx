@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   getAdminCountries,
@@ -9,6 +9,7 @@ import {
   deleteAdminCountry,
 } from '@/lib/countryApi';
 import type { AdminCountryResponse } from '@/src/types/country';
+import Pagination from '@/components/ui/Pagination';
 
 interface CountryFormValues {
   name: string;
@@ -16,6 +17,9 @@ interface CountryFormValues {
 
 export default function AdminMasterCountryPage() {
   const [countries, setCountries] = useState<AdminCountryResponse[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -36,16 +40,17 @@ export default function AdminMasterCountryPage() {
     },
   });
 
-  useEffect(() => {
-    loadCountries();
-  }, []);
-
-  async function loadCountries() {
+  const loadCountries = useCallback(async (targetPage = page) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAdminCountries();
-      setCountries(data);
+      const res = await getAdminCountries(targetPage, 10);
+      setCountries(res.items);
+      if (res.meta) {
+        setPage(res.meta.page);
+        setTotalPages(res.meta.totalPages);
+        setTotal(res.meta.total);
+      }
     } catch (err) {
       console.error('Failed to load countries:', err);
       setError(err instanceof Error ? err.message : 'Failed to connect to backend');
@@ -53,7 +58,11 @@ export default function AdminMasterCountryPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page]);
+
+  useEffect(() => {
+    loadCountries(page);
+  }, [page, loadCountries]);
 
   function openCreateModal() {
     setEditingItem(null);
@@ -84,8 +93,8 @@ export default function AdminMasterCountryPage() {
         const updated = await updateAdminCountry(editingItem.id, { name: values.name.trim() });
         setCountries((prev) => prev.map((c) => (c.id === editingItem.id ? updated : c)));
       } else {
-        const created = await createAdminCountry(values.name.trim());
-        setCountries((prev) => [...prev, created]);
+        await createAdminCountry(values.name.trim());
+        loadCountries(page);
       }
       closeModal();
     } catch (err) {
@@ -108,7 +117,7 @@ export default function AdminMasterCountryPage() {
     if (!confirm('Are you sure you want to delete this country?')) return;
     try {
       await deleteAdminCountry(id);
-      setCountries((prev) => prev.filter((c) => c.id !== id));
+      loadCountries(page);
     } catch (err) {
       console.error('Failed to delete country:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete country');
@@ -147,7 +156,7 @@ export default function AdminMasterCountryPage() {
               <strong>Server connection issue:</strong> {error}
             </div>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-dark" onClick={loadCountries}>
+          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadCountries(page)}>
             Retry
           </button>
         </div>
@@ -252,6 +261,21 @@ export default function AdminMasterCountryPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <span className="small text-muted">
+              Page {page} of {totalPages} {total > 0 && `(${total} total countries)`}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+              ariaLabel="Country list pagination"
+            />
+          </div>
+        )}
       </div>
 
       {/* Create / Edit Modal */}

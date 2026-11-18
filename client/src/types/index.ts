@@ -1,6 +1,6 @@
 export type SortKey = 'popular' | 'rated' | 'recent';
 
-export interface Category { slug: string; name: string; short: string; image: string }
+export interface Category { name: string; short: string; image: string }
 export interface Emotion { slug: string; name: string; image: string }
 
 export interface EventSummary {

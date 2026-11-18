@@ -31,7 +31,7 @@ export default function AdminInquirePage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await getAdminContacts({ page: targetPage, limit: 1 });
+      const res = await getAdminContacts({ page: targetPage, limit: 10 });
       setInquiries(res.items.map(mapContactToAdminInquiry));
       if (res.pagination) {
         setPage(res.pagination.page);

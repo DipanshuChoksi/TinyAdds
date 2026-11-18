@@ -4,7 +4,11 @@ import type { AdminUserResponse } from '@/src/types/user';
 /**
  * Fetch users for admin panel with pagination and optional search
  */
-export async function getAdminUsers(page = 1, limit = 100, search?: string): Promise<AdminUserResponse[]> {
+export async function getAdminUsers(
+  page = 1,
+  limit = 10,
+  search?: string
+): Promise<{ items: AdminUserResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminUserResponse[]>('/admin/users', {
     params: {
       page,
@@ -14,10 +18,13 @@ export async function getAdminUsers(page = 1, limit = 100, search?: string): Pro
   });
 
   if (!response.success || !Array.isArray(response.data)) {
-    return [];
+    return { items: [], meta: undefined };
   }
 
-  return response.data;
+  return {
+    items: response.data,
+    meta: response.meta as { page: number; limit: number; total: number; totalPages: number } | undefined,
+  };
 }
 
 /**

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   getAdminStates,
@@ -8,9 +8,10 @@ import {
   updateAdminState,
   deleteAdminState,
 } from '@/lib/stateApi';
-import { getAdminCountries } from '@/lib/countryApi';
+import { getAdminCountriesAll } from '@/lib/countryApi';
 import type { AdminStateResponse } from '@/src/types/state';
 import type { AdminCountryResponse } from '@/src/types/country';
+import Pagination from '@/components/ui/Pagination';
 
 interface StateFormValues {
   name: string;
@@ -20,6 +21,9 @@ interface StateFormValues {
 export default function AdminMasterStatePage() {
   const [states, setStates] = useState<AdminStateResponse[]>([]);
   const [countries, setCountries] = useState<AdminCountryResponse[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -42,19 +46,21 @@ export default function AdminMasterStatePage() {
     },
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
+  const loadData = useCallback(async (targetPage = page) => {
     try {
       setLoading(true);
       setError(null);
-      const [statesData, countriesData] = await Promise.all([
-        getAdminStates(),
-        getAdminCountries(),
+      const cFilter = selectedCountryFilter === 'all' ? undefined : Number(selectedCountryFilter);
+      const [statesRes, countriesData] = await Promise.all([
+        getAdminStates(cFilter, targetPage, 10),
+        getAdminCountriesAll(),
       ]);
-      setStates(statesData);
+      setStates(statesRes.items);
+      if (statesRes.meta) {
+        setPage(statesRes.meta.page);
+        setTotalPages(statesRes.meta.totalPages);
+        setTotal(statesRes.meta.total);
+      }
       setCountries(countriesData);
     } catch (err) {
       console.error('Failed to load states data:', err);
@@ -63,7 +69,11 @@ export default function AdminMasterStatePage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, selectedCountryFilter]);
+
+  useEffect(() => {
+    loadData(page);
+  }, [page, selectedCountryFilter, loadData]);
 
   function getCountryName(cId: number) {
     const c = countries.find((country) => country.id === cId);
@@ -104,8 +114,8 @@ export default function AdminMasterStatePage() {
         });
         setStates((prev) => prev.map((s) => (s.id === editingItem.id ? updated : s)));
       } else {
-        const created = await createAdminState(values.name.trim(), cId);
-        setStates((prev) => [...prev, created]);
+        await createAdminState(values.name.trim(), cId);
+        loadData(page);
       }
       closeModal();
     } catch (err) {
@@ -128,7 +138,7 @@ export default function AdminMasterStatePage() {
     if (!confirm('Are you sure you want to delete this state?')) return;
     try {
       await deleteAdminState(id);
-      setStates((prev) => prev.filter((s) => s.id !== id));
+      loadData(page);
     } catch (err) {
       console.error('Failed to delete state:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete state');
@@ -176,7 +186,7 @@ export default function AdminMasterStatePage() {
               <strong>Server connection issue:</strong> {error}
             </div>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-dark" onClick={loadData}>
+          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadData(page)}>
             Retry
           </button>
         </div>
@@ -301,6 +311,21 @@ export default function AdminMasterStatePage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <span className="small text-muted">
+              Page {page} of {totalPages} {total > 0 && `(${total} total states)`}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+              ariaLabel="State list pagination"
+            />
+          </div>
+        )}
       </div>
 
       {/* Create / Edit Modal */}

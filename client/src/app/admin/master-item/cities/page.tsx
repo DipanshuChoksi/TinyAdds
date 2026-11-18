@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   getAdminCities,
@@ -8,11 +8,12 @@ import {
   updateAdminCity,
   deleteAdminCity,
 } from '@/lib/cityApi';
-import { getAdminStates } from '@/lib/stateApi';
-import { getAdminCountries } from '@/lib/countryApi';
+import { getAdminStatesAll } from '@/lib/stateApi';
+import { getAdminCountriesAll } from '@/lib/countryApi';
 import type { AdminCityResponse } from '@/src/types/city';
 import type { AdminStateResponse } from '@/src/types/state';
 import type { AdminCountryResponse } from '@/src/types/country';
+import Pagination from '@/components/ui/Pagination';
 
 interface CityFormValues {
   name: string;
@@ -26,6 +27,9 @@ export default function AdminMasterCitiesPage() {
   const [cities, setCities] = useState<AdminCityResponse[]>([]);
   const [states, setStates] = useState<AdminStateResponse[]>([]);
   const [countries, setCountries] = useState<AdminCountryResponse[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -60,20 +64,24 @@ export default function AdminMasterCitiesPage() {
 
   const watchedCountryId = watch('countryId');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
+  const loadData = useCallback(async (targetPage = page) => {
     try {
       setLoading(true);
       setError(null);
-      const [citiesData, statesData, countriesData] = await Promise.all([
-        getAdminCities(),
-        getAdminStates(),
-        getAdminCountries(),
+      const cFilter = selectedCountryFilter === 'all' ? undefined : Number(selectedCountryFilter);
+      const sFilter = selectedStateFilter === 'all' ? undefined : Number(selectedStateFilter);
+
+      const [citiesRes, statesData, countriesData] = await Promise.all([
+        getAdminCities(cFilter, sFilter, targetPage, 10),
+        getAdminStatesAll(),
+        getAdminCountriesAll(),
       ]);
-      setCities(citiesData);
+      setCities(citiesRes.items);
+      if (citiesRes.meta) {
+        setPage(citiesRes.meta.page);
+        setTotalPages(citiesRes.meta.totalPages);
+        setTotal(citiesRes.meta.total);
+      }
       setStates(statesData);
       setCountries(countriesData);
     } catch (err) {
@@ -83,7 +91,11 @@ export default function AdminMasterCitiesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, selectedCountryFilter, selectedStateFilter]);
+
+  useEffect(() => {
+    loadData(page);
+  }, [page, selectedCountryFilter, selectedStateFilter, loadData]);
 
   function getCountryName(cId: number) {
     const c = countries.find((country) => country.id === cId);
@@ -217,14 +229,14 @@ export default function AdminMasterCitiesPage() {
         });
         setCities((prev) => prev.map((c) => (c.id === editingItem.id ? updated : c)));
       } else {
-        const created = await createAdminCity(
+        await createAdminCity(
           values.name.trim(),
           cId,
           sId,
           Boolean(values.showOnHome),
           modalImage.trim()
         );
-        setCities((prev) => [...prev, created]);
+        loadData(page);
       }
       closeModal();
     } catch (err) {
@@ -247,7 +259,7 @@ export default function AdminMasterCitiesPage() {
     if (!confirm('Are you sure you want to delete this city?')) return;
     try {
       await deleteAdminCity(id);
-      setCities((prev) => prev.filter((c) => c.id !== id));
+      loadData(page);
     } catch (err) {
       console.error('Failed to delete city:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete city');
@@ -304,7 +316,7 @@ export default function AdminMasterCitiesPage() {
               <strong>Server connection issue:</strong> {error}
             </div>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-dark" onClick={loadData}>
+          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadData(page)}>
             Retry
           </button>
         </div>
@@ -480,6 +492,21 @@ export default function AdminMasterCitiesPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <span className="small text-muted">
+              Page {page} of {totalPages} {total > 0 && `(${total} total cities)`}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+              ariaLabel="City list pagination"
+            />
+          </div>
+        )}
       </div>
 
       {/* Create / Edit Modal */}

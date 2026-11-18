@@ -1,28 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getAdminUsers, deleteAdminUser } from '@/lib/userApi';
 import type { AdminUserResponse } from '@/src/types/user';
+import Pagination from '@/components/ui/Pagination';
 
 export default function AdminMasterUserPage() {
   const [users, setUsers] = useState<AdminUserResponse[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
 
   // View Details Modal State
   const [selectedUser, setSelectedUser] = useState<AdminUserResponse | null>(null);
 
+  // Debounce search input
   useEffect(() => {
-    loadUsers();
-  }, []);
+    const timer = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
-  async function loadUsers() {
+  const loadUsers = useCallback(async (targetPage = page, searchTerm = search) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAdminUsers(1, 100);
-      setUsers(data);
+      const res = await getAdminUsers(targetPage, 10, searchTerm);
+      setUsers(res.items);
+      if (res.meta) {
+        setPage(res.meta.page);
+        setTotalPages(res.meta.totalPages);
+        setTotal(res.meta.total);
+      }
     } catch (err) {
       console.error('Failed to load users:', err);
       setError(err instanceof Error ? err.message : 'Failed to connect to backend');
@@ -30,7 +45,11 @@ export default function AdminMasterUserPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, search]);
+
+  useEffect(() => {
+    loadUsers(page, search);
+  }, [page, search, loadUsers]);
 
   const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Are you sure you want to delete user "${name}"?`)) {
@@ -39,7 +58,7 @@ export default function AdminMasterUserPage() {
 
     try {
       await deleteAdminUser(id);
-      setUsers((prev) => prev.filter((u) => u._id !== id));
+      loadUsers(page, search);
       if (selectedUser?._id === id) {
         setSelectedUser(null);
       }
@@ -81,7 +100,7 @@ export default function AdminMasterUserPage() {
             <i className="bi bi-exclamation-triangle-fill me-2" />
             <span>{error}</span>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-dark" onClick={loadUsers}>
+          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadUsers(page, search)}>
             Retry
           </button>
         </div>
@@ -99,13 +118,13 @@ export default function AdminMasterUserPage() {
                 type="text"
                 className="form-control border-start-0 ps-0"
                 placeholder="Search by name, email, mobile, city..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
             </div>
           </div>
           <div className="col-md-7 text-md-end text-muted small">
-            Showing {filtered.length} of {users.length} registered users
+            Showing {users.length} of {total} registered users
           </div>
         </div>
       </div>
@@ -132,7 +151,7 @@ export default function AdminMasterUserPage() {
                     Loading users from backend...
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
+              ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-5 text-muted">
                     <i className="bi bi-people fs-2 d-block mb-2 text-secondary" />
@@ -140,7 +159,7 @@ export default function AdminMasterUserPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((u) => {
+                users.map((u) => {
                   const locationParts = [u.city, u.state, u.country].filter(Boolean);
                   const locationDisplay = locationParts.length > 0 ? locationParts.join(', ') : 'Not specified';
 
@@ -216,6 +235,21 @@ export default function AdminMasterUserPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <span className="small text-muted">
+              Page {page} of {totalPages} {total > 0 && `(${total} total users)`}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+              ariaLabel="User list pagination"
+            />
+          </div>
+        )}
       </div>
 
       {/* User Details Modal */}

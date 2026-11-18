@@ -25,16 +25,22 @@ export async function getPublicBlogById(id: string): Promise<ApiResponse<PublicB
 /**
  * Fetch blogs for admin panel
  */
-export async function getAdminBlogs(page = 1, limit = 100): Promise<AdminBlogResponse[]> {
+export async function getAdminBlogs(
+  page = 1,
+  limit = 10
+): Promise<{ items: AdminBlogResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminBlogResponse[]>('/admin/blogs', {
     params: { page, limit },
   });
 
   if (!response.success || !Array.isArray(response.data)) {
-    return [];
+    return { items: [], meta: undefined };
   }
 
-  return response.data;
+  return {
+    items: response.data,
+    meta: response.meta as { page: number; limit: number; total: number; totalPages: number } | undefined,
+  };
 }
 
 /**

@@ -27,22 +27,33 @@ export async function getPublicStateById(id: number): Promise<ApiResponse<Public
 }
 
 /**
- * Fetch states for admin panel (optional countryId filter)
+ * Fetch states for admin panel (optional countryId filter) with pagination
  */
 export async function getAdminStates(
   countryId?: number,
   page = 1,
-  limit = 200
-): Promise<AdminStateResponse[]> {
+  limit = 10
+): Promise<{ items: AdminStateResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminStateResponse[]>('/admin/states', {
     params: { page, limit, ...(countryId !== undefined ? { countryId } : {}) },
   });
 
   if (!response.success || !Array.isArray(response.data)) {
-    return [];
+    return { items: [], meta: undefined };
   }
 
-  return response.data;
+  return {
+    items: response.data,
+    meta: response.meta as { page: number; limit: number; total: number; totalPages: number } | undefined,
+  };
+}
+
+/**
+ * Fetch all states for dropdowns
+ */
+export async function getAdminStatesAll(countryId?: number, limit = 200): Promise<AdminStateResponse[]> {
+  const res = await getAdminStates(countryId, 1, limit);
+  return res.items;
 }
 
 /**

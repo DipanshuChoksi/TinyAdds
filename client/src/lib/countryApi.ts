@@ -23,18 +23,32 @@ export async function getPublicCountryById(id: number): Promise<ApiResponse<Publ
 }
 
 /**
- * Fetch countries for admin panel
+ * Fetch countries for admin panel (list with pagination)
  */
-export async function getAdminCountries(page = 1, limit = 100): Promise<AdminCountryResponse[]> {
+export async function getAdminCountries(
+  page = 1,
+  limit = 10
+): Promise<{ items: AdminCountryResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminCountryResponse[]>('/admin/countries', {
     params: { page, limit },
   });
 
   if (!response.success || !Array.isArray(response.data)) {
-    return [];
+    return { items: [], meta: undefined };
   }
 
-  return response.data;
+  return {
+    items: response.data,
+    meta: response.meta as { page: number; limit: number; total: number; totalPages: number } | undefined,
+  };
+}
+
+/**
+ * Fetch all countries for select dropdowns (large limit)
+ */
+export async function getAdminCountriesAll(limit = 200): Promise<AdminCountryResponse[]> {
+  const res = await getAdminCountries(1, limit);
+  return res.items;
 }
 
 /**
