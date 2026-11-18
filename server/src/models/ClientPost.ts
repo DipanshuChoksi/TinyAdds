@@ -14,6 +14,17 @@ const clientPostSchema = new Schema(
     searchGroup: { type: Schema.Types.ObjectId, ref: "Group", default: null, index: true },
     searchCategory: { type: Schema.Types.ObjectId, ref: "SearchCategory", default: null, index: true },
     fromDate: { type: String, required: true, trim: true },
+    expiresAt: {
+      type: Date,
+      default: function (this: { fromDate?: string }) {
+        if (!this.fromDate) return null;
+        const d = new Date(this.fromDate);
+        if (isNaN(d.getTime())) return null;
+        d.setDate(d.getDate() + 30);
+        return d;
+      },
+      index: true,
+    },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     image: { type: String, default: "", maxlength: 8_000_000 },
     tag: { type: String, default: "", trim: true, maxlength: 300 },
@@ -46,6 +57,7 @@ export interface ClientPostData {
   searchGroup: Types.ObjectId | null;
   searchCategory: Types.ObjectId | null;
   fromDate: string;
+  expiresAt: Date | null;
   title: string;
   image: string;
   tag: string;

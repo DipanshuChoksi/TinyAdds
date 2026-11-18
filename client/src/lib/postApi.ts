@@ -9,6 +9,7 @@ export interface PublicPost {
   searchGroup: {name : string, _id: string} | null;
   searchCategory: {name : string, _id: string} | null;
   fromDate: string;
+  expiresAt?: string | null;
   tag: string;
   description: string;
   contactPerson: string;

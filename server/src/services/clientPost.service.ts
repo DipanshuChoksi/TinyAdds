@@ -19,6 +19,7 @@ type PostRecord = {
   searchGroup?: Types.ObjectId | string | null | undefined;
   searchCategory?: Types.ObjectId | string | null | undefined;
   fromDate: string;
+  expiresAt?: Date | null | undefined;
   title: string;
   image: string;
   tag: string;
@@ -44,6 +45,7 @@ function serializePost(post: PostRecord) {
     searchGroup: post.searchGroup,
     searchCategory: post.searchCategory ? String(post.searchCategory) : "",
     fromDate: post.fromDate,
+    expiresAt: post.expiresAt ?? null,
     title: post.title,
     image: post.image,
     tag: post.tag,
@@ -75,6 +77,12 @@ function buildSort(query: PostListQuery): Record<string, 1 | -1> {
   const sort: Record<string, 1 | -1> = { [query.sortBy]: query.sortDirection === "asc" ? 1 : -1 };
   if (query.sortBy !== "createdAt") sort.createdAt = -1;
   return sort;
+}
+
+function calculateDefaultExpiresAt(fromDateStr: string): Date {
+  const d = new Date(fromDateStr);
+  d.setDate(d.getDate() + 30);
+  return d;
 }
 
 export class ClientPostService {
@@ -118,7 +126,18 @@ export class ClientPostService {
 
   async getPublicPostById(postId: string) {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
-    const post = await ClientPost.findOne({ _id: postId, isDisplay: true, status: "approved" }).populate("banner", "name")
+    const now = new Date();
+    const post = await ClientPost.findOne({
+      _id: postId,
+      isDisplay: true,
+      status: "approved",
+      $or: [
+        { expiresAt: null },
+        { expiresAt: { $exists: false } },
+        { expiresAt: { $gt: now } },
+      ],
+    })
+      .populate("banner", "name")
       .populate("emotion", "name")
       .populate("searchGroup", "name")
       .lean();
@@ -127,19 +146,27 @@ export class ClientPostService {
   }
 
   async create(ownerId: string, input: ClientPostInput) {
-    const post = await ClientPost.create({ ...input, owner: new Types.ObjectId(ownerId) });
+    const expiresAt = calculateDefaultExpiresAt(input.fromDate);
+    const post = await ClientPost.create({ ...input, expiresAt, owner: new Types.ObjectId(ownerId) });
     return serializePost(post);
   }
 
   async createForAdmin(input: ClientPostInput) {
-    const post = await ClientPost.create({ ...input, owner: null });
+    const expiresAt = input.expiresAt ?? calculateDefaultExpiresAt(input.fromDate);
+    const post = await ClientPost.create({ ...input, expiresAt, owner: null });
     return serializePost(post);
   }
 
   async update(ownerId: string, postId: string, input: ClientPostInput) {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
-    const post = await ClientPost.findOneAndUpdate(
-      { _id: postId, owner: ownerId, isDisplay: true },
+    const existing = await ClientPost.findOne({ _id: postId, owner: ownerId, isDisplay: true });
+    if (!existing) throw new NotFoundError("Post not found");
+    if (existing.status === "approved") {
+      throw new BadRequestError("Approved posts cannot be updated");
+    }
+
+    const post = await ClientPost.findByIdAndUpdate(
+      postId,
       { $set: input },
       { new: true, runValidators: true }
     );
@@ -290,6 +317,16 @@ export class ClientPostService {
     // Date condition: ad starts when the date comes (fromDate <= today)
     const targetDate = query.fromDate || new Date().toISOString().slice(0, 10);
     conditions.push({ fromDate: { $lte: targetDate } });
+
+    // Expiration condition: if expiresAt exists, it must be greater than current date
+    const now = new Date();
+    conditions.push({
+      $or: [
+        { expiresAt: null },
+        { expiresAt: { $exists: false } },
+        { expiresAt: { $gt: now } },
+      ],
+    });
 
     const filter = conditions.length > 1 ? { $and: conditions } : (conditions[0] || {});
 

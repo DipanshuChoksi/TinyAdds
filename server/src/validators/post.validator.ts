@@ -13,6 +13,7 @@ export interface ClientPostInput {
   searchGroup: Types.ObjectId | null;
   searchCategory: Types.ObjectId | null;
   fromDate: string;
+  expiresAt?: Date | null;
   title: string;
   image: string;
   tag: string;
@@ -61,6 +62,13 @@ export function validatePost(body: unknown): ClientPostInput {
     searchGroup: parseObjectId("searchGroup"),
     searchCategory: null, // Removed validation for searchCategory as per the recent edits
     fromDate: get("fromDate", 10, true),
+    expiresAt: (() => {
+      const val = input.expiresAt;
+      if (val === undefined || val === null || val === "") return null;
+      const d = new Date(val as string | number | Date);
+      if (isNaN(d.getTime())) throw new BadRequestError("expiresAt must be a valid date");
+      return d;
+    })(),
     title: get("title", 200, true),
     image: get("image", 8_000_000),
     tag: get("tag", 300),
