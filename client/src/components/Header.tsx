@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import LocationModal from "@/components/LocationModal";
 import Image from "next/image";
 import http from "@/lib/http";
+import { useUserStore } from "@/store/userStore";
 
 /** Close the mobile drawer (Bootstrap's own dismiss attribute would cancel the link navigation). */
 const closeDrawer = () => {
@@ -17,8 +18,9 @@ export default function Header() {
   const pathname = usePathname();
   // const [locOpen, setLocOpen] = useState(false);
   const [city, setCity] = useState("");
-  const [accountName, setAccountName] = useState("");
-  const [profileImage, setProfileImage] = useState("");
+  const user = useUserStore((s) => s.user);
+  const accountName = user?.firstName ? user.firstName.trim().split(/\s+/)[0].slice(0, 10) : "";
+  const profileImage = user?.profileImage || "";
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
@@ -26,24 +28,8 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    let active = true;
-    http.get<{ firstName: string; lastName: string; profileImage?: string }>("/auth/me").then(({ data }) => {
-      if (active) {
-        const rawFirst = (data.firstName || "").trim().split(/\s+/)[0] || "";
-        const formattedName = rawFirst.slice(0, 10);
-        setAccountName(formattedName);
-        setProfileImage(data.profileImage || "");
-        setImgError(false);
-      }
-    }).catch(() => {
-      if (active) {
-        setAccountName("");
-        setProfileImage("");
-        setImgError(false);
-      }
-    });
-    return () => { active = false; };
-  }, [pathname]);
+    setImgError(false);
+  }, [profileImage]);
 
   // const selectCity = (value: string) => {
   //   setCity(value);

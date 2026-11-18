@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/UiProvider";
 import Dropdown from "@/components/ui/Dropdown";
 import { compose, email, phone, required } from "@/lib/validators";
 import http from "@/lib/http";
+import { useUserStore } from "@/store/userStore";
 import { getPublicCountries } from "@/lib/countryApi";
 import { getPublicStates } from "@/lib/stateApi";
 import { getPublicCities } from "@/lib/cityApi";
@@ -43,6 +44,12 @@ const EMPTY: Values = { firstName: "", lastName: "", mobile: "", email: "", coun
 
 export default function ProfileForm() {
   const toast = useToast();
+  const user = useUserStore((s) => s.user);
+  const initialized = useUserStore((s) => s.initialized);
+  const loading = useUserStore((s) => s.loading);
+  const fetchUser = useUserStore((s) => s.fetchUser);
+  const setUser = useUserStore((s) => s.setUser);
+
   const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({});
   const [saving, setSaving] = useState(false);
@@ -126,26 +133,28 @@ export default function ProfileForm() {
     };
   }, [values.country, values.state, countryList, stateList]);
 
-  // Load current user profile
+  // Ensure user is loaded from store or fetched if not initialized
   useEffect(() => {
-    let active = true;
-    http.get<UserProfileResponse>("/auth/me").then(({ data }) => {
-      if (!active) return;
+    if (!initialized && !loading) {
+      fetchUser();
+    }
+  }, [initialized, loading, fetchUser]);
+
+  // Populate form values from user store
+  useEffect(() => {
+    if (user) {
       setValues({
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
-        email: data.email || "",
-        mobile: data.mobile || "",
-        country: data.countryId || data.country || "",
-        state: data.stateId || data.state || "",
-        city: data.cityId || data.city || "",
-        profileImage: data.profileImage || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        mobile: user.mobile || "",
+        country: user.countryId || user.country || "",
+        state: user.stateId || user.state || "",
+        city: user.cityId || user.city || "",
+        profileImage: user.profileImage || "",
       });
-    }).catch((error: unknown) => {
-      toast.error(error instanceof Error ? error.message : "Unable to load profile");
-    });
-    return () => { active = false; };
-  }, [toast]);
+    }
+  }, [user]);
 
   // Normalize location values once lists are loaded if they were names
   useEffect(() => {
@@ -216,6 +225,7 @@ export default function ProfileForm() {
     setSaving(true);
     try {
       const { data } = await http.patch<UserProfileResponse, Values>("/auth/profile", values);
+      setUser(data);
       setValues({
         firstName: data.firstName || "",
         lastName: data.lastName || "",

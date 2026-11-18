@@ -17,7 +17,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.91.0",
-    "tinymce": "^8.10.2"
+    "tinymce": "^8.10.2",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

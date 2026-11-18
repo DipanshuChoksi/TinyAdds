@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Preloader from "@/components/Preloader";
 import UiProvider from "@/components/ui/UiProvider";
+import UserInitializer from "@/components/UserInitializer";
 import { SITE_URL } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -45,12 +46,14 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <UiProvider>
-        <Preloader />
-        <Header />
-        {children}
-        <Footer />
-        <ScrollToTop />
-        <BootstrapClient />
+          <UserInitializer>
+            <Preloader />
+            <Header />
+            {children}
+            <Footer />
+            <ScrollToTop />
+            <BootstrapClient />
+          </UserInitializer>
         </UiProvider>
       </body>
     </html>
