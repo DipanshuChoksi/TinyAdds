@@ -2,14 +2,27 @@
 
 import { AdminInquiry } from '@/src/types';
 import { useState } from 'react';
+import Pagination from '@/components/ui/Pagination';
 
 interface InquireViewProps {
   initialInquiries: AdminInquiry[];
+  page?: number;
+  totalPages?: number;
+  total?: number;
+  onPageChange?: (page: number) => void;
   onStatusChange?: (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => void;
   onDelete?: (id: string) => void;
 }
 
-export default function InquireView({ initialInquiries, onStatusChange, onDelete }: InquireViewProps) {
+export default function InquireView({
+  initialInquiries,
+  page = 1,
+  totalPages = 1,
+  total = 0,
+  onPageChange,
+  onStatusChange,
+  onDelete,
+}: InquireViewProps) {
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInquiry, setSelectedInquiry] = useState<AdminInquiry | null>(null);
@@ -66,7 +79,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
             </div>
           </div>
           <div className="col-12 col-md-7 d-flex justify-content-md-end gap-2 flex-wrap">
-            {(['all', 'pending', 'in_progress', 'resolved'] as const).map((st) => {
+            {/* {(['all', 'pending', 'in_progress', 'resolved'] as const).map((st) => {
               const label =
                 st === 'all'
                   ? 'All Status'
@@ -85,7 +98,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                   {label}
                 </button>
               );
-            })}
+            })} */}
           </div>
         </div>
       </div>
@@ -99,7 +112,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                 <th className="ps-4">Requester</th>
                 <th>Subject / Message</th>
                 <th>Date</th>
-                <th>Status</th>
+                {/* <th>Status</th> */}
                 <th className="text-end pe-4" style={{ width: '160px' }}>Action</th>
               </tr>
             </thead>
@@ -133,7 +146,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                       </p>
                     </td>
                     <td className="small" style={{ color: '#64748b' }}>{item.date}</td>
-                    <td>
+                    {/* <td>
                       <span
                         className={
                           item.status === 'in_progress'
@@ -147,7 +160,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                           ? 'In Progress'
                           : (item.status || 'pending').charAt(0).toUpperCase() + (item.status || 'pending').slice(1)}
                       </span>
-                    </td>
+                    </td> */}
                     <td className="text-end pe-4">
                       <div className="d-inline-flex align-items-center justify-content-end gap-1">
                         <button
@@ -158,7 +171,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                         >
                           <i className="bi bi-eye me-1" /> View
                         </button>
-                        {item.status !== 'resolved' && (
+                        {/* {item.status !== 'resolved' && (
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-success rounded-2 py-1 px-2"
@@ -168,8 +181,8 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                           >
                             <i className="bi bi-check-lg" />
                           </button>
-                        )}
-                        {onDelete && (
+                        )} */}
+                        {/* {onDelete && (
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-danger rounded-2 py-1 px-2"
@@ -179,7 +192,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                           >
                             <i className="bi bi-trash" />
                           </button>
-                        )}
+                        )} */}
                       </div>
                     </td>
                   </tr>
@@ -188,6 +201,21 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && onPageChange && (
+          <div className="p-3 border-top d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+            <span className="small text-muted">
+              Page {page} of {totalPages} {total > 0 && `(${total} total inquiries)`}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+              ariaLabel="Inquiry pagination"
+            />
+          </div>
+        )}
       </div>
 
       {/* Detail Modal */}
@@ -199,7 +227,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
-              <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+              {/* <div className="modal-header p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
                 <h6 className="modal-title fw-bold mb-0" style={{ color: '#0f172a' }}>
                   Inquiry Details #{selectedInquiry.id}
                 </h6>
@@ -208,7 +236,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                   className="btn-close"
                   onClick={() => setSelectedInquiry(null)}
                 />
-              </div>
+              </div> */}
               <div className="modal-body p-4">
                 <div className="p-3 rounded-2 bg-light border mb-3">
                   <div className="fw-semibold text-dark">{selectedInquiry.name}</div>
@@ -236,7 +264,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                   </div>
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="small text-muted fw-bold d-block mb-2" style={{ fontSize: '0.72rem' }}>
                     STATUS
                   </label>
@@ -263,7 +291,7 @@ export default function InquireView({ initialInquiries, onStatusChange, onDelete
                       Resolved
                     </button>
                   </div>
-                </div>
+                </div> */}
               </div>
               <div className="modal-footer p-3 bg-light border-top">
                 <button

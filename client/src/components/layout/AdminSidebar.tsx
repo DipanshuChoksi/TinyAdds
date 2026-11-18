@@ -49,7 +49,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    '/admin/master-item': true, // Keep open by default
+    '/admin/master-item': false, // Keep open by default
   });
 
   const handleLogout = async () => {

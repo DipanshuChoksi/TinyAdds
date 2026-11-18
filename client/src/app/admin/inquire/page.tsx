@@ -21,15 +21,23 @@ function mapContactToAdminInquiry(contact: AdminContactResponse): AdminInquiry {
 
 export default function AdminInquirePage() {
   const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (targetPage = page) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await getAdminContacts({ limit: 100 });
+      const res = await getAdminContacts({ page: targetPage, limit: 1 });
       setInquiries(res.items.map(mapContactToAdminInquiry));
+      if (res.pagination) {
+        setPage(res.pagination.page);
+        setTotalPages(res.pagination.totalPages);
+        setTotal(res.pagination.total);
+      }
     } catch (err: unknown) {
       console.error('Failed to load inquiries:', err);
       setError(
@@ -40,11 +48,15 @@ export default function AdminInquirePage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(page);
+  }, [page, loadData]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   const handleStatusChange = async (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
     try {
@@ -94,7 +106,7 @@ export default function AdminInquirePage() {
           <h5 className="alert-heading mb-1">Failed to load inquiries</h5>
           <p className="mb-0">{error}</p>
         </div>
-        <button className="btn btn-outline-danger" onClick={loadData}>
+        <button className="btn btn-outline-danger" onClick={() => loadData(page)}>
           <i className="bi bi-arrow-clockwise me-1" /> Retry
         </button>
       </div>
@@ -104,6 +116,10 @@ export default function AdminInquirePage() {
   return (
     <InquireView
       initialInquiries={inquiries}
+      page={page}
+      totalPages={totalPages}
+      total={total}
+      onPageChange={handlePageChange}
       onStatusChange={handleStatusChange}
       onDelete={handleDelete}
     />
