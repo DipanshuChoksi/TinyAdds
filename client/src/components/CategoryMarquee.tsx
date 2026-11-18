@@ -1,41 +1,35 @@
-const IMG_BASE =
-  "https://html.aqlova.com/listbnb-prv/listbnb/assets/img/category";
+'use client';
 
-type Category = { id: number; label: string };
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getPublicGroups } from '@/lib/api';
 
-const categories: Category[] = [
-  { id: 1, label: "Car & Parts" },
-  { id: 2, label: "Fashion" },
-  { id: 3, label: "Electronics" },
-  { id: 4, label: "Health & Beauty" },
-  { id: 5, label: "Mobile Phone" },
-  { id: 6, label: "Property & House" },
-  { id: 7, label: "Sports Accessories" },
-  { id: 8, label: "Kitchen Accessories" },
-  { id: 9, label: "Fashion" },
-];
+const IMG_BASE = 'https://html.aqlova.com/listbnb-prv/listbnb/assets/img/category';
 
-function Group({ hidden = false }: { hidden?: boolean }) {
+type Category = { id: string; label: string; image?: string };
+
+
+function Group({ items, hidden = false }: { items: Category[]; hidden?: boolean }) {
   return (
     <div className="lb-marquee-group" aria-hidden={hidden || undefined}>
-      {categories.map((c) => (
-        <a
+      {items.map((c) => (
+        <Link
           key={c.id}
-          href="#"
+          href={`/listings?group=${encodeURIComponent(c.label)}&page=1`}
           className="lb-cat-sm"
           tabIndex={hidden ? -1 : undefined}
           aria-hidden={hidden || undefined}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${IMG_BASE}/category-sm-1-${c.id}.png`}
+            src={c.image || `${IMG_BASE}/category-sm-1-${Number(c.id) || 1}.png`}
             alt=""
             width={40}
             height={40}
             loading="lazy"
           />
           <span>{c.label}</span>
-        </a>
+        </Link>
       ))}
     </div>
   );
@@ -43,11 +37,43 @@ function Group({ hidden = false }: { hidden?: boolean }) {
 
 /** Auto-scrolling category pills. The second group is a duplicate for a seamless loop. */
 export default function CategoryMarquee() {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    getPublicGroups(1, 20)
+      .then((response) => {
+        if (!active) return;
+
+        if (response.success && Array.isArray(response.data)) {
+          const mapped = response.data.map((group) => ({
+            id: group._id,
+            label: group.name,
+            image: group.image || undefined,
+          }));
+
+          if (mapped.length > 0) {
+            setCategories(mapped);
+          }
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setCategories([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="lb-cat-strip lb-marquee">
       <div className="lb-marquee-track">
-        <Group />
-        <Group hidden />
+        <Group items={categories} />
+        <Group items={categories} hidden />
       </div>
     </div>
   );

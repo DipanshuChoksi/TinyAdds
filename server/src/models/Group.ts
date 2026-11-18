@@ -8,6 +8,12 @@ const groupSchema = new Schema(
       trim: true,
       maxlength: [100, "Group name cannot exceed 100 characters"],
     },
+    image: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: [8_000_000, "Image URL cannot exceed 8MB"],
+    },
     isActive: {
       type: Boolean,
       default: true,

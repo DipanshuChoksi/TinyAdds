@@ -46,8 +46,8 @@ export default function Hero() {
   useEffect(() => {
     let active = true;
     Promise.all([
-      getPublicPosts({ banner: "Standy slider", limit: 20 }),
-      getPublicPosts({ banner: "Section banner", limit: 20 }),
+      getPublicPosts({ banner: "6af6ec34da18ee7ad2da4e30", limit: 20 }), //Standy slider
+      getPublicPosts({ banner: "6af6ec4eda18ee7ad2da4e32", limit: 20 }), // Section banner
     ])
       .then(([standyRes, sectionRes]) => {
         if (!active) return;
@@ -67,31 +67,17 @@ export default function Hero() {
     };
   }, []);
 
-  // Build section slides list (ensuring at least 2 slides so carousel & manual arrows always work)
-  const sectionSlides: SectionSlide[] = (() => {
-    if (sectionAds.length > 1) {
-      return sectionAds.map((post) => ({
-        id: post.id,
-        title: post.title,
-        image: post.image || "/ads/minimalist-fb-ad.png",
-        tag: post.tag || post.searchCategory || "Featured Deal",
-        link: `/listings/${post.id}`,
-      }));
-    }
-    if (sectionAds.length === 1) {
-      return [
-        {
-          id: sectionAds[0].id,
-          title: sectionAds[0].title,
-          image: sectionAds[0].image || "/ads/minimalist-fb-ad.png",
-          tag: sectionAds[0].tag || sectionAds[0].searchCategory || "Featured Deal",
-          link: `/listings/${sectionAds[0].id}`,
-        },
-        FALLBACK_SECTION_SLIDES[1],
-      ];
-    }
-    return FALLBACK_SECTION_SLIDES;
-  })();
+  // Build section slides list: show fetched ads if any exist; only show fallbacks if none exist
+  const sectionSlides: SectionSlide[] =
+    sectionAds.length > 0
+      ? sectionAds.map((post) => ({
+          id: post.id,
+          title: post.title,
+          image: post.image || "/ads/minimalist-fb-ad.png",
+          tag: post.tag || post.searchCategory?.name || "Featured Deal",
+          link: `/listings/${post.id}`,
+        }))
+      : FALLBACK_SECTION_SLIDES;
 
   const totalSectionSlides = sectionSlides.length;
 

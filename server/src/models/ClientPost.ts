@@ -9,10 +9,10 @@ const clientPostSchema = new Schema(
     address: { type: String, default: "", trim: true, maxlength: 500 },
     cityId: { type: Number, default: null, index: true },
     cityName: { type: String, default: "", trim: true, maxlength: 100 },
-    banner: { type: String, default: "", trim: true, maxlength: 100 },
-    emotion: { type: String, default: "", trim: true, maxlength: 100 },
-    searchGroup: { type: String, default: "", trim: true, maxlength: 100 },
-    searchCategory: { type: String, default: "", trim: true, maxlength: 100 },
+    banner: { type: Schema.Types.ObjectId, ref: "BannerSection", default: null, index: true },
+    emotion: { type: Schema.Types.ObjectId, ref: "Emotion", default: null, index: true },
+    searchGroup: { type: Schema.Types.ObjectId, ref: "Group", default: null, index: true },
+    searchCategory: { type: Schema.Types.ObjectId, ref: "SearchCategory", default: null, index: true },
     fromDate: { type: String, required: true, trim: true },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     image: { type: String, default: "", maxlength: 8_000_000 },
@@ -41,10 +41,10 @@ export interface ClientPostData {
   address: string;
   cityId: number | null;
   cityName: string;
-  banner: string;
-  emotion: string;
-  searchGroup: string;
-  searchCategory: string;
+  banner: Types.ObjectId | null;
+  emotion: Types.ObjectId | null;
+  searchGroup: Types.ObjectId | null;
+  searchCategory: Types.ObjectId | null;
   fromDate: string;
   title: string;
   image: string;

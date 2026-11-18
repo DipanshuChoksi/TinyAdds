@@ -18,7 +18,7 @@ export default function Listings() {
 
   useEffect(() => {
     let active = true;
-    getPublicPosts({ banner: "Listing ads", limit: 100 })
+    getPublicPosts({ banner: "6af6ec5ada18ee7ad2da4e33", limit: 100 })
       .then((res) => {
         if (!active) return;
         if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
@@ -194,7 +194,7 @@ export default function Listings() {
                               </span>
                               {item.emotion && (
                                 <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
-                                  {item.emotion}
+                                  {item.emotion.name}
                                 </span>
                               )}
                             </div>
@@ -219,7 +219,7 @@ export default function Listings() {
 
                             <div className="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
                               <span className="lb-chip">
-                                {item.searchCategory || item.searchGroup || "Listing Ad"}
+                                {item.searchGroup?.name || "Listing Ad"}
                               </span>
                               <span className="text-muted small text-truncate" style={{ maxWidth: 120 }}>
                                 {item.contactNo ? <i className="bi bi-telephone me-1" /> : null}

@@ -4,10 +4,10 @@ export interface PublicPost {
   id: string;
   title: string;
   image: string;
-  banner: string;
-  emotion: string;
-  searchGroup: string;
-  searchCategory: string;
+  banner: {name : string, _id: string} | null;
+  emotion: {name : string, _id: string} | null;
+  searchGroup: {name : string, _id: string} | null;
+  searchCategory: {name : string, _id: string} | null;
   fromDate: string;
   tag: string;
   description: string;

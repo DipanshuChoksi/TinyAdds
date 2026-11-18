@@ -62,8 +62,7 @@ export class ClientPostController {
         fromDate,
         page,
         limit,
-      });
-      // res.status(500).json(result);
+      });      
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) { next(error); }
   }

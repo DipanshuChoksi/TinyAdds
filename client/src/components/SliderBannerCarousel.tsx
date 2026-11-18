@@ -66,7 +66,7 @@ export default function SliderBannerCarousel() {
 
   useEffect(() => {
     let active = true;
-    getPublicPosts({ banner: "Slider banner", limit: 20 })
+    getPublicPosts({ banner: "6af6ec3eda18ee7ad2da4e31", limit: 20 }) //Slider banner
       .then((res) => {
         if (!active) return;
         if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
@@ -88,10 +88,10 @@ export default function SliderBannerCarousel() {
         title: post.title,
         image: post.image || "/ads/minimalist-fb-ad.png",
         author: post.contactPerson || post.title,
-        role: [post.tag, post.searchCategory, post.searchGroup].filter(Boolean).join(" • ") || "Featured Advertiser",
-        company: post.searchGroup || "TinyAdds",
+        role: [post.tag, post.searchCategory?.name, post.searchGroup?.name].filter(Boolean).join(" • ") || "Featured Advertiser",
+        company: post.searchGroup?.name || "TinyAdds",
         quote: extractText(post.description) || post.title,
-        emotion: post.emotion,
+        emotion: post.emotion?.name,
       }))
     : FALLBACK_SLIDES;
 

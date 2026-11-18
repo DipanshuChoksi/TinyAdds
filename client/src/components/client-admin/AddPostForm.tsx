@@ -32,9 +32,9 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
   const [editId, setEditId] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [bannerOptions, setBannerOptions] = useState<string[]>([]);
-  const [emotionOptions, setEmotionOptions] = useState<string[]>([]);
-  const [searchGroupOptions, setSearchGroupOptions] = useState<string[]>([]);
+  const [bannerOptions, setBannerOptions] = useState<{ label: string; value: string }[]>([]);
+  const [emotionOptions, setEmotionOptions] = useState<{ label: string; value: string }[]>([]);
+  const [searchGroupOptions, setSearchGroupOptions] = useState<{ label: string; value: string }[]>([]);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState<string>("");
   const endpoint = mode === "admin" ? "/admin/posts" : "/client/posts";
@@ -49,24 +49,20 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
       if (!active) return;
 
       if (bannerRes.status === "fulfilled" && bannerRes.value.success && Array.isArray(bannerRes.value.data)) {
-        const names = bannerRes.value.data.map((b) => b.name).filter(Boolean);
-        if (names.length > 0) {
-          setBannerOptions(Array.from(new Set([...names])));
+        const options = bannerRes.value.data.map((item) => ({ label: item.name, value: item._id })).filter((item) => item.label);
+        if (options.length > 0) {
+          setBannerOptions(options);
         }
       }
 
       if (emotionRes.status === "fulfilled" && emotionRes.value.success && Array.isArray(emotionRes.value.data)) {
-        const names = emotionRes.value.data.map((e) => e.name).filter(Boolean);
-        if (names.length > 0) {
-          setEmotionOptions(Array.from(new Set([...names])));
-        }
+        const options = emotionRes.value.data.map((item) => ({ label: item.name, value: item._id })).filter((item) => item.label);
+        if (options.length > 0) setEmotionOptions(options);
       }
 
       if (groupRes.status === "fulfilled" && groupRes.value.success && Array.isArray(groupRes.value.data)) {
-        const names = groupRes.value.data.map((g) => g.name).filter(Boolean);
-        if (names.length > 0) {
-          setSearchGroupOptions(Array.from(new Set([...names])));
-        }
+        const options = groupRes.value.data.map((item) => ({ label: item.name, value: item._id })).filter((item) => item.label);
+        if (options.length > 0) setSearchGroupOptions(options);
       }
     });
 

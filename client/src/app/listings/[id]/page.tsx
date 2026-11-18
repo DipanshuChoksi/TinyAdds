@@ -134,7 +134,7 @@ export default function ListingDetailPage() {
                       className="position-absolute top-0 end-0 m-3 badge bg-dark bg-opacity-75 text-white py-2 px-3"
                       style={{ fontSize: "0.85rem", backdropFilter: "blur(4px)" }}
                     >
-                      {post.banner}
+                      {post.banner.name}
                     </span>
                   )}
                 </div>
@@ -143,19 +143,19 @@ export default function ListingDetailPage() {
                 <div className="d-flex flex-wrap align-items-center gap-2 mb-3">
                   {post.emotion && (
                     <span className="badge bg-primary-subtle text-primary border border-primary-subtle py-2 px-3 fs-6">
-                      <i className="bi bi-emoji-smile me-1" /> {post.emotion}
+                      <i className="bi bi-emoji-smile me-1" /> {post.emotion.name}
                     </span>
                   )}
                   {post.searchGroup && (
                     <span className="badge bg-light text-dark border py-2 px-3 fs-6">
-                      <i className="bi bi-folder2-open me-1 text-primary" /> Group: {post.searchGroup}
+                      <i className="bi bi-folder2-open me-1 text-primary" /> Group: {post.searchGroup.name}
                     </span>
                   )}
-                  {post.searchCategory && (
+                  {/* {post.searchCategory && (
                     <span className="badge bg-light text-dark border py-2 px-3 fs-6">
                       <i className="bi bi-tag me-1 text-primary" /> Category: {post.searchCategory}
                     </span>
-                  )}
+                  )} */}
                   {post.fromDate && (
                     <span className="badge bg-light text-dark border py-2 px-3 fs-6">
                       <i className="bi bi-calendar3 me-1 text-primary" /> Available From: {post.fromDate}
@@ -286,25 +286,25 @@ export default function ListingDetailPage() {
                       {post.banner && (
                         <tr>
                           <td className="text-muted py-2">Banner Type:</td>
-                          <td className="fw-semibold text-end text-dark py-2">{post.banner}</td>
+                          <td className="fw-semibold text-end text-dark py-2">{post.banner.name}</td>
                         </tr>
                       )}
                       {post.searchGroup && (
                         <tr>
                           <td className="text-muted py-2">Group:</td>
-                          <td className="fw-semibold text-end text-dark py-2">{post.searchGroup}</td>
+                          <td className="fw-semibold text-end text-dark py-2">{post.searchGroup.name}</td>
                         </tr>
                       )}
-                      {post.searchCategory && (
+                      {/* {post.searchCategory && (
                         <tr>
                           <td className="text-muted py-2">Category:</td>
                           <td className="fw-semibold text-end text-dark py-2">{post.searchCategory}</td>
                         </tr>
-                      )}
+                      )} */}
                       {post.emotion && (
                         <tr>
                           <td className="text-muted py-2">Emotion / Mood:</td>
-                          <td className="fw-semibold text-end text-dark py-2">{post.emotion}</td>
+                          <td className="fw-semibold text-end text-dark py-2">{post.emotion.name}</td>
                         </tr>
                       )}
                       {post.fromDate && (

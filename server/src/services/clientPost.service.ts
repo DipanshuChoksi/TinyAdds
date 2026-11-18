@@ -14,10 +14,10 @@ type PostRecord = {
   address: string;
   cityId?: number | null | undefined;
   cityName?: string | undefined;
-  banner: string;
-  emotion: string;
-  searchGroup: string;
-  searchCategory: string;
+  banner?: Types.ObjectId | string | null | undefined;
+  emotion?: Types.ObjectId | string | null | undefined;
+  searchGroup?: Types.ObjectId | string | null | undefined;
+  searchCategory?: Types.ObjectId | string | null | undefined;
   fromDate: string;
   title: string;
   image: string;
@@ -42,7 +42,7 @@ function serializePost(post: PostRecord) {
     banner: post.banner,
     emotion: post.emotion,
     searchGroup: post.searchGroup,
-    searchCategory: post.searchCategory,
+    searchCategory: post.searchCategory ? String(post.searchCategory) : "",
     fromDate: post.fromDate,
     title: post.title,
     image: post.image,
@@ -118,7 +118,10 @@ export class ClientPostService {
 
   async getPublicPostById(postId: string) {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
-    const post = await ClientPost.findOne({ _id: postId, isDisplay: true, status: "approved" }).lean();
+    const post = await ClientPost.findOne({ _id: postId, isDisplay: true, status: "approved" }).populate("banner", "name")
+      .populate("emotion", "name")
+      .populate("searchGroup", "name")
+      .lean();
     if (!post) throw new NotFoundError("Post not found");
     return serializePost(post);
   }
@@ -236,7 +239,7 @@ export class ClientPostService {
     if (query.cityId !== undefined && query.cityId !== null) {
       // Find the City document to get its ObjectId
       const cityDoc = await City.findOne({ id: query.cityId, isDisplay: true }).select("_id").lean();
-      
+
       const cityConditions: Record<string, unknown>[] = [{ cityId: query.cityId }];
       if (cityDoc) {
         // Users who have this city assigned in their profile (not deleted)
@@ -292,6 +295,9 @@ export class ClientPostService {
 
     const [items, total] = await Promise.all([
       ClientPost.find(filter)
+        .populate("banner", "name _id")
+        .populate("emotion", "name _id")
+        .populate("searchGroup", "name _id")
         .sort({ fromDate: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)

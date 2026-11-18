@@ -15,6 +15,17 @@ import type { PublicCityResponse } from "@/types/city";
 
 const PAGE_SIZE = 12;
 
+type FilterOption = { id: string; name: string };
+
+/** Resolve a possibly-populated ref (object with `name` or plain string) to a display string. */
+function refName(
+  ref: { name?: string } | string | null | undefined
+): string | undefined {
+  if (!ref) return undefined;
+  if (typeof ref === "string") return ref;
+  return ref.name;
+}
+
 function ListingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,7 +38,8 @@ function ListingsContent() {
   const category = searchParams.get("category") || "";
   const emotion = searchParams.get("emotion") || "";
   const cityIdParam = searchParams.get("cityId") || "";
-  const cityId = cityIdParam && !isNaN(Number(cityIdParam)) ? Number(cityIdParam) : undefined;
+  const cityId =
+    cityIdParam && !isNaN(Number(cityIdParam)) ? Number(cityIdParam) : undefined;
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 
@@ -35,10 +47,10 @@ function ListingsContent() {
   const [searchInput, setSearchInput] = useState(search);
 
   // Master dropdown options
-  const [bannerOptions, setBannerOptions] = useState<string[]>([]);
-  const [groupOptions, setGroupOptions] = useState<string[]>([]);
-  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
-  const [emotionOptions, setEmotionOptions] = useState<string[]>([]);
+  const [bannerOptions, setBannerOptions] = useState<FilterOption[]>([]);
+  const [groupOptions, setGroupOptions] = useState<FilterOption[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<FilterOption[]>([]);
+  const [emotionOptions, setEmotionOptions] = useState<FilterOption[]>([]);
   const [cityOptions, setCityOptions] = useState<PublicCityResponse[]>([]);
 
   // Post items & pagination state
@@ -62,16 +74,32 @@ function ListingsContent() {
       getPublicCities().catch(() => null),
     ]).then(([bannerRes, groupRes, catRes, emotionRes, cityRes]) => {
       if (bannerRes?.success && Array.isArray(bannerRes.data)) {
-        setBannerOptions(bannerRes.data.map((b) => b.name).filter(Boolean));
+        setBannerOptions(
+          bannerRes.data
+            .map((b) => ({ id: String(b._id), name: b.name }))
+            .filter((b) => b.name)
+        );
       }
       if (groupRes?.success && Array.isArray(groupRes.data)) {
-        setGroupOptions(groupRes.data.map((g) => g.name).filter(Boolean));
+        setGroupOptions(
+          groupRes.data
+            .map((g) => ({ id: String(g._id), name: g.name }))
+            .filter((g) => g.name)
+        );
       }
       if (catRes?.success && Array.isArray(catRes.data)) {
-        setCategoryOptions(catRes.data.map((c) => c.name).filter(Boolean));
+        setCategoryOptions(
+          catRes.data
+            .map((c) => ({ id: String(c._id), name: c.name }))
+            .filter((c) => c.name)
+        );
       }
       if (emotionRes?.success && Array.isArray(emotionRes.data)) {
-        setEmotionOptions(emotionRes.data.map((e) => e.name).filter(Boolean));
+        setEmotionOptions(
+          emotionRes.data
+            .map((e) => ({ id: String(e._id), name: e.name }))
+            .filter((e) => e.name)
+        );
       }
       if (cityRes?.success && Array.isArray(cityRes.data)) {
         setCityOptions(cityRes.data);
@@ -117,9 +145,15 @@ function ListingsContent() {
         if (!active) return;
         if (res?.success && Array.isArray(res.data)) {
           setPosts(res.data);
-          const meta = res.meta as { total?: number; totalPages?: number } | undefined;
+          const meta = res.meta as
+            | { total?: number; totalPages?: number }
+            | undefined;
           setTotal(meta?.total || res.data.length);
-          setTotalPages(meta?.totalPages || Math.ceil((meta?.total || res.data.length) / PAGE_SIZE) || 1);
+          setTotalPages(
+            meta?.totalPages ||
+              Math.ceil((meta?.total || res.data.length) / PAGE_SIZE) ||
+              1
+          );
         } else {
           setPosts([]);
           setTotal(0);
@@ -155,7 +189,9 @@ function ListingsContent() {
     });
   };
 
-  const hasActiveFilters = Boolean(search || banner || group || category || emotion || cityId !== undefined);
+  const hasActiveFilters = Boolean(
+    search || banner || group || category || emotion || cityId !== undefined
+  );
 
   return (
     <section className="lb-section py-5">
@@ -173,7 +209,9 @@ function ListingsContent() {
               {/* Filters Box */}
               <div className="lb-side-box">
                 <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                  <h3 className="lb-side-title mb-0 border-bottom-0 pb-0">Filters</h3>
+                  <h3 className="lb-side-title mb-0 border-bottom-0 pb-0">
+                    Filters
+                  </h3>
                   {hasActiveFilters && (
                     <button
                       type="button"
@@ -194,12 +232,14 @@ function ListingsContent() {
                   <select
                     className="form-select"
                     value={banner}
-                    onChange={(e) => updateParams({ banner: e.target.value, page: 1 })}
+                    onChange={(e) =>
+                      updateParams({ banner: e.target.value, page: 1 })
+                    }
                   >
                     <option value="">All Banner Types</option>
                     {bannerOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
+                      <option key={opt.id} value={opt.id}>
+                        {opt.name}
                       </option>
                     ))}
                   </select>
@@ -213,12 +253,14 @@ function ListingsContent() {
                   <select
                     className="form-select"
                     value={group}
-                    onChange={(e) => updateParams({ group: e.target.value, page: 1 })}
+                    onChange={(e) =>
+                      updateParams({ group: e.target.value, page: 1 })
+                    }
                   >
                     <option value="">All Groups</option>
                     {groupOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
+                      <option key={opt.id} value={opt.id}>
+                        {opt.name}
                       </option>
                     ))}
                   </select>
@@ -236,8 +278,8 @@ function ListingsContent() {
                   >
                     <option value="">All Categories</option>
                     {categoryOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
+                      <option key={opt.id} value={opt.id}>
+                        {opt.name}
                       </option>
                     ))}
                   </select>
@@ -251,7 +293,9 @@ function ListingsContent() {
                   <select
                     className="form-select"
                     value={cityId !== undefined ? String(cityId) : ""}
-                    onChange={(e) => updateParams({ cityId: e.target.value || null, page: 1 })}
+                    onChange={(e) =>
+                      updateParams({ cityId: e.target.value || null, page: 1 })
+                    }
                   >
                     <option value="">All Locations</option>
                     {cityOptions.map((c) => (
@@ -270,12 +314,14 @@ function ListingsContent() {
                   <select
                     className="form-select"
                     value={emotion}
-                    onChange={(e) => updateParams({ emotion: e.target.value, page: 1 })}
+                    onChange={(e) =>
+                      updateParams({ emotion: e.target.value, page: 1 })
+                    }
                   >
                     <option value="">All Emotions</option>
                     {emotionOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
+                      <option key={opt.id} value={opt.id}>
+                        {opt.name}
                       </option>
                     ))}
                   </select>
@@ -365,31 +411,38 @@ function ListingsContent() {
                   )}
                 </div>
               )} */}
-               <form onSubmit={handleSearchSubmit} className="lb-side-search">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Keyword, title, tag..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                  />
-                  <button type="submit" aria-label="Search">
-                    <i className="bi bi-search" />
-                  </button>
-                </form>
+              <form onSubmit={handleSearchSubmit} className="lb-side-search">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Keyword, title, tag..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+                <button type="submit" aria-label="Search">
+                  <i className="bi bi-search" />
+                </button>
+              </form>
             </div>
 
             {/* Grid content */}
             {loading ? (
-              <div className="text-center py-5 my-5" role="status" aria-live="polite">
+              <div
+                className="text-center py-5 my-5"
+                role="status"
+                aria-live="polite"
+              >
                 <LoadingIndicator label="Loading listings" />
               </div>
             ) : posts.length === 0 ? (
               <div className="text-center py-5 my-5 bg-light rounded-4 border p-4">
                 <i className="bi bi-inbox display-4 text-muted mb-3 d-block" />
-                <h3 className="h5 fw-bold text-dark mb-2">No ad listings found</h3>
+                <h3 className="h5 fw-bold text-dark mb-2">
+                  No ad listings found
+                </h3>
                 <p className="text-muted small mb-4">
-                  We couldn&apos;t find any ads matching your current filter criteria.
+                  We couldn&apos;t find any ads matching your current filter
+                  criteria.
                 </p>
                 {hasActiveFilters && (
                   <button
@@ -403,60 +456,70 @@ function ListingsContent() {
               </div>
             ) : (
               <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
-                {posts.map((item) => (
-                  <div className="col" key={item.id}>
-                    <Link
-                      href={`/listings/${item.id}`}
-                      className="text-decoration-none d-block h-100"
-                    >
-                      <article className="lb-card h-100 shadow-sm d-flex flex-column transition-all">
-                        <div
-                          className="lb-card-img position-relative"
-                          style={{ height: 210, overflow: "hidden" }}
-                        >
-                          <img
-                            src={item.image || "/ads/minimalist-fb-ad.png"}
-                            alt={item.title}
-                            loading="lazy"
-                            className="w-100 h-100"
-                            style={{ objectFit: "cover" }}
-                          />
-                          {item.banner && (
-                            <span
-                              className="position-absolute top-0 start-0 m-2 badge bg-dark bg-opacity-75 text-white"
-                              style={{ fontSize: "0.7rem", backdropFilter: "blur(4px)" }}
-                            >
-                              {item.banner}
-                            </span>
-                          )}
-                        </div>
+                {posts.map((item) => {
+                  const bannerName = refName(item.banner);
+                  const emotionName = refName(item.emotion);
+                  const categoryName = refName(item.searchCategory);
+                  const groupName = refName(item.searchGroup);
 
-                        <div className="lb-card-body d-flex flex-column flex-grow-1">
-                          <div className="d-flex align-items-center justify-content-between mb-2">
-                            <span className="badge bg-light text-dark border">
-                              <i className="bi bi-calendar3 me-1 text-muted" />
-                              {item.fromDate || "Active"}
-                            </span>
-                            {item.emotion && (
-                              <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
-                                {item.emotion}
+                  return (
+                    <div className="col" key={item.id}>
+                      <Link
+                        href={`/listings/${item.id}`}
+                        className="text-decoration-none d-block h-100"
+                      >
+                        <article className="lb-card h-100 shadow-sm d-flex flex-column transition-all">
+                          <div
+                            className="lb-card-img position-relative"
+                            style={{ height: 210, overflow: "hidden" }}
+                          >
+                            <img
+                              src={item.image || "/ads/minimalist-fb-ad.png"}
+                              alt={item.title}
+                              loading="lazy"
+                              className="w-100 h-100"
+                              style={{ objectFit: "cover" }}
+                            />
+                            {bannerName && (
+                              <span
+                                className="position-absolute top-0 start-0 m-2 badge bg-dark bg-opacity-75 text-white"
+                                style={{
+                                  fontSize: "0.7rem",
+                                  backdropFilter: "blur(4px)",
+                                }}
+                              >
+                                {bannerName}
                               </span>
                             )}
                           </div>
 
-                          <h3 className="lb-card-title mb-2">
-                            <span
-                              className="d-inline-block text-truncate w-100"
-                              title={item.title}
-                            >
-                              {item.title}
-                            </span>
-                          </h3>
+                          <div className="lb-card-body d-flex flex-column flex-grow-1">
+                            <div className="d-flex align-items-center justify-content-between mb-2">
+                              <span className="badge bg-light text-dark border">
+                                <i className="bi bi-calendar3 me-1 text-muted" />
+                                {item.fromDate || "Active"}
+                              </span>
+                              {emotionName && (
+                                <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                  {emotionName}
+                                </span>
+                              )}
+                            </div>
+
+                            <h3 className="lb-card-title mb-2">
+                              <span
+                                className="d-inline-block text-truncate w-100"
+                                title={item.title}
+                              >
+                                {item.title}
+                              </span>
+                            </h3>
 
                             <p className="lb-meta mb-3">
                               {item.address ? (
                                 <span className="text-truncate d-inline-block text-muted small w-100">
-                                  <i className="bi bi-geo-alt me-1 text-primary" /> {item.address}
+                                  <i className="bi bi-geo-alt me-1 text-primary" />{" "}
+                                  {item.address}
                                 </span>
                               ) : (
                                 <span className="text-muted small">
@@ -465,22 +528,23 @@ function ListingsContent() {
                               )}
                             </p>
 
-                          <div className="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
-                            <span className="lb-chip">
-                              {item.searchCategory || item.searchGroup || "Listing Ad"}
-                            </span>
-                            <span
-                              className="text-muted small text-truncate"
-                              style={{ maxWidth: 120 }}
-                            >
-                              {item.contactPerson || "TinyAdds"}
-                            </span>
+                            <div className="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
+                              <span className="lb-chip">
+                                {categoryName || groupName || "Listing Ad"}
+                              </span>
+                              <span
+                                className="text-muted small text-truncate"
+                                style={{ maxWidth: 120 }}
+                              >
+                                {item.contactPerson || "TinyAdds"}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </article>
-                    </Link>
-                  </div>
-                ))}
+                        </article>
+                      </Link>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -488,7 +552,11 @@ function ListingsContent() {
             {!loading && totalPages > 1 && (
               <nav aria-label="Listings pagination" className="mt-5">
                 <ul className="pagination lb-pagination justify-content-center flex-wrap">
-                  <li className={`page-item${currentPage === 1 ? " disabled" : ""}`}>
+                  <li
+                    className={`page-item${
+                      currentPage === 1 ? " disabled" : ""
+                    }`}
+                  >
                     {currentPage === 1 ? (
                       <span className="page-link" aria-label="Previous page">
                         <i className="bi bi-chevron-left" />
@@ -497,7 +565,9 @@ function ListingsContent() {
                       <button
                         type="button"
                         className="page-link"
-                        onClick={() => updateParams({ page: currentPage - 1 })}
+                        onClick={() =>
+                          updateParams({ page: currentPage - 1 })
+                        }
                         aria-label="Previous page"
                       >
                         <i className="bi bi-chevron-left" />
@@ -505,23 +575,34 @@ function ListingsContent() {
                     )}
                   </li>
 
-                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((num) => (
+                  {Array.from(
+                    { length: totalPages },
+                    (_, idx) => idx + 1
+                  ).map((num) => (
                     <li
                       key={num}
-                      className={`page-item${num === currentPage ? " active" : ""}`}
+                      className={`page-item${
+                        num === currentPage ? " active" : ""
+                      }`}
                     >
                       <button
                         type="button"
                         className="page-link"
                         onClick={() => updateParams({ page: num })}
-                        aria-current={num === currentPage ? "page" : undefined}
+                        aria-current={
+                          num === currentPage ? "page" : undefined
+                        }
                       >
                         {num}
                       </button>
                     </li>
                   ))}
 
-                  <li className={`page-item${currentPage === totalPages ? " disabled" : ""}`}>
+                  <li
+                    className={`page-item${
+                      currentPage === totalPages ? " disabled" : ""
+                    }`}
+                  >
                     {currentPage === totalPages ? (
                       <span className="page-link" aria-label="Next page">
                         <i className="bi bi-chevron-right" />
@@ -530,7 +611,9 @@ function ListingsContent() {
                       <button
                         type="button"
                         className="page-link"
-                        onClick={() => updateParams({ page: currentPage + 1 })}
+                        onClick={() =>
+                          updateParams({ page: currentPage + 1 })
+                        }
                         aria-label="Next page"
                       >
                         <i className="bi bi-chevron-right" />

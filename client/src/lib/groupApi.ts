@@ -40,8 +40,8 @@ export async function getAdminGroups(page = 1, limit = 100): Promise<AdminGroupR
 /**
  * Create a new group via admin API
  */
-export async function createAdminGroup(name: string): Promise<AdminGroupResponse> {
-  const payload: CreateGroupPayload = { name, isActive: true };
+export async function createAdminGroup(name: string, image?: string): Promise<AdminGroupResponse> {
+  const payload: CreateGroupPayload = { name, image, isActive: true };
   const response = await http.post<AdminGroupResponse, CreateGroupPayload>('/admin/groups', payload);
   return response.data;
 }

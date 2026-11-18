@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { BadRequestError } from "../utils/errors.js";
 
 export interface ClientPostInput {
@@ -7,10 +8,10 @@ export interface ClientPostInput {
   address: string;
   cityId?: number | null;
   cityName?: string;
-  banner: string;
-  emotion: string;
-  searchGroup: string;
-  searchCategory: string;
+  banner: Types.ObjectId | null;
+  emotion: Types.ObjectId | null;
+  searchGroup: Types.ObjectId | null;
+  searchCategory: Types.ObjectId | null;
   fromDate: string;
   title: string;
   image: string;
@@ -39,6 +40,15 @@ export function validatePost(body: unknown): ClientPostInput {
     parsedCityId = num;
   }
 
+  const parseObjectId = (key: string): Types.ObjectId | null => {
+    const value = input[key];
+    if (value === undefined || value === null || value === "") return null;
+    if (typeof value !== "string" || !Types.ObjectId.isValid(value)) {
+      throw new BadRequestError(`${key} must be a valid ObjectId`);
+    }
+    return new Types.ObjectId(value);
+  };
+
   return {
     contactPerson: get("contactPerson", 160, true),
     contactNo: get("contactNo", 20, true),
@@ -46,10 +56,10 @@ export function validatePost(body: unknown): ClientPostInput {
     address: get("address", 500),
     cityId: parsedCityId,
     cityName: typeof input.cityName === "string" ? input.cityName.trim().slice(0, 100) : "",
-    banner: get("banner", 100),
-    emotion: get("emotion", 100),
-    searchGroup: get("searchGroup", 100),
-    searchCategory: get("searchCategory", 100),
+    banner: parseObjectId("banner"),
+    emotion: parseObjectId("emotion"),
+    searchGroup: parseObjectId("searchGroup"),
+    searchCategory: null, // Removed validation for searchCategory as per the recent edits
     fromDate: get("fromDate", 10, true),
     title: get("title", 200, true),
     image: get("image", 8_000_000),

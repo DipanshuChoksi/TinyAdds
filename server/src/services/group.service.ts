@@ -31,7 +31,7 @@ export class GroupService {
 
     const [items, total] = await Promise.all([
       Group.find(filter)
-        .select("name createdAt updatedAt")
+        .select("name image createdAt updatedAt")
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit)
@@ -55,7 +55,7 @@ export class GroupService {
    */
   async getPublicGroupById(id: string): Promise<GroupDocument> {
     const group = await Group.findOne({ _id: id, isDisplay: true, isActive: true })
-      .select("name createdAt updatedAt")
+      .select("name image createdAt updatedAt")
       .lean();
 
     if (!group) {
@@ -77,6 +77,7 @@ export class GroupService {
 
     const [items, total] = await Promise.all([
       Group.find(filter)
+        .select("name image isActive isDisplay deletedAt createdAt updatedAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -99,7 +100,9 @@ export class GroupService {
    * Admin get by ID: filters by isDisplay: true
    */
   async getGroupById(id: string): Promise<GroupDocument> {
-    const group = await Group.findOne({ _id: id, isDisplay: true }).lean();
+    const group = await Group.findOne({ _id: id, isDisplay: true })
+      .select("name image isActive isDisplay deletedAt createdAt updatedAt")
+      .lean();
 
     if (!group) {
       throw new NotFoundError(`Group with id '${id}' not found`);
@@ -122,6 +125,7 @@ export class GroupService {
 
     const group = await Group.create({
       name: data.name,
+      image: data.image ?? "",
       isActive: data.isActive ?? true,
       isDisplay: true,
       deletedAt: null,
@@ -147,7 +151,7 @@ export class GroupService {
 
     const group = await Group.findOneAndUpdate(
       { _id: id, isDisplay: true },
-      { $set: data },
+      { $set: { ...data, ...(data.image !== undefined ? { image: data.image } : {}) } },
       { new: true, runValidators: true }
     );
 

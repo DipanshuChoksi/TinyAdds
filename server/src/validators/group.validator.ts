@@ -39,11 +39,13 @@ export function validatePagination(query: { page?: unknown; limit?: unknown }): 
 
 export interface CreateGroupInput {
   name: string;
+  image?: string;
   isActive?: boolean;
 }
 
 export interface UpdateGroupInput {
   name?: string;
+  image?: string;
   isActive?: boolean;
 }
 
@@ -52,7 +54,7 @@ export function validateCreateGroup(body: unknown): CreateGroupInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, isActive } = body as Record<string, unknown>;
+  const { name, image, isActive } = body as Record<string, unknown>;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     throw new BadRequestError("Group 'name' is required and must be a non-empty string");
@@ -61,6 +63,13 @@ export function validateCreateGroup(body: unknown): CreateGroupInput {
   const result: CreateGroupInput = {
     name: name.trim(),
   };
+
+  if (image !== undefined) {
+    if (typeof image !== "string") {
+      throw new BadRequestError("Group 'image' must be a string");
+    }
+    result.image = image.trim();
+  }
 
   if (isActive !== undefined) {
     if (typeof isActive !== "boolean") {
@@ -77,10 +86,10 @@ export function validateUpdateGroup(body: unknown): UpdateGroupInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, isActive } = body as Record<string, unknown>;
+  const { name, image, isActive } = body as Record<string, unknown>;
 
-  if (name === undefined && isActive === undefined) {
-    throw new BadRequestError("At least one field ('name' or 'isActive') must be provided to update");
+  if (name === undefined && image === undefined && isActive === undefined) {
+    throw new BadRequestError("At least one field ('name', 'image', or 'isActive') must be provided to update");
   }
 
   const result: UpdateGroupInput = {};
@@ -90,6 +99,13 @@ export function validateUpdateGroup(body: unknown): UpdateGroupInput {
       throw new BadRequestError("Group 'name' must be a non-empty string");
     }
     result.name = name.trim();
+  }
+
+  if (image !== undefined) {
+    if (typeof image !== "string") {
+      throw new BadRequestError("Group 'image' must be a string");
+    }
+    result.image = image.trim();
   }
 
   if (isActive !== undefined) {
