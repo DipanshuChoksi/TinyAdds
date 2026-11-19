@@ -23,6 +23,13 @@ export async function getPublicGroupById(id: string): Promise<ApiResponse<Public
 }
 
 /**
+ * Fetch a single public group by slug
+ */
+export async function getPublicGroupBySlug(slug: string): Promise<ApiResponse<PublicGroupResponse>> {
+  return await http.get<PublicGroupResponse>(`/groups/slug/${slug}`);
+}
+
+/**
  * Fetch groups for admin panel
  */
 export async function getAdminGroups(page = 1, limit = 100): Promise<AdminGroupResponse[]> {
@@ -40,8 +47,8 @@ export async function getAdminGroups(page = 1, limit = 100): Promise<AdminGroupR
 /**
  * Create a new group via admin API
  */
-export async function createAdminGroup(name: string, image?: string): Promise<AdminGroupResponse> {
-  const payload: CreateGroupPayload = { name, image, isActive: true };
+export async function createAdminGroup(name: string, image?: string, slug?: string): Promise<AdminGroupResponse> {
+  const payload: CreateGroupPayload = { name, image, slug: slug || undefined, isActive: true };
   const response = await http.post<AdminGroupResponse, CreateGroupPayload>('/admin/groups', payload);
   return response.data;
 }

@@ -5,6 +5,7 @@ const router = Router();
 
 // Public routes for banner sections
 router.get("/", (req, res, next) => bannerSectionController.getPublicBannerSections(req, res, next));
+router.get("/slug/:slug", (req, res, next) => bannerSectionController.getPublicBannerSectionBySlug(req, res, next));
 router.get("/:id", (req, res, next) => bannerSectionController.getPublicBannerSectionById(req, res, next));
 
 export default router;

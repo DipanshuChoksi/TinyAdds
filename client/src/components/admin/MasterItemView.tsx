@@ -119,8 +119,8 @@ interface MasterItemViewProps {
   pageTitle?: string;
   pageDescription?: string;
   pageSize?: number;
-  onCreateItem?: (name: string, image?: string) => Promise<AdminMasterItem>;
-  onUpdateItem?: (id: string, data: { name: string; image?: string }) => Promise<AdminMasterItem>;
+  onCreateItem?: (name: string, image?: string, slug?: string) => Promise<AdminMasterItem>;
+  onUpdateItem?: (id: string, data: { name: string; image?: string; slug?: string }) => Promise<AdminMasterItem>;
   onToggleStatus?: (id: string, newStatus: 'active' | 'inactive') => Promise<void>;
   onDeleteItem?: (id: string) => Promise<void>;
 }
@@ -146,6 +146,7 @@ export default function MasterItemView({
 
   // Form State
   const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [image, setImage] = useState('');
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -187,6 +188,7 @@ export default function MasterItemView({
   const openCreateModal = () => {
     setEditingItem(null);
     setName('');
+    setSlug('');
     setImage('');
     setError(null);
     setFileError(null);
@@ -196,6 +198,7 @@ export default function MasterItemView({
   const openEditModal = (item: AdminMasterItem) => {
     setEditingItem(item);
     setName(item.name);
+    setSlug(item.slug || '');
     setImage(item.image || '');
     setError(null);
     setFileError(null);
@@ -206,6 +209,7 @@ export default function MasterItemView({
     setShowModal(false);
     setEditingItem(null);
     setName('');
+    setSlug('');
     setImage('');
     setError(null);
     setFileError(null);
@@ -258,12 +262,14 @@ export default function MasterItemView({
     setIsSubmitting(true);
 
     try {
+      const trimmedSlug = slug.trim();
       if (editingItem) {
         // Handle Update
         if (onUpdateItem) {
           const updated = await onUpdateItem(editingItem.id, {
             name: name.trim(),
             image: image.trim(),
+            slug: trimmedSlug || undefined,
           });
           setItems((prev) =>
             prev.map((i) => (i.id === editingItem.id ? updated : i))
@@ -272,7 +278,7 @@ export default function MasterItemView({
           setItems((prev) =>
             prev.map((i) =>
               i.id === editingItem.id
-                ? { ...i, name: name.trim(), image: image.trim() }
+                ? { ...i, name: name.trim(), image: image.trim(), slug: trimmedSlug || undefined }
                 : i
             )
           );
@@ -280,18 +286,13 @@ export default function MasterItemView({
       } else {
         // Handle Create
         if (onCreateItem) {
-          const created = await onCreateItem(name.trim(), image.trim());
+          const created = await onCreateItem(name.trim(), image.trim(), trimmedSlug || undefined);
           setItems((prev) => [...prev, created]);
         } else {
-          // const slug = name
-          //   .toLowerCase()
-          //   .trim()
-          //   .replace(/[^a-z0-9]+/g, '-')
-          //   .replace(/(^-|-$)+/g, '');
-
           const newItem: AdminMasterItem = {
             id: `mi-${Date.now()}`,
             name: name.trim(),
+            slug: trimmedSlug || undefined,
             type: defaultCategory,
             status: 'active',
             itemCount: 0,
@@ -405,8 +406,8 @@ export default function MasterItemView({
             <thead>
               <tr>
                 <th className="ps-4">Name</th>
+                <th>Slug</th>
                 {defaultCategory === 'emotion' && <th>Image</th>}
-                {/* {defaultCategory !== 'emotion' && <th>Slug (URL Key)</th>} */}
                 {defaultCategory !== 'emotion' && <th>Assigned Items</th>}
                 <th>Status</th>
                 <th className="text-end pe-4" style={{ width: '100px' }}>Action</th>
@@ -415,7 +416,7 @@ export default function MasterItemView({
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={defaultCategory === 'emotion' ? 4 : 5} className="text-center py-5 text-muted">
+                  <td colSpan={defaultCategory === 'emotion' ? 5 : 5} className="text-center py-5 text-muted">
                     <i className="bi bi-diagram-3 fs-2 d-block mb-2 text-secondary" />
                     No {meta.label.toLowerCase()} found matching your criteria.
                   </td>
@@ -425,6 +426,15 @@ export default function MasterItemView({
                   <tr key={item.id}>
                     <td className="ps-4 fw-semibold" style={{ color: '#0f172a' }}>
                       {item.name}
+                    </td>
+                    <td>
+                      {item.slug ? (
+                        <code className="px-2 py-1 bg-light rounded text-dark small border">
+                          {item.slug}
+                        </code>
+                      ) : (
+                        <span className="text-muted small">-</span>
+                      )}
                     </td>
                     {defaultCategory === 'emotion' && (
                       <td>
@@ -447,11 +457,6 @@ export default function MasterItemView({
                         )}
                       </td>
                     )}
-                    {/* {defaultCategory !== 'emotion' && (
-                      <td className="small" style={{ color: '#64748b' }}>
-                        {item.slug ? `/${item.slug}` : '-'}
-                      </td>
-                    )} */}
                     {defaultCategory !== 'emotion' && (
                       <td>
                         <span
@@ -558,6 +563,21 @@ export default function MasterItemView({
                       required
                       autoFocus
                     />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label small fw-semibold text-muted">
+                      Slug (URL Key)
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control rounded-2"
+                      placeholder="e.g. car-deals (auto-generated if empty)"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                    />
+                    {/* <div className="form-text small" style={{ fontSize: '0.75rem' }}>
+                      Unique identifier for URL paths and lookups. Leave blank to generate automatically from name.
+                    </div> */}
                   </div>
                   {defaultCategory === 'emotion' && (
                     <div className="mb-3">

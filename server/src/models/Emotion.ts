@@ -8,6 +8,14 @@ const emotionSchema = new Schema(
       trim: true,
       maxlength: [100, "Name cannot exceed 100 characters"],
     },
+    slug: {
+      type: String,
+      required: [true, "Emotion slug is required"],
+      trim: true,
+      lowercase: true,
+      maxlength: [120, "Emotion slug cannot exceed 120 characters"],
+      index: true,
+    },
     image: {
       type: String,
       trim: true,
@@ -36,6 +44,7 @@ const emotionSchema = new Schema(
 // Compound indexes for optimal queries according to AGENTS.md rules
 emotionSchema.index({ isDisplay: 1, isActive: 1 });
 emotionSchema.index({ isDisplay: 1, name: 1 });
+emotionSchema.index({ isDisplay: 1, slug: 1 });
 
 export type EmotionSchemaType = InferSchemaType<typeof emotionSchema>;
 export type EmotionDocument = HydratedDocument<EmotionSchemaType>;

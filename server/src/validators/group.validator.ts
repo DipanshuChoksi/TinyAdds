@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { BadRequestError } from "../utils/errors.js";
+import { generateSlug } from "../utils/slug.js";
 
 export function validateObjectId(id: string, paramName = "id"): string {
   if (!id || typeof id !== "string" || !Types.ObjectId.isValid(id)) {
@@ -39,12 +40,14 @@ export function validatePagination(query: { page?: unknown; limit?: unknown }): 
 
 export interface CreateGroupInput {
   name: string;
+  slug: string;
   image?: string;
   isActive?: boolean;
 }
 
 export interface UpdateGroupInput {
   name?: string;
+  slug?: string;
   image?: string;
   isActive?: boolean;
 }
@@ -54,14 +57,20 @@ export function validateCreateGroup(body: unknown): CreateGroupInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, image, isActive } = body as Record<string, unknown>;
+  const { name, slug, image, isActive } = body as Record<string, unknown>;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     throw new BadRequestError("Group 'name' is required and must be a non-empty string");
   }
 
+  const trimmedName = name.trim();
+  const generatedSlug = slug && typeof slug === "string" && slug.trim().length > 0
+    ? generateSlug(slug)
+    : generateSlug(trimmedName);
+
   const result: CreateGroupInput = {
-    name: name.trim(),
+    name: trimmedName,
+    slug: generatedSlug,
   };
 
   if (image !== undefined) {
@@ -86,10 +95,10 @@ export function validateUpdateGroup(body: unknown): UpdateGroupInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, image, isActive } = body as Record<string, unknown>;
+  const { name, slug, image, isActive } = body as Record<string, unknown>;
 
-  if (name === undefined && image === undefined && isActive === undefined) {
-    throw new BadRequestError("At least one field ('name', 'image', or 'isActive') must be provided to update");
+  if (name === undefined && slug === undefined && image === undefined && isActive === undefined) {
+    throw new BadRequestError("At least one field ('name', 'slug', 'image', or 'isActive') must be provided to update");
   }
 
   const result: UpdateGroupInput = {};
@@ -99,6 +108,13 @@ export function validateUpdateGroup(body: unknown): UpdateGroupInput {
       throw new BadRequestError("Group 'name' must be a non-empty string");
     }
     result.name = name.trim();
+  }
+
+  if (slug !== undefined) {
+    if (typeof slug !== "string" || slug.trim().length === 0) {
+      throw new BadRequestError("Group 'slug' must be a non-empty string");
+    }
+    result.slug = generateSlug(slug);
   }
 
   if (image !== undefined) {

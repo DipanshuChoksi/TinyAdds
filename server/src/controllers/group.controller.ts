@@ -24,13 +24,30 @@ export class GroupController {
   }
 
   /**
-   * GET /api/groups/:id
-   * Public get group by ID
+   * GET /api/groups/:idOrSlug
+   * Public get group by ID or slug
    */
   async getPublicGroupById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validId = validateObjectId(req.params.id as string);
-      const group = await groupService.getPublicGroupById(validId);
+      const param = (req.params.id as string).trim();
+      const isHexId = /^[0-9a-fA-F]{24}$/.test(param);
+      const group = isHexId
+        ? await groupService.getPublicGroupById(param)
+        : await groupService.getPublicGroupBySlug(param);
+      res.status(200).json(sendSuccess(group));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/groups/slug/:slug
+   * Explicit public get group by slug
+   */
+  async getPublicGroupBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const slug = (req.params.slug as string).trim();
+      const group = await groupService.getPublicGroupBySlug(slug);
       res.status(200).json(sendSuccess(group));
     } catch (error) {
       next(error);
@@ -52,13 +69,30 @@ export class GroupController {
   }
 
   /**
-   * GET /api/admin/groups/:id
-   * Admin get group details by ID
+   * GET /api/admin/groups/:idOrSlug
+   * Admin get group details by ID or slug
    */
   async getGroupById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validId = validateObjectId(req.params.id as string);
-      const group = await groupService.getGroupById(validId);
+      const param = (req.params.id as string).trim();
+      const isHexId = /^[0-9a-fA-F]{24}$/.test(param);
+      const group = isHexId
+        ? await groupService.getGroupById(param)
+        : await groupService.getGroupBySlug(param);
+      res.status(200).json(sendSuccess(group));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/admin/groups/slug/:slug
+   * Explicit admin get group by slug
+   */
+  async getGroupBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const slug = (req.params.slug as string).trim();
+      const group = await groupService.getGroupBySlug(slug);
       res.status(200).json(sendSuccess(group));
     } catch (error) {
       next(error);

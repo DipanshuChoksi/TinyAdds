@@ -31,7 +31,7 @@ export class GroupService {
 
     const [items, total] = await Promise.all([
       Group.find(filter)
-        .select("name image createdAt updatedAt")
+        .select("name slug image createdAt updatedAt")
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit)
@@ -55,11 +55,30 @@ export class GroupService {
    */
   async getPublicGroupById(id: string): Promise<GroupDocument> {
     const group = await Group.findOne({ _id: id, isDisplay: true, isActive: true })
-      .select("name image createdAt updatedAt")
+      .select("name slug image createdAt updatedAt")
       .lean();
 
     if (!group) {
       throw new NotFoundError(`Group with id '${id}' not found`);
+    }
+
+    return group as unknown as GroupDocument;
+  }
+
+  /**
+   * Public get by slug: must filter by isDisplay: true AND isActive: true
+   */
+  async getPublicGroupBySlug(slug: string): Promise<GroupDocument> {
+    const group = await Group.findOne({
+      slug: slug.toLowerCase().trim(),
+      isDisplay: true,
+      isActive: true,
+    })
+      .select("name slug image createdAt updatedAt")
+      .lean();
+
+    if (!group) {
+      throw new NotFoundError(`Group with slug '${slug}' not found`);
     }
 
     return group as unknown as GroupDocument;
@@ -77,7 +96,7 @@ export class GroupService {
 
     const [items, total] = await Promise.all([
       Group.find(filter)
-        .select("name image isActive isDisplay deletedAt createdAt updatedAt")
+        .select("name slug image isActive isDisplay deletedAt createdAt updatedAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -101,7 +120,7 @@ export class GroupService {
    */
   async getGroupById(id: string): Promise<GroupDocument> {
     const group = await Group.findOne({ _id: id, isDisplay: true })
-      .select("name image isActive isDisplay deletedAt createdAt updatedAt")
+      .select("name slug image isActive isDisplay deletedAt createdAt updatedAt")
       .lean();
 
     if (!group) {
@@ -112,19 +131,49 @@ export class GroupService {
   }
 
   /**
+   * Admin get by slug: filters by isDisplay: true
+   */
+  async getGroupBySlug(slug: string): Promise<GroupDocument> {
+    const group = await Group.findOne({
+      slug: slug.toLowerCase().trim(),
+      isDisplay: true,
+    })
+      .select("name slug image isActive isDisplay deletedAt createdAt updatedAt")
+      .lean();
+
+    if (!group) {
+      throw new NotFoundError(`Group with slug '${slug}' not found`);
+    }
+
+    return group as unknown as GroupDocument;
+  }
+
+  /**
    * Create new group
    */
   async createGroup(data: CreateGroupInput): Promise<GroupDocument> {
+    const slug = data.slug || "";
+    const orConditions: Record<string, unknown>[] = [
+      { name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } },
+    ];
+    if (slug) {
+      orConditions.push({ slug: { $regex: new RegExp(`^${slug}$`, "i") } });
+    }
+
     const existing = await Group.findOne({
-      name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
+      $or: orConditions,
       isDisplay: true,
     });
     if (existing) {
+      if (existing.slug && existing.slug.toLowerCase() === slug.toLowerCase()) {
+        throw new ConflictError(`Group with slug '${slug}' already exists`);
+      }
       throw new ConflictError(`Group with name '${data.name}' already exists`);
     }
 
     const group = await Group.create({
       name: data.name,
+      slug: data.slug,
       image: data.image ?? "",
       isActive: data.isActive ?? true,
       isDisplay: true,
@@ -138,13 +187,25 @@ export class GroupService {
    * Update existing group
    */
   async updateGroup(id: string, data: UpdateGroupInput): Promise<GroupDocument> {
-    if (data.name) {
+    if (data.name || data.slug) {
+      const orConditions: Record<string, unknown>[] = [];
+      if (data.name) {
+        orConditions.push({ name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } });
+      }
+      if (data.slug) {
+        orConditions.push({ slug: { $regex: new RegExp(`^${data.slug.trim()}$`, "i") } });
+      }
+
       const conflict = await Group.findOne({
-        name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
         _id: { $ne: id },
+        $or: orConditions,
         isDisplay: true,
       });
+
       if (conflict) {
+        if (data.slug && conflict.slug.toLowerCase() === data.slug.toLowerCase()) {
+          throw new ConflictError(`Group with slug '${data.slug}' already exists`);
+        }
         throw new ConflictError(`Group with name '${data.name}' already exists`);
       }
     }

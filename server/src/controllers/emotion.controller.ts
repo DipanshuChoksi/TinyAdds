@@ -24,13 +24,30 @@ export class EmotionController {
   }
 
   /**
-   * GET /api/emotions/:id
-   * Public get emotion by ID
+   * GET /api/emotions/:idOrSlug
+   * Public get emotion by ID or slug
    */
   async getPublicEmotionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validId = validateObjectId(req.params.id as string);
-      const emotion = await emotionService.getPublicEmotionById(validId);
+      const param = (req.params.id as string).trim();
+      const isHexId = /^[0-9a-fA-F]{24}$/.test(param);
+      const emotion = isHexId
+        ? await emotionService.getPublicEmotionById(param)
+        : await emotionService.getPublicEmotionBySlug(param);
+      res.status(200).json(sendSuccess(emotion));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/emotions/slug/:slug
+   * Explicit public get emotion by slug
+   */
+  async getPublicEmotionBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const slug = (req.params.slug as string).trim();
+      const emotion = await emotionService.getPublicEmotionBySlug(slug);
       res.status(200).json(sendSuccess(emotion));
     } catch (error) {
       next(error);
@@ -52,13 +69,30 @@ export class EmotionController {
   }
 
   /**
-   * GET /api/admin/emotions/:id
-   * Admin get emotion details by ID
+   * GET /api/admin/emotions/:idOrSlug
+   * Admin get emotion details by ID or slug
    */
   async getEmotionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validId = validateObjectId(req.params.id as string);
-      const emotion = await emotionService.getEmotionById(validId);
+      const param = (req.params.id as string).trim();
+      const isHexId = /^[0-9a-fA-F]{24}$/.test(param);
+      const emotion = isHexId
+        ? await emotionService.getEmotionById(param)
+        : await emotionService.getEmotionBySlug(param);
+      res.status(200).json(sendSuccess(emotion));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/admin/emotions/slug/:slug
+   * Explicit admin get emotion by slug
+   */
+  async getEmotionBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const slug = (req.params.slug as string).trim();
+      const emotion = await emotionService.getEmotionBySlug(slug);
       res.status(200).json(sendSuccess(emotion));
     } catch (error) {
       next(error);

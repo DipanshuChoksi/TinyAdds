@@ -16,6 +16,7 @@ function mapToMasterItem(bs: AdminBannerSectionResponse): AdminMasterItem {
     id: bs._id,
     type: 'banner-section',
     name: bs.name,
+    slug: bs.slug || '',
     status: bs.isActive ? 'active' : 'inactive',
     itemCount: 0,
   };
@@ -54,16 +55,16 @@ export default function AdminMasterBannerSectionsPage() {
     };
   }, []);
 
-  const handleCreate = async (name: string): Promise<AdminMasterItem> => {
-    const created = await createAdminBannerSection(name);
+  const handleCreate = async (name: string, image?: string, slug?: string): Promise<AdminMasterItem> => {
+    const created = await createAdminBannerSection(name, slug);
     return mapToMasterItem(created);
   };
 
   const handleUpdate = async (
     id: string,
-    data: { name: string }
+    data: { name: string; image?: string; slug?: string }
   ): Promise<AdminMasterItem> => {
-    const updated = await updateAdminBannerSection(id, { name: data.name });
+    const updated = await updateAdminBannerSection(id, { name: data.name, slug: data.slug });
     return mapToMasterItem(updated);
   };
 

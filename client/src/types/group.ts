@@ -4,6 +4,7 @@
 export interface PublicGroupResponse {
   _id: string;
   name: string;
+  slug?: string;
   image?: string;
   createdAt: string;
   updatedAt: string;
@@ -15,6 +16,7 @@ export interface PublicGroupResponse {
 export interface AdminGroupResponse {
   _id: string;
   name: string;
+  slug?: string;
   image?: string;
   isActive: boolean;
   isDisplay: boolean;
@@ -25,12 +27,14 @@ export interface AdminGroupResponse {
 
 export interface CreateGroupPayload {
   name: string;
+  slug?: string;
   image?: string;
   isActive?: boolean;
 }
 
 export interface UpdateGroupPayload {
   name?: string;
+  slug?: string;
   image?: string;
   isActive?: boolean;
 }

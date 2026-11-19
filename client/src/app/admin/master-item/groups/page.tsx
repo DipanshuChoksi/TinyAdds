@@ -16,6 +16,7 @@ function mapToMasterItem(g: AdminGroupResponse): AdminMasterItem {
     id: g._id,
     type: 'group',
     name: g.name,
+    slug: g.slug || '',
     status: g.isActive ? 'active' : 'inactive',
     itemCount: 0,
   };
@@ -54,16 +55,16 @@ export default function AdminMasterGroupsPage() {
     };
   }, []);
 
-  const handleCreate = async (name: string): Promise<AdminMasterItem> => {
-    const created = await createAdminGroup(name);
+  const handleCreate = async (name: string, image?: string, slug?: string): Promise<AdminMasterItem> => {
+    const created = await createAdminGroup(name, image, slug);
     return mapToMasterItem(created);
   };
 
   const handleUpdate = async (
     id: string,
-    data: { name: string }
+    data: { name: string; image?: string; slug?: string }
   ): Promise<AdminMasterItem> => {
-    const updated = await updateAdminGroup(id, { name: data.name });
+    const updated = await updateAdminGroup(id, { name: data.name, image: data.image, slug: data.slug });
     return mapToMasterItem(updated);
   };
 

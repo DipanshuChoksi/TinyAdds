@@ -23,6 +23,13 @@ export async function getPublicBannerSectionById(id: string): Promise<ApiRespons
 }
 
 /**
+ * Fetch a single public banner section by slug
+ */
+export async function getPublicBannerSectionBySlug(slug: string): Promise<ApiResponse<PublicBannerSectionResponse>> {
+  return await http.get<PublicBannerSectionResponse>(`/banner-sections/slug/${slug}`);
+}
+
+/**
  * Fetch banner sections for admin panel
  */
 export async function getAdminBannerSections(page = 1, limit = 100): Promise<AdminBannerSectionResponse[]> {
@@ -40,8 +47,8 @@ export async function getAdminBannerSections(page = 1, limit = 100): Promise<Adm
 /**
  * Create a new banner section via admin API
  */
-export async function createAdminBannerSection(name: string): Promise<AdminBannerSectionResponse> {
-  const payload: CreateBannerSectionPayload = { name, isActive: true };
+export async function createAdminBannerSection(name: string, slug?: string): Promise<AdminBannerSectionResponse> {
+  const payload: CreateBannerSectionPayload = { name, slug: slug || undefined, isActive: true };
   const response = await http.post<AdminBannerSectionResponse, CreateBannerSectionPayload>('/admin/banner-sections', payload);
   return response.data;
 }

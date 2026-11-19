@@ -6,6 +6,7 @@ const router = Router();
 // Admin routes for emotions
 router.get("/", (req, res, next) => emotionController.getAdminEmotions(req, res, next));
 router.post("/", (req, res, next) => emotionController.createEmotion(req, res, next));
+router.get("/slug/:slug", (req, res, next) => emotionController.getEmotionBySlug(req, res, next));
 router.get("/:id", (req, res, next) => emotionController.getEmotionById(req, res, next));
 router.patch("/:id", (req, res, next) => emotionController.updateEmotion(req, res, next));
 router.delete("/:id", (req, res, next) => emotionController.softDeleteEmotion(req, res, next));

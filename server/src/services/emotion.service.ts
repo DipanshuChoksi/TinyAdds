@@ -27,7 +27,7 @@ export class EmotionService {
 
     const [items, total] = await Promise.all([
       Emotion.find(filter)
-        .select("name image createdAt updatedAt")
+        .select("name slug image createdAt updatedAt")
         .sort({ name: 1 })
         .skip(pagination.skip)
         .limit(pagination.limit)
@@ -51,11 +51,30 @@ export class EmotionService {
    */
   async getPublicEmotionById(id: string): Promise<EmotionDocument> {
     const emotion = await Emotion.findOne({ _id: id, isDisplay: true, isActive: true })
-      .select("name image createdAt updatedAt")
+      .select("name slug image createdAt updatedAt")
       .lean();
 
     if (!emotion) {
       throw new NotFoundError(`Emotion with id '${id}' not found`);
+    }
+
+    return emotion as unknown as EmotionDocument;
+  }
+
+  /**
+   * Public get by slug: must filter by isDisplay: true AND isActive: true
+   */
+  async getPublicEmotionBySlug(slug: string): Promise<EmotionDocument> {
+    const emotion = await Emotion.findOne({
+      slug: slug.toLowerCase().trim(),
+      isDisplay: true,
+      isActive: true,
+    })
+      .select("name slug image createdAt updatedAt")
+      .lean();
+
+    if (!emotion) {
+      throw new NotFoundError(`Emotion with slug '${slug}' not found`);
     }
 
     return emotion as unknown as EmotionDocument;
@@ -69,6 +88,7 @@ export class EmotionService {
 
     const [items, total] = await Promise.all([
       Emotion.find(filter)
+        .select("name slug image isActive isDisplay deletedAt createdAt updatedAt")
         .sort({ createdAt: -1 })
         .skip(pagination.skip)
         .limit(pagination.limit)
@@ -91,7 +111,9 @@ export class EmotionService {
    * Admin get by ID: filters by isDisplay: true
    */
   async getEmotionById(id: string): Promise<EmotionDocument> {
-    const emotion = await Emotion.findOne({ _id: id, isDisplay: true }).lean();
+    const emotion = await Emotion.findOne({ _id: id, isDisplay: true })
+      .select("name slug image isActive isDisplay deletedAt createdAt updatedAt")
+      .lean();
 
     if (!emotion) {
       throw new NotFoundError(`Emotion with id '${id}' not found`);
@@ -101,19 +123,49 @@ export class EmotionService {
   }
 
   /**
+   * Admin get by slug: filters by isDisplay: true
+   */
+  async getEmotionBySlug(slug: string): Promise<EmotionDocument> {
+    const emotion = await Emotion.findOne({
+      slug: slug.toLowerCase().trim(),
+      isDisplay: true,
+    })
+      .select("name slug image isActive isDisplay deletedAt createdAt updatedAt")
+      .lean();
+
+    if (!emotion) {
+      throw new NotFoundError(`Emotion with slug '${slug}' not found`);
+    }
+
+    return emotion as unknown as EmotionDocument;
+  }
+
+  /**
    * Create new emotion
    */
   async createEmotion(data: CreateEmotionInput): Promise<EmotionDocument> {
+    const slug = data.slug || "";
+    const orConditions: Record<string, unknown>[] = [
+      { name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } },
+    ];
+    if (slug) {
+      orConditions.push({ slug: { $regex: new RegExp(`^${slug}$`, "i") } });
+    }
+
     const existing = await Emotion.findOne({
-      name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
+      $or: orConditions,
       isDisplay: true,
     });
     if (existing) {
+      if (existing.slug && existing.slug.toLowerCase() === slug.toLowerCase()) {
+        throw new ConflictError(`Emotion with slug '${slug}' already exists`);
+      }
       throw new ConflictError(`Emotion with name '${data.name}' already exists`);
     }
 
     const emotion = await Emotion.create({
       name: data.name,
+      slug: data.slug,
       image: data.image ?? "",
       isActive: data.isActive ?? true,
       isDisplay: true,
@@ -127,13 +179,25 @@ export class EmotionService {
    * Update existing emotion
    */
   async updateEmotion(id: string, data: UpdateEmotionInput): Promise<EmotionDocument> {
-    if (data.name) {
+    if (data.name || data.slug) {
+      const orConditions: Record<string, unknown>[] = [];
+      if (data.name) {
+        orConditions.push({ name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } });
+      }
+      if (data.slug) {
+        orConditions.push({ slug: { $regex: new RegExp(`^${data.slug.trim()}$`, "i") } });
+      }
+
       const conflict = await Emotion.findOne({
-        name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
         _id: { $ne: id },
+        $or: orConditions,
         isDisplay: true,
       });
+
       if (conflict) {
+        if (data.slug && conflict.slug.toLowerCase() === data.slug.toLowerCase()) {
+          throw new ConflictError(`Emotion with slug '${data.slug}' already exists`);
+        }
         throw new ConflictError(`Emotion with name '${data.name}' already exists`);
       }
     }

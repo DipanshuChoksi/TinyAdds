@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { BadRequestError } from "../utils/errors.js";
+import { generateSlug } from "../utils/slug.js";
 
 export function validateObjectId(id: string, paramName = "id"): string {
   if (!id || typeof id !== "string" || !Types.ObjectId.isValid(id)) {
@@ -39,12 +40,14 @@ export function validatePagination(query: { page?: unknown; limit?: unknown }): 
 
 export interface CreateEmotionInput {
   name: string;
+  slug: string;
   image?: string;
   isActive?: boolean;
 }
 
 export interface UpdateEmotionInput {
   name?: string;
+  slug?: string;
   image?: string;
   isActive?: boolean;
 }
@@ -54,14 +57,20 @@ export function validateCreateEmotion(body: unknown): CreateEmotionInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, image, isActive } = body as Record<string, unknown>;
+  const { name, slug, image, isActive } = body as Record<string, unknown>;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     throw new BadRequestError("Emotion 'name' is required and must be a non-empty string");
   }
 
+  const trimmedName = name.trim();
+  const generatedSlug = slug && typeof slug === "string" && slug.trim().length > 0
+    ? generateSlug(slug)
+    : generateSlug(trimmedName);
+
   const result: CreateEmotionInput = {
-    name: name.trim(),
+    name: trimmedName,
+    slug: generatedSlug,
   };
 
   if (image !== undefined) {
@@ -86,7 +95,12 @@ export function validateUpdateEmotion(body: unknown): UpdateEmotionInput {
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, image, isActive } = body as Record<string, unknown>;
+  const { name, slug, image, isActive } = body as Record<string, unknown>;
+
+  if (name === undefined && slug === undefined && image === undefined && isActive === undefined) {
+    throw new BadRequestError("At least one valid field must be provided to update");
+  }
+
   const result: UpdateEmotionInput = {};
 
   if (name !== undefined) {
@@ -94,6 +108,13 @@ export function validateUpdateEmotion(body: unknown): UpdateEmotionInput {
       throw new BadRequestError("'name' must be a non-empty string");
     }
     result.name = name.trim();
+  }
+
+  if (slug !== undefined) {
+    if (typeof slug !== "string" || slug.trim().length === 0) {
+      throw new BadRequestError("'slug' must be a non-empty string");
+    }
+    result.slug = generateSlug(slug);
   }
 
   if (image !== undefined) {
@@ -108,10 +129,6 @@ export function validateUpdateEmotion(body: unknown): UpdateEmotionInput {
       throw new BadRequestError("'isActive' must be a boolean");
     }
     result.isActive = isActive;
-  }
-
-  if (Object.keys(result).length === 0) {
-    throw new BadRequestError("At least one valid field must be provided to update");
   }
 
   return result;

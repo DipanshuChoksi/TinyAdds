@@ -16,6 +16,7 @@ function mapToMasterItem(e: AdminEmotionResponse): AdminMasterItem {
     id: e._id,
     type: 'emotion',
     name: e.name,
+    slug: e.slug || '',
     status: e.isActive ? 'active' : 'inactive',
     itemCount: 0,
     image: e.image || '',
@@ -54,14 +55,14 @@ export default function AdminMasterEmotionsPage() {
     };
   }, []);
 
-  const handleCreate = async (name: string, image?: string): Promise<AdminMasterItem> => {
-    const created = await createAdminEmotion(name, image);
+  const handleCreate = async (name: string, image?: string, slug?: string): Promise<AdminMasterItem> => {
+    const created = await createAdminEmotion(name, image, slug);
     return mapToMasterItem(created);
   };
 
   const handleUpdate = async (
     id: string,
-    data: { name: string; image?: string }
+    data: { name: string; image?: string; slug?: string }
   ): Promise<AdminMasterItem> => {
     const updated = await updateAdminEmotion(id, data);
     return mapToMasterItem(updated);

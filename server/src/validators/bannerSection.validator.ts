@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { BadRequestError } from "../utils/errors.js";
+import { generateSlug } from "../utils/slug.js";
 
 export function validateObjectId(id: string, paramName = "id"): string {
   if (!id || typeof id !== "string" || !Types.ObjectId.isValid(id)) {
@@ -39,11 +40,13 @@ export function validatePagination(query: { page?: unknown; limit?: unknown }): 
 
 export interface CreateBannerSectionInput {
   name: string;
+  slug: string;
   isActive?: boolean;
 }
 
 export interface UpdateBannerSectionInput {
   name?: string;
+  slug?: string;
   isActive?: boolean;
 }
 
@@ -52,14 +55,20 @@ export function validateCreateBannerSection(body: unknown): CreateBannerSectionI
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, isActive } = body as Record<string, unknown>;
+  const { name, slug, isActive } = body as Record<string, unknown>;
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
     throw new BadRequestError("Banner section 'name' is required and must be a non-empty string");
   }
 
+  const trimmedName = name.trim();
+  const generatedSlug = slug && typeof slug === "string" && slug.trim().length > 0
+    ? generateSlug(slug)
+    : generateSlug(trimmedName);
+
   const result: CreateBannerSectionInput = {
-    name: name.trim(),
+    name: trimmedName,
+    slug: generatedSlug,
   };
 
   if (isActive !== undefined) {
@@ -77,10 +86,10 @@ export function validateUpdateBannerSection(body: unknown): UpdateBannerSectionI
     throw new BadRequestError("Request body must be a JSON object");
   }
 
-  const { name, isActive } = body as Record<string, unknown>;
+  const { name, slug, isActive } = body as Record<string, unknown>;
 
-  if (name === undefined && isActive === undefined) {
-    throw new BadRequestError("At least one field ('name' or 'isActive') must be provided to update");
+  if (name === undefined && slug === undefined && isActive === undefined) {
+    throw new BadRequestError("At least one field ('name', 'slug', or 'isActive') must be provided to update");
   }
 
   const result: UpdateBannerSectionInput = {};
@@ -90,6 +99,13 @@ export function validateUpdateBannerSection(body: unknown): UpdateBannerSectionI
       throw new BadRequestError("Banner section 'name' must be a non-empty string");
     }
     result.name = name.trim();
+  }
+
+  if (slug !== undefined) {
+    if (typeof slug !== "string" || slug.trim().length === 0) {
+      throw new BadRequestError("Banner section 'slug' must be a non-empty string");
+    }
+    result.slug = generateSlug(slug);
   }
 
   if (isActive !== undefined) {

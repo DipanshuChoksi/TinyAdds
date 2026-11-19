@@ -24,13 +24,30 @@ export class BannerSectionController {
   }
 
   /**
-   * GET /api/banner-sections/:id
-   * Public get banner section by ID
+   * GET /api/banner-sections/:idOrSlug
+   * Public get banner section by ID or slug
    */
   async getPublicBannerSectionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validId = validateObjectId(req.params.id as string);
-      const banner = await bannerSectionService.getPublicBannerSectionById(validId);
+      const param = (req.params.id as string).trim();
+      const isHexId = /^[0-9a-fA-F]{24}$/.test(param);
+      const banner = isHexId
+        ? await bannerSectionService.getPublicBannerSectionById(param)
+        : await bannerSectionService.getPublicBannerSectionBySlug(param);
+      res.status(200).json(sendSuccess(banner));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/banner-sections/slug/:slug
+   * Explicit public get banner section by slug
+   */
+  async getPublicBannerSectionBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const slug = (req.params.slug as string).trim();
+      const banner = await bannerSectionService.getPublicBannerSectionBySlug(slug);
       res.status(200).json(sendSuccess(banner));
     } catch (error) {
       next(error);
@@ -52,13 +69,30 @@ export class BannerSectionController {
   }
 
   /**
-   * GET /api/admin/banner-sections/:id
-   * Admin get banner section details by ID
+   * GET /api/admin/banner-sections/:idOrSlug
+   * Admin get banner section details by ID or slug
    */
   async getBannerSectionById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validId = validateObjectId(req.params.id as string);
-      const banner = await bannerSectionService.getBannerSectionById(validId);
+      const param = (req.params.id as string).trim();
+      const isHexId = /^[0-9a-fA-F]{24}$/.test(param);
+      const banner = isHexId
+        ? await bannerSectionService.getBannerSectionById(param)
+        : await bannerSectionService.getBannerSectionBySlug(param);
+      res.status(200).json(sendSuccess(banner));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/admin/banner-sections/slug/:slug
+   * Explicit admin get banner section by slug
+   */
+  async getBannerSectionBySlug(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const slug = (req.params.slug as string).trim();
+      const banner = await bannerSectionService.getBannerSectionBySlug(slug);
       res.status(200).json(sendSuccess(banner));
     } catch (error) {
       next(error);

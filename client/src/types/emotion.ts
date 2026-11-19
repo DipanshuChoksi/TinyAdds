@@ -4,6 +4,7 @@
 export interface PublicEmotionResponse {
   _id: string;
   name: string;
+  slug?: string;
   image?: string;
   createdAt: string;
   updatedAt: string;
@@ -15,6 +16,7 @@ export interface PublicEmotionResponse {
 export interface AdminEmotionResponse {
   _id: string;
   name: string;
+  slug?: string;
   image?: string;
   isActive: boolean;
   isDisplay: boolean;
@@ -25,6 +27,7 @@ export interface AdminEmotionResponse {
 
 export interface CreateEmotionPayload {
   name: string;
+  slug?: string;
   image?: string;
   isActive?: boolean;
 }
@@ -34,6 +37,7 @@ export interface CreateEmotionPayload {
  */
 export interface UpdateEmotionPayload {
   name?: string;
+  slug?: string;
   image?: string;
   isActive?: boolean;
 }

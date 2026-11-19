@@ -5,6 +5,7 @@ const router = Router();
 
 // Public routes for groups
 router.get("/", (req, res, next) => groupController.getPublicGroups(req, res, next));
+router.get("/slug/:slug", (req, res, next) => groupController.getPublicGroupBySlug(req, res, next));
 router.get("/:id", (req, res, next) => groupController.getPublicGroupById(req, res, next));
 
 export default router;

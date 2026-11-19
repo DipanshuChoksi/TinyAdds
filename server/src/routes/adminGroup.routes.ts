@@ -6,6 +6,7 @@ const router = Router();
 // Admin routes for groups
 router.get("/", (req, res, next) => groupController.getAdminGroups(req, res, next));
 router.post("/", (req, res, next) => groupController.createGroup(req, res, next));
+router.get("/slug/:slug", (req, res, next) => groupController.getGroupBySlug(req, res, next));
 router.get("/:id", (req, res, next) => groupController.getGroupById(req, res, next));
 router.patch("/:id", (req, res, next) => groupController.updateGroup(req, res, next));
 router.delete("/:id", (req, res, next) => groupController.softDeleteGroup(req, res, next));

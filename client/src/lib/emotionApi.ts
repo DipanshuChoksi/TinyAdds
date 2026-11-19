@@ -23,6 +23,13 @@ export async function getPublicEmotionById(id: string): Promise<ApiResponse<Publ
 }
 
 /**
+ * Fetch a single public emotion by slug
+ */
+export async function getPublicEmotionBySlug(slug: string): Promise<ApiResponse<PublicEmotionResponse>> {
+  return await http.get<PublicEmotionResponse>(`/emotions/slug/${slug}`);
+}
+
+/**
  * Fetch emotions for admin panel
  */
 export async function getAdminEmotions(page = 1, limit = 100): Promise<AdminEmotionResponse[]> {
@@ -40,8 +47,8 @@ export async function getAdminEmotions(page = 1, limit = 100): Promise<AdminEmot
 /**
  * Create a new emotion via admin API
  */
-export async function createAdminEmotion(name: string, image = ''): Promise<AdminEmotionResponse> {
-  const payload: CreateEmotionPayload = { name, image, isActive: true };
+export async function createAdminEmotion(name: string, image = '', slug?: string): Promise<AdminEmotionResponse> {
+  const payload: CreateEmotionPayload = { name, image, slug: slug || undefined, isActive: true };
   const response = await http.post<AdminEmotionResponse, CreateEmotionPayload>('/admin/emotions', payload);
   return response.data;
 }

@@ -31,7 +31,7 @@ export class BannerSectionService {
 
     const [items, total] = await Promise.all([
       BannerSection.find(filter)
-        .select("name createdAt updatedAt")
+        .select("name slug createdAt updatedAt")
         .sort({ name: 1 })
         .skip(skip)
         .limit(limit)
@@ -55,11 +55,30 @@ export class BannerSectionService {
    */
   async getPublicBannerSectionById(id: string): Promise<BannerSectionDocument> {
     const banner = await BannerSection.findOne({ _id: id, isDisplay: true, isActive: true })
-      .select("name createdAt updatedAt")
+      .select("name slug createdAt updatedAt")
       .lean();
 
     if (!banner) {
       throw new NotFoundError(`Banner section with id '${id}' not found`);
+    }
+
+    return banner as unknown as BannerSectionDocument;
+  }
+
+  /**
+   * Public get by slug: must filter by isDisplay: true AND isActive: true
+   */
+  async getPublicBannerSectionBySlug(slug: string): Promise<BannerSectionDocument> {
+    const banner = await BannerSection.findOne({
+      slug: slug.toLowerCase().trim(),
+      isDisplay: true,
+      isActive: true,
+    })
+      .select("name slug createdAt updatedAt")
+      .lean();
+
+    if (!banner) {
+      throw new NotFoundError(`Banner section with slug '${slug}' not found`);
     }
 
     return banner as unknown as BannerSectionDocument;
@@ -77,6 +96,7 @@ export class BannerSectionService {
 
     const [items, total] = await Promise.all([
       BannerSection.find(filter)
+        .select("name slug isActive isDisplay deletedAt createdAt updatedAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -99,7 +119,9 @@ export class BannerSectionService {
    * Admin get by ID: filters by isDisplay: true
    */
   async getBannerSectionById(id: string): Promise<BannerSectionDocument> {
-    const banner = await BannerSection.findOne({ _id: id, isDisplay: true }).lean();
+    const banner = await BannerSection.findOne({ _id: id, isDisplay: true })
+      .select("name slug isActive isDisplay deletedAt createdAt updatedAt")
+      .lean();
 
     if (!banner) {
       throw new NotFoundError(`Banner section with id '${id}' not found`);
@@ -109,19 +131,49 @@ export class BannerSectionService {
   }
 
   /**
+   * Admin get by slug: filters by isDisplay: true
+   */
+  async getBannerSectionBySlug(slug: string): Promise<BannerSectionDocument> {
+    const banner = await BannerSection.findOne({
+      slug: slug.toLowerCase().trim(),
+      isDisplay: true,
+    })
+      .select("name slug isActive isDisplay deletedAt createdAt updatedAt")
+      .lean();
+
+    if (!banner) {
+      throw new NotFoundError(`Banner section with slug '${slug}' not found`);
+    }
+
+    return banner as unknown as BannerSectionDocument;
+  }
+
+  /**
    * Create new banner section
    */
   async createBannerSection(data: CreateBannerSectionInput): Promise<BannerSectionDocument> {
+    const slug = data.slug || "";
+    const orConditions: Record<string, unknown>[] = [
+      { name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } },
+    ];
+    if (slug) {
+      orConditions.push({ slug: { $regex: new RegExp(`^${slug}$`, "i") } });
+    }
+
     const existing = await BannerSection.findOne({
-      name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
+      $or: orConditions,
       isDisplay: true,
     });
     if (existing) {
+      if (existing.slug && existing.slug.toLowerCase() === slug.toLowerCase()) {
+        throw new ConflictError(`Banner section with slug '${slug}' already exists`);
+      }
       throw new ConflictError(`Banner section with name '${data.name}' already exists`);
     }
 
     const banner = await BannerSection.create({
       name: data.name,
+      slug: data.slug,
       isActive: data.isActive ?? true,
       isDisplay: true,
       deletedAt: null,
@@ -134,13 +186,25 @@ export class BannerSectionService {
    * Update existing banner section
    */
   async updateBannerSection(id: string, data: UpdateBannerSectionInput): Promise<BannerSectionDocument> {
-    if (data.name) {
+    if (data.name || data.slug) {
+      const orConditions: Record<string, unknown>[] = [];
+      if (data.name) {
+        orConditions.push({ name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } });
+      }
+      if (data.slug) {
+        orConditions.push({ slug: { $regex: new RegExp(`^${data.slug.trim()}$`, "i") } });
+      }
+
       const conflict = await BannerSection.findOne({
-        name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
         _id: { $ne: id },
+        $or: orConditions,
         isDisplay: true,
       });
+
       if (conflict) {
+        if (data.slug && conflict.slug.toLowerCase() === data.slug.toLowerCase()) {
+          throw new ConflictError(`Banner section with slug '${data.slug}' already exists`);
+        }
         throw new ConflictError(`Banner section with name '${data.name}' already exists`);
       }
     }
