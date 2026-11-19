@@ -142,6 +142,7 @@ export * from './searchCategoryApi';
 export * from './bannerSectionApi';
 export * from './blogApi';
 export * from './postApi';
+export * from './tagApi';
 export * from './analyticsApi';
 
 

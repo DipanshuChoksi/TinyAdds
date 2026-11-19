@@ -88,7 +88,13 @@ export default function SliderBannerCarousel() {
         title: post.title,
         image: post.image || "/ads/minimalist-fb-ad.png",
         author: post.contactPerson || post.title,
-        role: [post.tag, post.searchCategory?.name, post.searchGroup?.name].filter(Boolean).join(" • ") || "Featured Advertiser",
+        role: [
+          Array.isArray(post.tags) && post.tags.length > 0
+            ? (typeof post.tags[0] === "object" && post.tags[0] !== null && "name" in post.tags[0] ? post.tags[0].name : String(post.tags[0]))
+            : "",
+          post.searchCategory?.name,
+          post.searchGroup?.name,
+        ].filter(Boolean).join(" • ") || "Featured Advertiser",
         company: post.searchGroup?.name || "TinyAdds",
         quote: extractText(post.description) || post.title,
         emotion: post.emotion?.name,

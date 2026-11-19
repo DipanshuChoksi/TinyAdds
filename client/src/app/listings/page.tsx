@@ -12,7 +12,9 @@ import { getPublicGroups } from "@/lib/groupApi";
 import { getPublicSearchCategories } from "@/lib/searchCategoryApi";
 import { getPublicEmotions } from "@/lib/emotionApi";
 import { getPublicCities } from "@/lib/cityApi";
+import { getPublicTags } from "@/lib/tagApi";
 import type { PublicCityResponse } from "@/types/city";
+import type { PublicTagResponse } from "@/types/tag";
 
 const PAGE_SIZE = 12;
 
@@ -38,6 +40,7 @@ function ListingsContent() {
   const group = searchParams.get("group") || "";
   const category = searchParams.get("category") || "";
   const emotion = searchParams.get("emotion") || "";
+  const tagsParam = searchParams.get("tags") || "";
   const cityIdParam = searchParams.get("cityId") || "";
   const cityId =
     cityIdParam && !isNaN(Number(cityIdParam)) ? Number(cityIdParam) : undefined;
@@ -53,6 +56,13 @@ function ListingsContent() {
   const [categoryOptions, setCategoryOptions] = useState<FilterOption[]>([]);
   const [emotionOptions, setEmotionOptions] = useState<FilterOption[]>([]);
   const [cityOptions, setCityOptions] = useState<PublicCityResponse[]>([]);
+  const [tagOptions, setTagOptions] = useState<PublicTagResponse[]>([]);
+
+  // Tag filter modal state
+  const [tagModalOpen, setTagModalOpen] = useState(false);
+  const selectedTagIds = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+  const [pendingTagIds, setPendingTagIds] = useState<string[]>([]);
+  const [tagSearchQuery, setTagSearchQuery] = useState("");
 
   // Post items & pagination state
   const [posts, setPosts] = useState<PublicPost[]>([]);
@@ -73,7 +83,8 @@ function ListingsContent() {
       getPublicSearchCategories().catch(() => null),
       getPublicEmotions().catch(() => null),
       getPublicCities().catch(() => null),
-    ]).then(([bannerRes, groupRes, catRes, emotionRes, cityRes]) => {
+      getPublicTags().catch(() => null),
+    ]).then(([bannerRes, groupRes, catRes, emotionRes, cityRes, tagRes]) => {
       if (bannerRes?.success && Array.isArray(bannerRes.data)) {
         setBannerOptions(
           bannerRes.data
@@ -104,6 +115,9 @@ function ListingsContent() {
       }
       if (cityRes?.success && Array.isArray(cityRes.data)) {
         setCityOptions(cityRes.data);
+      }
+      if (tagRes?.success && Array.isArray(tagRes.data)) {
+        setTagOptions(tagRes.data);
       }
     });
   }, []);
@@ -138,6 +152,7 @@ function ListingsContent() {
       searchGroup: group || undefined,
       searchCategory: category || undefined,
       emotion: emotion || undefined,
+      tags: tagsParam || undefined,
       cityId: cityId,
       page: currentPage,
       limit: PAGE_SIZE,
@@ -176,7 +191,7 @@ function ListingsContent() {
     return () => {
       active = false;
     };
-  }, [search, banner, group, category, emotion, cityId, currentPage]);
+  }, [search, banner, group, category, emotion, tagsParam, cityId, currentPage]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,7 +206,7 @@ function ListingsContent() {
   };
 
   const hasActiveFilters = Boolean(
-    search || banner || group || category || emotion || cityId !== undefined
+    search || banner || group || category || emotion || tagsParam || cityId !== undefined
   );
 
   return (
@@ -308,7 +323,7 @@ function ListingsContent() {
                 </div>
 
                 {/* Emotion Filter */}
-                <div className="mb-2">
+                <div className="mb-3">
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Emotion / Vibe
                   </label>
@@ -326,6 +341,66 @@ function ListingsContent() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                {/* Tags Filter Button & Selected Tag Pills */}
+                <div className="mb-2">
+                  <div className="d-flex align-items-center justify-content-between mb-1">
+                    <label className="form-label small fw-semibold text-muted text-uppercase mb-0">
+                      Tags
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 py-1 px-2 rounded-pill"
+                      style={{ fontSize: "0.78rem" }}
+                      onClick={() => {
+                        setPendingTagIds(selectedTagIds);
+                        setTagSearchQuery("");
+                        setTagModalOpen(true);
+                      }}
+                    >
+                      <i className="bi bi-tag" />
+                      <span>{selectedTagIds.length > 0 ? "Edit Tags" : "Select Tags"}</span>
+                    </button>
+                  </div>
+
+                  {selectedTagIds.length > 0 ? (
+                    <div className="d-flex flex-wrap gap-1 mt-2">
+                      {selectedTagIds.map((tid) => {
+                        const tagObj = tagOptions.find((t) => t._id === tid);
+                        const label = tagObj ? tagObj.name : tid;
+                        return (
+                          <span
+                            key={tid}
+                            className="badge d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill"
+                            style={{
+                              backgroundColor: "rgba(184, 77, 40, 0.08)",
+                              color: "var(--lb-primary, #b84d28)",
+                              border: "1px solid rgba(184, 77, 40, 0.22)",
+                              fontSize: "0.78rem",
+                              fontWeight: 500,
+                            }}
+                          >
+                            <span>#{label}</span>
+                            <button
+                              type="button"
+                              className="btn-close p-0 ms-1"
+                              style={{ fontSize: "0.55rem" }}
+                              aria-label={`Remove tag ${label}`}
+                              onClick={() => {
+                                const next = selectedTagIds.filter((id) => id !== tid);
+                                updateParams({ tags: next.length > 0 ? next.join(",") : null, page: 1 });
+                              }}
+                            />
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-muted small mb-0 mt-1" style={{ fontSize: "0.8rem" }}>
+                      No tags selected.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -562,6 +637,189 @@ function ListingsContent() {
           </main>
         </div>
       </div>
+
+      {/* Tags Filter Modal */}
+      {tagModalOpen && (
+        <div
+          className="modal d-block"
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          style={{
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: "blur(2px)",
+            zIndex: 1060,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTagModalOpen(false);
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+              <div className="modal-header border-bottom bg-light px-4 py-3 d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="modal-title fw-bold mb-0 text-dark">
+                    <i className="bi bi-tags me-2 text-primary" />
+                    Filter by Tags
+                  </h6>
+                  <small className="text-muted">
+                    Select one or more tags to refine ad listings
+                  </small>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setTagModalOpen(false)}
+                />
+              </div>
+
+              <div className="modal-body p-4">
+                {/* Search tags inside modal */}
+                <div className="position-relative mb-3">
+                  <i
+                    className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                    style={{ color: "#94a3b8" }}
+                  />
+                  <input
+                    type="text"
+                    className="form-control ps-5"
+                    placeholder="Search tags..."
+                    value={tagSearchQuery}
+                    onChange={(e) => setTagSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                  {tagSearchQuery && (
+                    <button
+                      type="button"
+                      className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
+                      style={{ color: "#94a3b8" }}
+                      onClick={() => setTagSearchQuery("")}
+                    >
+                      <i className="bi bi-x-circle-fill" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Selected Count & Select/Deselect All buttons */}
+                <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                  <span className="small text-muted">
+                    <strong>{pendingTagIds.length}</strong> tag
+                    {pendingTagIds.length === 1 ? "" : "s"} selected
+                  </span>
+                  <div className="d-flex gap-2">
+                    {pendingTagIds.length > 0 && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                        style={{ fontSize: "0.8rem" }}
+                        onClick={() => setPendingTagIds([])}
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tags Grid / List */}
+                <div
+                  className="d-flex flex-wrap gap-2"
+                  style={{ maxHeight: "280px", overflowY: "auto" }}
+                >
+                  {(() => {
+                    const filtered = tagOptions.filter((t) =>
+                      tagSearchQuery.trim()
+                        ? t.name.toLowerCase().includes(tagSearchQuery.trim().toLowerCase())
+                        : true
+                    );
+
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="w-100 text-center py-4 text-muted small">
+                          <i className="bi bi-tag fs-3 d-block mb-1 text-secondary" />
+                          No tags match &ldquo;{tagSearchQuery}&rdquo;
+                        </div>
+                      );
+                    }
+
+                    return filtered.map((t) => {
+                      const isSelected = pendingTagIds.includes(t._id);
+                      return (
+                        <button
+                          key={t._id}
+                          type="button"
+                          className="btn btn-sm rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1 text-start"
+                          style={{
+                            fontSize: "0.84rem",
+                            backgroundColor: isSelected
+                              ? "rgba(184, 77, 40, 0.12)"
+                              : "var(--lb-soft, #f8f6f4)",
+                            color: isSelected
+                              ? "var(--lb-primary, #b84d28)"
+                              : "var(--lb-ink, #2d2621)",
+                            border: isSelected
+                              ? "1.5px solid var(--lb-primary, #b84d28)"
+                              : "1px solid var(--lb-line, #eadfd7)",
+                            fontWeight: isSelected ? 600 : 400,
+                            transition: "all 0.15s ease",
+                          }}
+                          onClick={() => {
+                            if (isSelected) {
+                              setPendingTagIds(pendingTagIds.filter((id) => id !== t._id));
+                            } else {
+                              setPendingTagIds([...pendingTagIds, t._id]);
+                            }
+                          }}
+                        >
+                          <span
+                            className="d-inline-flex align-items-center justify-content-center rounded-circle"
+                            style={{
+                              width: "14px",
+                              height: "14px",
+                              backgroundColor: isSelected
+                                ? "var(--lb-primary, #b84d28)"
+                                : "transparent",
+                              color: "#fff",
+                              fontSize: "0.6rem",
+                            }}
+                          >
+                            {isSelected && <i className="bi bi-check" />}
+                          </span>
+                          <span>{t.name}</span>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              <div className="modal-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                  onClick={() => setTagModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary text-white rounded-pill px-4"
+                  style={{ backgroundColor: "var(--lb-primary)" }}
+                  onClick={() => {
+                    setTagModalOpen(false);
+                    updateParams({
+                      tags: pendingTagIds.length > 0 ? pendingTagIds.join(",") : null,
+                      page: 1,
+                    });
+                  }}
+                >
+                  Apply Filter {pendingTagIds.length > 0 ? `(${pendingTagIds.length})` : ""}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { AdminMasterItem, MasterEntityType } from '@/src/types';
+import Pagination from '@/components/ui/Pagination';
 
 export interface MasterCategoryMeta {
   label: string;
@@ -117,6 +118,7 @@ interface MasterItemViewProps {
   defaultCategory: MasterEntityType;
   pageTitle?: string;
   pageDescription?: string;
+  pageSize?: number;
   onCreateItem?: (name: string, image?: string) => Promise<AdminMasterItem>;
   onUpdateItem?: (id: string, data: { name: string; image?: string }) => Promise<AdminMasterItem>;
   onToggleStatus?: (id: string, newStatus: 'active' | 'inactive') => Promise<void>;
@@ -128,12 +130,14 @@ export default function MasterItemView({
   defaultCategory,
   pageTitle,
   pageDescription,
+  pageSize,
   onCreateItem,
   onUpdateItem,
   onToggleStatus,
   onDeleteItem,
 }: MasterItemViewProps) {
   const [items, setItems] = useState<AdminMasterItem[]>(initialMasterItems);
+  const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<AdminMasterItem | null>(null);
@@ -209,13 +213,18 @@ export default function MasterItemView({
 
   const filtered = items.filter((item) => {
     const matchesCategory = item.type === defaultCategory;
-    // const matchesSearch =
-    //   item.name.toLowerCase().includes(search.toLowerCase()) ||
-    //   (item.slug ? item.slug.toLowerCase().includes(search.toLowerCase()) : false);
-    // return matchesCategory && matchesSearch;
-    return matchesCategory;
-
+    const matchesSearch = search.trim()
+      ? item.name.toLowerCase().includes(search.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
   });
+
+  const effectivePageSize = pageSize ?? 10;
+  const totalPages = Math.ceil(filtered.length / effectivePageSize) || 1;
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedItems = pageSize
+    ? filtered.slice((safePage - 1) * effectivePageSize, safePage * effectivePageSize)
+    : filtered;
 
   const toggleStatus = async (id: string) => {
     const item = items.find((i) => i.id === id);
@@ -358,14 +367,20 @@ export default function MasterItemView({
                 className="form-control admin-search-input ps-5"
                 placeholder={`Search ${meta.label.toLowerCase()} or slug...`}
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
               {search && (
                 <button
                   type="button"
                   className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
                   style={{ color: '#94a3b8' }}
-                  onClick={() => setSearch('')}
+                  onClick={() => {
+                    setSearch('');
+                    setCurrentPage(1);
+                  }}
                 >
                   <i className="bi bi-x-circle-fill" />
                 </button>
@@ -406,7 +421,7 @@ export default function MasterItemView({
                   </td>
                 </tr>
               ) : (
-                filtered.map((item) => (
+                pagedItems.map((item) => (
                   <tr key={item.id}>
                     <td className="ps-4 fw-semibold" style={{ color: '#0f172a' }}>
                       {item.name}
@@ -487,6 +502,22 @@ export default function MasterItemView({
           </table>
         </div>
       </div>
+
+      {/* Pagination (Client-side when pageSize is provided and records > pageSize) */}
+      {pageSize && filtered.length > pageSize && (
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+          <span className="small text-muted">
+            Showing {(safePage - 1) * effectivePageSize + 1} to{' '}
+            {Math.min(safePage * effectivePageSize, filtered.length)} of {filtered.length} entries
+          </span>
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            onPageChange={(p) => setCurrentPage(p)}
+            ariaLabel={`${meta.label} pagination`}
+          />
+        </div>
+      )}
 
       {/* Create / Edit Modal */}
       {showModal && (

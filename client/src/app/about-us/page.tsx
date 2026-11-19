@@ -14,7 +14,7 @@ export const metadata = createSeoMetadata({
 export default function AboutUs() {
   return (
     <main>
-      <PageBanner title="About Us" crumbs={[{ label: "Home", href: "/" }, { label: "Pages" }, { label: "About Us" }]} />
+      <PageBanner title="About Us" crumbs={[{ label: "Home", href: "/" }, { label: "About Us" }]} />
       <AboutIntro />
       {/* <CompanyJourney /> */}
       {/* <Team /> */}

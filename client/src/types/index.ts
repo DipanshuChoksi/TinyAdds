@@ -77,7 +77,7 @@ export interface ClientPost {
   fromDate: string;
   title: string;
   image: string;
-  tag: string;
+  tags?: (string | { _id: string; name: string })[];
   description: string;
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected';

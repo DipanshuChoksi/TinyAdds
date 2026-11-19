@@ -46,6 +46,12 @@ export class ClientPostController {
       const searchGroup = typeof req.query.searchGroup === "string" ? req.query.searchGroup : undefined;
       const searchCategory = typeof req.query.searchCategory === "string" ? req.query.searchCategory : undefined;
       const emotion = typeof req.query.emotion === "string" ? req.query.emotion : undefined;
+      const tags =
+        typeof req.query.tags === "string"
+          ? req.query.tags
+          : Array.isArray(req.query.tags)
+          ? (req.query.tags as string[])
+          : undefined;
       const cityId = req.query.cityId && !isNaN(Number(req.query.cityId)) ? Number(req.query.cityId) : undefined;
       const search = typeof req.query.search === "string" ? req.query.search : undefined;
       const fromDate = typeof req.query.fromDate === "string" ? req.query.fromDate : undefined;
@@ -57,6 +63,7 @@ export class ClientPostController {
         searchGroup,
         searchCategory,
         emotion,
+        tags,
         cityId,
         search,
         fromDate,

@@ -8,7 +8,7 @@ import http from "@/lib/http";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import Pagination from "@/components/ui/Pagination";
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 10;
 type SortField = "title" | "fromDate" | "createdAt" | "status";
 
 interface Props {
@@ -224,7 +224,14 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
                 <dt className="col-sm-4 text-body-secondary">Emotion</dt><dd className="col-sm-8 mb-2">{selectedPost.emotion || "-"}</dd>
                 <dt className="col-sm-4 text-body-secondary">Search group</dt><dd className="col-sm-8 mb-2">{selectedPost.searchGroup || "-"}</dd>
                 <dt className="col-sm-4 text-body-secondary">Search category</dt><dd className="col-sm-8 mb-2">{selectedPost.searchCategory || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Tag</dt><dd className="col-sm-8 mb-2">{selectedPost.tag || "-"}</dd>
+                <dt className="col-sm-4 text-body-secondary">Tags</dt>
+                <dd className="col-sm-8 mb-2">
+                  {Array.isArray(selectedPost.tags) && selectedPost.tags.length > 0
+                    ? selectedPost.tags
+                        .map((t) => (typeof t === "object" && t !== null && "name" in t ? t.name : String(t)))
+                        .join(", ")
+                    : "-"}
+                </dd>
                 <dt className="col-sm-4 text-body-secondary">Created</dt><dd className="col-sm-8 mb-2">{new Date(selectedPost.createdAt).toLocaleString()}</dd>
                 <dt className="col-sm-4 text-body-secondary">Status</dt><dd className="col-sm-8 mb-2">{selectedPost.status ?? "pending"}</dd>
                 {selectedPost.rejectionComment && <><dt className="col-sm-4 text-body-secondary">Admin feedback</dt><dd className="col-sm-8 mb-2 text-break">{selectedPost.rejectionComment}</dd></>}

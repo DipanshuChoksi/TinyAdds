@@ -12,9 +12,25 @@ import http from "@/lib/http";
 import { getPublicBannerSections } from "@/lib/bannerSectionApi";
 import { getPublicEmotions } from "@/lib/emotionApi";
 import { getPublicGroups } from "@/lib/groupApi";
+import { getPublicTags, createPublicTag } from "@/lib/tagApi";
+import MultiSelectTags, { type TagOption } from "@/components/ui/MultiSelectTags";
 import type { ClientPost } from "@/types";
 
-const EMPTY = { contactPerson: "", contactNo: "", email: "", address: "", banner: "", emotion: "", searchGroup: "", searchCategory: "", fromDate: todayISO(), title: "", image: "", tag: "", description: "" };
+const EMPTY = {
+  contactPerson: "",
+  contactNo: "",
+  email: "",
+  address: "",
+  banner: "",
+  emotion: "",
+  searchGroup: "",
+  searchCategory: "",
+  fromDate: todayISO(),
+  title: "",
+  image: "",
+  tags: [] as string[],
+  description: "",
+};
 type Values = typeof EMPTY;
 type Errors = Partial<Record<keyof Values | "file", string>>;
 interface Props {
@@ -41,6 +57,7 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
   const [bannerOptions, setBannerOptions] = useState<{ label: string; value: string }[]>([]);
   const [emotionOptions, setEmotionOptions] = useState<{ label: string; value: string }[]>([]);
   const [searchGroupOptions, setSearchGroupOptions] = useState<{ label: string; value: string }[]>([]);
+  const [tagOptions, setTagOptions] = useState<TagOption[]>([]);
   const [cropperOpen, setCropperOpen] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState<string>("");
   const endpoint = mode === "admin" ? "/admin/posts" : "/client/posts";
@@ -51,7 +68,8 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
       getPublicBannerSections(1, 100),
       getPublicEmotions(1, 100),
       getPublicGroups(1, 100),
-    ]).then(([bannerRes, emotionRes, groupRes]) => {
+      getPublicTags(),
+    ]).then(([bannerRes, emotionRes, groupRes, tagRes]) => {
       if (!active) return;
 
       if (bannerRes.status === "fulfilled" && bannerRes.value.success && Array.isArray(bannerRes.value.data)) {
@@ -70,10 +88,34 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
         const options = groupRes.value.data.map((item) => ({ label: item.name, value: item._id })).filter((item) => item.label);
         if (options.length > 0) setSearchGroupOptions(options);
       }
+
+      if (tagRes.status === "fulfilled" && tagRes.value.success && Array.isArray(tagRes.value.data)) {
+        const options = tagRes.value.data
+          .map((item) => ({ label: item.name, value: item._id }))
+          .filter((item) => item.label);
+        setTagOptions(options);
+      }
     });
 
     return () => { active = false; };
   }, []);
+
+  const handleCreateTag = async (tagName: string): Promise<TagOption | null> => {
+    try {
+      const res = await createPublicTag(tagName);
+      if (res.success && res.data) {
+        const newOpt: TagOption = { label: res.data.name, value: res.data._id };
+        setTagOptions((prev) => {
+          if (prev.some((o) => o.value === newOpt.value)) return prev;
+          return [...prev, newOpt];
+        });
+        return newOpt;
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to create tag");
+    }
+    return null;
+  };
 
   useEffect(() => {
     let active = true;
@@ -82,7 +124,17 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
     setEditId(id);
     setLoading(true);
     http.get<ClientPost>(`${endpoint}/${encodeURIComponent(id)}`).then(({ data }) => {
-      if (active) setValues({ ...EMPTY, ...data });
+      if (active) {
+        let normalizedTags: string[] = [];
+        if (Array.isArray(data.tags)) {
+          normalizedTags = data.tags.map((t) => (typeof t === "object" && t !== null && "_id" in t ? String(t._id) : String(t)));
+        }
+        setValues({
+          ...EMPTY,
+          ...data,
+          tags: normalizedTags,
+        });
+      }
     }).catch((error: unknown) => {
       if (active) toast.error(error instanceof Error ? error.message : "Unable to load post");
     }).finally(() => {
@@ -231,7 +283,16 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
               )}
             </div>
           </div>
-          <div className="col-12"><label className="lb-ca-label">Tag</label><input className="form-control lb-ca-input" placeholder="e.g. auction, finance" value={values.tag} onChange={set("tag")} /></div>
+          <div className="col-12">
+            <label className="lb-ca-label">Tags</label>
+            <MultiSelectTags
+              value={values.tags}
+              onChange={(selected) => setValues((v) => ({ ...v, tags: selected }))}
+              options={tagOptions}
+              onCreateTag={handleCreateTag}
+              placeholder="Search or select tags, or type to create new..."
+            />
+          </div>
           <div className="col-12"><label className="lb-ca-label">Description</label><RichTextEditor value={values.description} onChange={(html) => setValues((v) => ({ ...v, description: html }))} /></div>
         </div>
         <div className="text-end mt-4"><button type="submit" className="btn lb-btn-primary" disabled={saving || loading}>{saving ? "Saving..." : editId ? "Update Post" : "Add Post"}</button></div>

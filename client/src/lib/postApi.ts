@@ -10,7 +10,7 @@ export interface PublicPost {
   searchCategory: {name : string, _id: string} | null;
   fromDate: string;
   expiresAt?: string | null;
-  tag: string;
+  tags?: (string | { _id: string; name: string })[];
   description: string;
   contactPerson: string;
   contactNo: string;
@@ -27,6 +27,7 @@ export async function getPublicPosts(params?: {
   searchGroup?: string;
   searchCategory?: string;
   emotion?: string;
+  tags?: string;
   cityId?: number;
   search?: string;
   fromDate?: string;
@@ -39,6 +40,7 @@ export async function getPublicPosts(params?: {
       searchGroup: params?.searchGroup,
       searchCategory: params?.searchCategory,
       emotion: params?.emotion,
+      tags: params?.tags,
       cityId: params?.cityId,
       search: params?.search,
       fromDate: params?.fromDate,

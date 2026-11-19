@@ -16,7 +16,7 @@ export interface ClientPostInput {
   expiresAt?: Date | null;
   title: string;
   image: string;
-  tag: string;
+  tags: Types.ObjectId[];
   description: string;
 }
 
@@ -50,6 +50,22 @@ export function validatePost(body: unknown): ClientPostInput {
     return new Types.ObjectId(value);
   };
 
+  const parseTags = (): Types.ObjectId[] => {
+    const raw = input.tags;
+    if (raw === undefined || raw === null) return [];
+    if (!Array.isArray(raw)) {
+      throw new BadRequestError("tags must be an array of ObjectIds");
+    }
+
+    return raw.map((item, idx) => {
+      const val = typeof item === "string" ? item.trim() : String(item);
+      if (!Types.ObjectId.isValid(val)) {
+        throw new BadRequestError(`Invalid ObjectId in tags at index ${idx}`);
+      }
+      return new Types.ObjectId(val);
+    });
+  };
+
   return {
     contactPerson: get("contactPerson", 160, true),
     contactNo: get("contactNo", 20, true),
@@ -71,7 +87,7 @@ export function validatePost(body: unknown): ClientPostInput {
     })(),
     title: get("title", 200, true),
     image: get("image", 8_000_000),
-    tag: get("tag", 300),
+    tags: parseTags(),
     description: get("description", 100_000),
   };
 }

@@ -74,7 +74,9 @@ export default function Hero() {
           id: post.id,
           title: post.title,
           image: post.image || "/ads/minimalist-fb-ad.png",
-          tag: post.tag || post.searchCategory?.name || "Featured Deal",
+          tag: (Array.isArray(post.tags) && post.tags.length > 0
+            ? (typeof post.tags[0] === "object" && post.tags[0] !== null && "name" in post.tags[0] ? post.tags[0].name : String(post.tags[0]))
+            : "") || post.searchCategory?.name || "Featured Deal",
           link: `/listings/${post.id}`,
         }))
       : FALLBACK_SECTION_SLIDES;

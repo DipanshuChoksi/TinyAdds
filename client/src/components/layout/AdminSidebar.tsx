@@ -35,7 +35,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
       { href: '/admin/master-item/emotions', label: 'Emotions' },
       { href: '/admin/master-item/manage-cms', label: 'Manage CMS' },
       // { href: '/admin/master-item/manage-marquee', label: 'Manage Marquee' },
-      // { href: '/admin/master-item/tax-master', label: 'TaxMaster' },
+      { href: '/admin/master-item/tags', label: 'Tags' },
       // { href: '/admin/master-item/success-stories', label: 'Success Stories' },
       { href: '/admin/master-item/user', label: 'User' },
       { href: '/admin/master-item/country', label: 'Country' },

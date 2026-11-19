@@ -27,7 +27,7 @@ const clientPostSchema = new Schema(
     },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     image: { type: String, default: "", maxlength: 8_000_000 },
-    tag: { type: String, default: "", trim: true, maxlength: 300 },
+    tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
     description: { type: String, default: "", maxlength: 100_000 },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending", index: true },
     rejectionComment: { type: String, default: "", trim: true, maxlength: 2000 },
@@ -60,7 +60,7 @@ export interface ClientPostData {
   expiresAt: Date | null;
   title: string;
   image: string;
-  tag: string;
+  tags: Types.ObjectId[];
   description: string;
   status: "pending" | "approved" | "rejected";
   rejectionComment: string;

@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { ClientPost, type ClientPostData } from "../models/ClientPost.js";
 import { User } from "../models/User.js";
 import { City } from "../models/City.js";
+import { Group } from "../models/Group.js";
+import { Tag } from "../models/Tag.js";
 import { BadRequestError, NotFoundError } from "../utils/errors.js";
 import type { ClientPostInput } from "../validators/post.validator.js";
 import type { PostListQuery } from "../validators/postQuery.validator.js";
@@ -22,7 +24,7 @@ type PostRecord = {
   expiresAt?: Date | null | undefined;
   title: string;
   image: string;
-  tag: string;
+  tags?: (Types.ObjectId | string | { _id: Types.ObjectId | string; name: string })[] | undefined;
   description: string;
   createdAt: Date;
   status?: "pending" | "approved" | "rejected" | undefined;
@@ -32,6 +34,10 @@ type PostRecord = {
 };
 
 function serializePost(post: PostRecord) {
+  const tags = (Array.isArray(post.tags) ? post.tags : []).filter(
+    (t): t is NonNullable<typeof t> => t !== null && t !== undefined
+  );
+
   return {
     id: String(post._id),
     contactPerson: post.contactPerson,
@@ -48,7 +54,7 @@ function serializePost(post: PostRecord) {
     expiresAt: post.expiresAt ?? null,
     title: post.title,
     image: post.image,
-    tag: post.tag,
+    tags,
     description: post.description,
     createdAt: post.createdAt,
     status: post.status ?? "pending",
@@ -89,7 +95,16 @@ export class ClientPostService {
   async list(ownerId: string, query: PostListQuery) {
     const filter = buildListFilter(ownerId, query.search);
     const [items, total] = await Promise.all([
-      ClientPost.find(filter).sort(buildSort(query)).skip((query.page - 1) * query.limit).limit(query.limit).lean(),
+      ClientPost.find(filter)
+        .populate({
+          path: "tags",
+          select: "name _id",
+          match: { isDisplay: true, isActive: true },
+        })
+        .sort(buildSort(query))
+        .skip((query.page - 1) * query.limit)
+        .limit(query.limit)
+        .lean(),
       ClientPost.countDocuments(filter),
     ]);
     return {
@@ -101,7 +116,16 @@ export class ClientPostService {
   async listForAdmin(query: PostListQuery) {
     const filter = buildListFilter(null, query.search);
     const [items, total] = await Promise.all([
-      ClientPost.find(filter).sort(buildSort(query)).skip((query.page - 1) * query.limit).limit(query.limit).lean(),
+      ClientPost.find(filter)
+        .populate({
+          path: "tags",
+          select: "name _id",
+          match: { isDisplay: true, isActive: true },
+        })
+        .sort(buildSort(query))
+        .skip((query.page - 1) * query.limit)
+        .limit(query.limit)
+        .lean(),
       ClientPost.countDocuments(filter),
     ]);
     return {
@@ -112,14 +136,26 @@ export class ClientPostService {
 
   async get(ownerId: string, postId: string) {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
-    const post = await ClientPost.findOne({ _id: postId, owner: ownerId, isDisplay: true }).lean();
+    const post = await ClientPost.findOne({ _id: postId, owner: ownerId, isDisplay: true })
+      .populate({
+        path: "tags",
+        select: "name _id",
+        match: { isDisplay: true, isActive: true },
+      })
+      .lean();
     if (!post) throw new NotFoundError("Post not found");
     return serializePost(post);
   }
 
   async getForAdmin(postId: string) {
     if (!Types.ObjectId.isValid(postId)) throw new NotFoundError("Post not found");
-    const post = await ClientPost.findOne({ _id: postId, isDisplay: true }).lean();
+    const post = await ClientPost.findOne({ _id: postId, isDisplay: true })
+      .populate({
+        path: "tags",
+        select: "name _id",
+        match: { isDisplay: true, isActive: true },
+      })
+      .lean();
     if (!post) throw new NotFoundError("Post not found");
     return serializePost(post);
   }
@@ -140,6 +176,11 @@ export class ClientPostService {
       .populate("banner", "name")
       .populate("emotion", "name")
       .populate("searchGroup", "name")
+      .populate({
+        path: "tags",
+        select: "name _id",
+        match: { isDisplay: true, isActive: true },
+      })
       .lean();
     if (!post) throw new NotFoundError("Post not found");
     return serializePost(post);
@@ -248,6 +289,7 @@ export class ClientPostService {
     searchGroup?: string | undefined;
     searchCategory?: string | undefined;
     emotion?: string | undefined;
+    tags?: string[] | string | undefined;
     cityId?: number | undefined;
     search?: string | undefined;
     fromDate?: string | undefined;
@@ -300,18 +342,50 @@ export class ClientPostService {
       conditions.push({ emotion: query.emotion.trim() });
     }
 
+    if (query.tags) {
+      const tagList = Array.isArray(query.tags)
+        ? query.tags
+        : typeof query.tags === "string"
+        ? query.tags.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+
+      const validTagIds = tagList
+        .filter((id) => Types.ObjectId.isValid(id))
+        .map((id) => new Types.ObjectId(id));
+
+      if (validTagIds.length > 0) {
+        conditions.push({ tags: { $in: validTagIds } });
+      }
+    }
+
     if (query.search && query.search.trim()) {
       const searchRegex = new RegExp(query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-      conditions.push({
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex },
-          { address: searchRegex },
-          { tag: searchRegex },
-          { searchGroup: searchRegex },
-          { searchCategory: searchRegex },
-        ],
-      });
+      
+      // Match by group name or tag name
+      const [matchingGroups, matchingTags] = await Promise.all([
+        Group.find({ name: searchRegex, isDisplay: true }).select("_id").lean(),
+        Tag.find({ name: searchRegex, isDisplay: true }).select("_id").lean(),
+      ]);
+
+      const groupIds = matchingGroups.map((g) => g._id);
+      const tagIds = matchingTags.map((t) => t._id);
+
+      const orConditions: Record<string, unknown>[] = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { address: searchRegex },
+        { contactPerson: searchRegex },
+      ];
+
+      if (groupIds.length > 0) {
+        orConditions.push({ searchGroup: { $in: groupIds } });
+      }
+
+      if (tagIds.length > 0) {
+        orConditions.push({ tags: { $in: tagIds } });
+      }
+
+      conditions.push({ $or: orConditions });
     }
 
     // Date condition: ad starts when the date comes (fromDate <= today)
@@ -335,6 +409,11 @@ export class ClientPostService {
         .populate("banner", "name _id")
         .populate("emotion", "name _id")
         .populate("searchGroup", "name _id")
+        .populate({
+          path: "tags",
+          select: "name _id",
+          match: { isDisplay: true, isActive: true },
+        })
         .sort({ fromDate: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit)

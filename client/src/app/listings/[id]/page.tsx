@@ -167,17 +167,16 @@ export default function ListingDetailPage() {
                 <h1 className="h2 fw-bold text-dark mb-4">{post.title}</h1>
 
                 {/* Tag Pills */}
-                {post.tag && (
+                {Array.isArray(post.tags) && post.tags.length > 0 && (
                   <div className="mb-4">
                     <h6 className="text-muted text-uppercase small fw-bold mb-2">Tags</h6>
                     <div className="d-flex flex-wrap gap-2">
-                      {post.tag
-                        .split(",")
-                        .map((t) => t.trim())
+                      {post.tags
+                        .map((t) => (typeof t === "object" && t !== null && "name" in t ? t.name : String(t)))
                         .filter(Boolean)
-                        .map((tagItem, idx) => (
+                        .map((tagName, idx) => (
                           <span key={idx} className="badge bg-light text-secondary border px-3 py-2">
-                            #{tagItem}
+                            #{tagName}
                           </span>
                         ))}
                     </div>
