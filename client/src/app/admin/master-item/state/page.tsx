@@ -52,7 +52,7 @@ export default function AdminMasterStatePage() {
       setError(null);
       const cFilter = selectedCountryFilter === 'all' ? undefined : Number(selectedCountryFilter);
       const [statesRes, countriesData] = await Promise.all([
-        getAdminStates(cFilter, targetPage, 10),
+        getAdminStates(cFilter, targetPage, 1),
         getAdminCountriesAll(),
       ]);
       setStates(statesRes.items);
@@ -213,7 +213,10 @@ export default function AdminMasterStatePage() {
             <select
               className="form-select form-select-sm"
               value={selectedCountryFilter}
-              onChange={(e) => setSelectedCountryFilter(e.target.value)}
+              onChange={(e) => {
+                setSelectedCountryFilter(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="all">All Countries</option>
               {countries.map((c) => (
@@ -274,9 +277,8 @@ export default function AdminMasterStatePage() {
                     <td>
                       <button
                         type="button"
-                        className={`badge border-0 rounded-pill px-3 py-1 fw-medium ${
-                          s.isActive ? 'admin-badge-active' : 'admin-badge-inactive'
-                        }`}
+                        className={`badge border-0 rounded-pill px-3 py-1 fw-medium ${s.isActive ? 'admin-badge-active' : 'admin-badge-inactive'
+                          }`}
                         onClick={() => toggleStatus(s)}
                         title="Click to toggle status"
                       >

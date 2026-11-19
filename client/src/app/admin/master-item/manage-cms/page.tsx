@@ -336,7 +336,7 @@ export default function AdminMasterManageCmsPage() {
                       )}
                     </td>
                     <td>
-                      <code className="small text-secondary">/{item.slug}</code>
+                      <code className="small text-secondary">{item.slug}</code>
                     </td>
                     <td>
                       <button

@@ -72,7 +72,7 @@ export default function AdminMasterCitiesPage() {
       const sFilter = selectedStateFilter === 'all' ? undefined : Number(selectedStateFilter);
 
       const [citiesRes, statesData, countriesData] = await Promise.all([
-        getAdminCities(cFilter, sFilter, targetPage, 10),
+        getAdminCities(cFilter, sFilter, targetPage, 1),
         getAdminStatesAll(),
         getAdminCountriesAll(),
       ]);
@@ -346,6 +346,7 @@ export default function AdminMasterCitiesPage() {
               onChange={(e) => {
                 setSelectedCountryFilter(e.target.value);
                 setSelectedStateFilter('all');
+                setPage(1)
               }}
             >
               <option value="all">All Countries</option>
@@ -360,7 +361,10 @@ export default function AdminMasterCitiesPage() {
             <select
               className="form-select form-select-sm"
               value={selectedStateFilter}
-              onChange={(e) => setSelectedStateFilter(e.target.value)}
+              onChange={(e) => {
+                 setSelectedStateFilter(e.target.value);
+                 setPage(1);
+              }}
             >
               <option value="all">All States</option>
               {tableFilterStates.map((s) => (

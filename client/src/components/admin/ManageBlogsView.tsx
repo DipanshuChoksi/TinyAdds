@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { AdminBlogResponse } from '@/src/types/blog';
 import Pagination from '@/components/ui/Pagination';
+import BundledEditor from '@/components/BundledEditor';
 import {
   createAdminBlog,
   updateAdminBlog,
@@ -17,6 +18,9 @@ interface ManageBlogsViewProps {
   onPageChange?: (page: number) => void;
   onRefresh?: () => void;
 }
+
+const BASE_URL = (process.env.NEXT_PUBLIC_IMAGE_URL || 'http://localhost:5000') + "/";
+
 
 export default function ManageBlogsView({
   initialBlogs,
@@ -46,6 +50,7 @@ export default function ManageBlogsView({
   const [bannerImage, setBannerImage] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filtered = blogs.filter((b) =>
     b.title.toLowerCase().includes(search.toLowerCase())
@@ -258,7 +263,7 @@ export default function ManageBlogsView({
                         {blog.bannerImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={blog.bannerImage}
+                            src={blog.bannerImage.startsWith("data:") ? blog.bannerImage :  BASE_URL + blog.bannerImage}
                             alt={blog.title}
                             className="w-100 h-100 object-fit-cover"
                           />
@@ -271,17 +276,16 @@ export default function ManageBlogsView({
                       <div className="fw-semibold text-truncate" style={{ color: '#0f172a', maxWidth: 350 }}>
                         {blog.title}
                       </div>
-                      <small style={{ color: '#64748b', fontSize: '0.74rem' }}>ID: {blog._id}</small>
+                      {/* <small style={{ color: '#64748b', fontSize: '0.74rem' }}>ID: {blog._id}</small> */}
                     </td>
                     <td>
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(blog)}
-                        className={`badge rounded-pill border-0 px-2.5 py-1 ${
-                          blog.isActive
+                        className={`badge rounded-pill border-0 px-2.5 py-1 ${blog.isActive
                             ? 'bg-success-subtle text-success'
                             : 'bg-secondary-subtle text-secondary'
-                        }`}
+                          }`}
                         style={{ cursor: 'pointer', fontSize: '0.75rem' }}
                         title="Click to toggle status"
                       >
@@ -386,17 +390,29 @@ export default function ManageBlogsView({
                   <div className="mb-3">
                     <label className="form-label small fw-semibold text-muted">Banner Image</label>
                     <input
+                      ref={fileInputRef}
                       type="file"
-                      className="form-control rounded-2 mb-2"
+                      className="d-none"
                       accept="image/*"
                       onChange={handleImageChange}
                     />
+
+                    {!bannerImage ? (
+                      <input
+                        type="file"
+                        className="form-control rounded-2 mb-2"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    ) : null}
+
                     {fileError && (
                       <div className="text-danger small mb-2" style={{ fontSize: '0.78rem' }}>
                         <i className="bi bi-exclamation-circle me-1" />
                         {fileError}
                       </div>
                     )}
+
                     <input
                       type="text"
                       className="form-control rounded-2"
@@ -404,27 +420,45 @@ export default function ManageBlogsView({
                       value={bannerImage}
                       onChange={(e) => setBannerImage(e.target.value)}
                     />
+
                     {bannerImage && (
-                      <div className="mt-2 p-2 border rounded-2 bg-light d-flex align-items-center gap-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={bannerImage}
-                          alt="Banner preview"
-                          style={{
-                            width: '90px',
-                            height: '50px',
-                            objectFit: 'cover',
-                            borderRadius: '4px',
-                            border: '1px solid #e2e8f0',
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() => setBannerImage('')}
-                        >
-                          Remove image
-                        </button>
+                      <div className="mt-2 p-2 border rounded-2 bg-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div className="d-flex align-items-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={bannerImage.startsWith('data:') ? bannerImage : BASE_URL + bannerImage}
+                            alt="Banner preview"
+                            style={{
+                              width: '90px',
+                              height: '50px',
+                              objectFit: 'cover',
+                              borderRadius: '4px',
+                              border: '1px solid #e2e8f0',
+                            }}
+                          />
+                          <span className="small text-muted text-truncate" style={{ maxWidth: 200 }}>
+                            {bannerImage.startsWith('data:') ? 'Custom uploaded image' : bannerImage}
+                          </span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <i className="bi bi-arrow-repeat me-1" /> Update image
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => {
+                              setBannerImage('');
+                              if (fileInputRef.current) fileInputRef.current.value = '';
+                            }}
+                          >
+                            Remove image
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -432,12 +466,19 @@ export default function ManageBlogsView({
                   {/* Content */}
                   <div className="mb-3">
                     <label className="form-label small fw-semibold text-muted">Content</label>
-                    <textarea
-                      rows={6}
-                      className="form-control rounded-2"
-                      placeholder="Write blog article content here..."
+                    <BundledEditor
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                      onEditorChange={(newContent: string) => setContent(newContent)}
+                      init={{
+                        height: 350,
+                        menubar: false,
+                        branding: false,
+                        promotion: false,
+                        placeholder: "Write blog article content here...",
+                        plugins: "lists link table code insertdatetime wordcount",
+                        toolbar:
+                          "undo redo | blocks | bold italic underline | bullist numlist | alignleft aligncenter alignright | link table | removeformat code",
+                      }}
                     />
                   </div>
 

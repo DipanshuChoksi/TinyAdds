@@ -17,14 +17,14 @@ const FALLBACK_SECTION_SLIDES: SectionSlide[] = [
   {
     id: "fb-sec-1",
     title: "Minimalist Modern Advertising",
-    image: "/ads/minimalist-fb-ad.png",
+    image: "/home/Banner1.png",
     tag: "Trending Spotlight",
     link: "/listings",
   },
   {
     id: "fb-sec-2",
     title: "Special Festive Offers & Discounts",
-    image: "/ads/section-banner-sale.png",
+    image: "/home/Banner2.png",
     tag: "Exclusive Deals",
     link: "/listings",
   },

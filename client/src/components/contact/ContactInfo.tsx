@@ -67,7 +67,7 @@ export default function ContactInfo() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 className="lb-contact-img lb-contact-img-1"
-                src={`${IMG}/thumb-1.png`}
+                src={`/contact/Contact1.png`}
                 alt="Contact TinyAdds"
                 loading="lazy"
               />
@@ -75,7 +75,7 @@ export default function ContactInfo() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 className="lb-contact-img lb-contact-img-2"
-                src={`${IMG}/thumb-2.png`}
+                src={`/contact/Contact2.png`}
                 alt="Get in touch with TinyAdds"
                 loading="lazy"
               />

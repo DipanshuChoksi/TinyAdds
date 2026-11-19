@@ -48,12 +48,12 @@ export default function Footer() {
             <h3 className="lb-footer-h">Essential</h3>
 
             <ul className="lb-footer-links">
-              <li><Link href="/contact">Company &amp; Contact Info</Link></li>
+              {/* <li><Link href="/contact">Company &amp; Contact Info</Link></li> */}
               <li><Link href="/blog">Blog &amp; Articles</Link></li>
               <li><a href="#">Sitemap</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">FAQ Page</a></li>
+              <li><a href="/terms-and-conditions">Terms of Service</a></li>
+              <li><a href="/privacy-policy">Privacy Policy</a></li>
+              <li><a href="/faq">FAQ Page</a></li>
               {/* <li><a href="#">Live Chat</a></li>
               <li><a href="#">How to Stay Safe</a></li>
               <li><a href="#">Terms &amp; Conditions</a></li> */}
