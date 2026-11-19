@@ -1,0 +1,23 @@
+{
+  "apps": [
+    {
+      "name": "tinyadds.com",
+      "script": "node_modules/next/dist/bin/next",
+      "args": "start",
+      "cwd": "./",
+      "instances": 1,
+      "exec_mode": "cluster",
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "300M",
+      "time": true,
+      "restart_delay": 4000,
+      "max_restarts": 10,
+      "kill_timeout": 3000,
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 7011
+      }
+    }
+  ]
+}
