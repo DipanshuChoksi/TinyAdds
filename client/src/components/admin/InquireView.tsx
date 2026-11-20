@@ -280,7 +280,10 @@ export default function InquireView({
                   <label className="small text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>
                     MESSAGE
                   </label>
-                  <div className="p-3 rounded-2 border bg-white small text-secondary">
+                  <div
+                    className="p-3 rounded-2 border bg-white small text-secondary text-break"
+                    style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                  >
                     {selectedInquiry.message}
                   </div>
                 </div>

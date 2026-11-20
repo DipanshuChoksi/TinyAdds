@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 
 const CARDS_PER_PAGE = 12; // 4 columns x 3 rows grid
@@ -176,58 +177,63 @@ export default function Listings() {
                   <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4 px-1">
                     {pageCards.map((item) => (
                       <div className="col" key={`${copy}-${item.id}`}>
-                        <article className="lb-card h-100 shadow-sm">
-                          <div className="lb-card-img" style={{ height: 210, overflow: "hidden" }}>
-                            <img
-                              src={item.image || "/ads/minimalist-fb-ad.png"}
-                              alt={item.title}
-                              loading="lazy"
-                              className="w-100 h-100"
-                              style={{ objectFit: "cover" }}
-                            />
-                          </div>
-                          <div className="lb-card-body d-flex flex-column">
-                            <div className="d-flex align-items-center justify-content-between mb-2">
-                              <span className="badge bg-light text-dark border">
-                                <i className="bi bi-clock me-1 text-muted" />
-                                {item.fromDate || "Active"}
-                              </span>
-                              {item.emotion && (
-                                <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
-                                  {item.emotion.name}
-                                </span>
-                              )}
+                        <Link
+                          href={`/listings/${item.id}`}
+                          className="text-decoration-none d-block h-100 text-reset"
+                        >
+                          <article className="lb-card h-100 shadow-sm">
+                            <div className="lb-card-img" style={{ height: 210, overflow: "hidden" }}>
+                              <img
+                                src={item.image || "/ads/minimalist-fb-ad.png"}
+                                alt={item.title}
+                                loading="lazy"
+                                className="w-100 h-100"
+                                style={{ objectFit: "cover" }}
+                              />
                             </div>
-
-                            <h3 className="lb-card-title mb-2">
-                              <span className="d-inline-block text-truncate w-100" title={item.title}>
-                                {item.title}
-                              </span>
-                            </h3>
-
-                            <p className="lb-meta mb-3">
-                              {item.address ? (
-                                <span className="text-truncate d-inline-block" style={{ maxWidth: 200 }}>
-                                  <i className="bi bi-geo-alt me-1 text-primary" /> {item.address}
+                            <div className="lb-card-body d-flex flex-column">
+                              <div className="d-flex align-items-center justify-content-between mb-2">
+                                <span className="badge bg-light text-dark border">
+                                  <i className="bi bi-clock me-1 text-muted" />
+                                  {item.fromDate || "Active"}
                                 </span>
-                              ) : (
-                                <span className="text-muted small">
-                                  <i className="bi bi-geo-alt me-1" /> Gujarat
-                                </span>
-                              )}
-                            </p>
+                                {item.emotion && (
+                                  <span className="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                    {item.emotion.name}
+                                  </span>
+                                )}
+                              </div>
 
-                            <div className="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
-                              <span className="lb-chip">
-                                {item.searchGroup?.name || "Listing Ad"}
-                              </span>
-                              <span className="text-muted small text-truncate" style={{ maxWidth: 120 }}>
-                                {item.contactNo ? <i className="bi bi-telephone me-1" /> : null}
-                                {item.contactPerson || "TinyAdds"}
-                              </span>
+                              <h3 className="lb-card-title mb-2">
+                                <span className="d-inline-block text-truncate w-100" title={item.title}>
+                                  {item.title}
+                                </span>
+                              </h3>
+
+                              <p className="lb-meta mb-3">
+                                {item.address ? (
+                                  <span className="text-truncate d-inline-block" style={{ maxWidth: 200 }}>
+                                    <i className="bi bi-geo-alt me-1 text-primary" /> {item.address}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted small">
+                                    <i className="bi bi-geo-alt me-1" /> Gujarat
+                                  </span>
+                                )}
+                              </p>
+
+                              <div className="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
+                                <span className="lb-chip">
+                                  {item.searchGroup?.name || "Listing Ad"}
+                                </span>
+                                <span className="text-muted small text-truncate" style={{ maxWidth: 120 }}>
+                                  {item.contactNo ? <i className="bi bi-telephone me-1" /> : null}
+                                  {item.contactPerson || "TinyAdds"}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </article>
+                          </article>
+                        </Link>
                       </div>
                     ))}
                   </div>

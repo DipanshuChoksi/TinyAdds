@@ -199,12 +199,12 @@ export default function Hero() {
                     src={currentSlide.image}
                     alt={currentSlide.title}
                   />
-                  {currentSlide.tag && (
+                  {/* {currentSlide.tag && (
                     <span className="lb-hero-main-carousel-badge">
                       <i className="bi bi-stars" aria-hidden="true" />
                       {currentSlide.tag}
                     </span>
-                  )}
+                  )} */}
                 </Link>
               </div>
 

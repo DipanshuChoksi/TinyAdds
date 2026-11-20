@@ -70,9 +70,9 @@ export interface ClientPost {
   contactNo: string;
   email: string;
   address: string;
-  banner: string;
-  emotion: string;
-  searchGroup: string;
+  banner: { name: string; _id: string; slug?: string };
+  emotion: { name: string; _id: string };
+  searchGroup: { name: string; slug: string; _id: string };
   searchCategory: string;
   fromDate: string;
   title: string;

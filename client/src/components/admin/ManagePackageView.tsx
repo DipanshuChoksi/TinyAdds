@@ -254,12 +254,12 @@ export default function ManagePackageView({
                 >
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary rounded-2 flex-grow-1 py-1"
+                    className="btn btn-sm btn-outline-secondary rounded-2 py-1"
                     style={{ fontSize: '0.78rem' }}
                     onClick={() => openEditModal(pkg)}
                     disabled={actionLoadingId === pkg._id}
                   >
-                    <i className="bi bi-pencil me-1" /> Edit
+                    Edit
                   </button>
                   <button
                     type="button"
@@ -287,7 +287,7 @@ export default function ManagePackageView({
                       onClick={() => handleDelete(pkg)}
                       disabled={actionLoadingId === pkg._id}
                     >
-                      <i className="bi bi-trash" />
+                      Delete
                     </button>
                   )}
                 </div>

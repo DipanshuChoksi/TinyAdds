@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Add Post – TinyAdds" };
 export default function ClientAddPost() {
   return (
     <>
-      <h6 className="lb-ca-title">Add Post</h6>
+      {/* <h6 className="lb-ca-title">Add Post</h6> */}
       <AddPostForm />
     </>
   );

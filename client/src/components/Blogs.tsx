@@ -33,7 +33,7 @@ export default async function Blogs() {
                       alt={blog.title}
                       loading="lazy"
                     />
-                    <span className="lb-blog-tag">{blog.tag || "Blog"}</span>
+                    {/* <span className="lb-blog-tag">{blog.tag || "Blog"}</span> */}
                   </Link>
                   <div className="lb-blog-body d-flex flex-column flex-grow-1">
                     <p className="lb-meta mb-2">

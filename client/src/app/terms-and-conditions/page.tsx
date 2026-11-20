@@ -71,7 +71,7 @@ export default async function TermsAndConditionsPage() {
                 )}
 
                 <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-3 border-bottom">
-                  <h1 className="h2 mb-0 fw-bold text-dark">{pageTitle}</h1>
+                  {/* <h1 className="h2 mb-0 fw-bold text-dark">{pageTitle}</h1>
                   {cmsData?.updatedAt && (
                     <span className="text-muted small">
                       Last Updated: {new Date(cmsData.updatedAt).toLocaleDateString(undefined, {
@@ -80,7 +80,7 @@ export default async function TermsAndConditionsPage() {
                         day: 'numeric',
                       })}
                     </span>
-                  )}
+                  )} */}
                 </div>
 
                 {cmsData?.content ? (

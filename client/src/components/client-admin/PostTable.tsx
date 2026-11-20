@@ -21,6 +21,24 @@ function descriptionText(html: string): string {
   return new DOMParser().parseFromString(html, "text/html").body.textContent?.trim() ?? "";
 }
 
+// Helper to ensure both dates are formatted identically
+function formatDate(dateString?: string | null): string {
+  if (!dateString) return "-";
+  try {
+    // Appending T00:00:00 ensures YYYY-MM-DD strings don't shift timezone days
+    const safeDateString = dateString.includes("T") ? dateString : `${dateString}T00:00:00`;
+    const date = new Date(safeDateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } catch {
+    return dateString;
+  }
+}
+
 export default function PostTable({ mode = "client", onEdit, title }: Props = {}) {
   const isAdmin = mode === "admin";
   const confirm = useConfirm();
@@ -39,6 +57,7 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
   const [rejectPost, setRejectPost] = useState<ClientPost | null>(null);
   const [rejectionComment, setRejectionComment] = useState("");
   const [rejecting, setRejecting] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -94,12 +113,16 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
 
   const handleStatusToggle = async (post: ClientPost) => {
     const status = post.status === "approved" ? "pending" : "approved";
+    setStatusUpdating(true);
     try {
       const { data } = await http.patch<ClientPost, { status: string }>(`/admin/posts/${encodeURIComponent(post.id)}/status`, { status });
       setPosts((items) => items.map((item) => item.id === post.id ? data : item));
+      setSelectedPost((current) => (current && current.id === post.id ? data : current));
       toast.success(status === "approved" ? "Post approved" : "Post moved to pending");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to update post status");
+    } finally {
+      setStatusUpdating(false);
     }
   };
 
@@ -131,6 +154,7 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
         { status: "rejected", rejectionComment: rejectionComment.trim() }
       );
       setPosts((items) => items.map((item) => item.id === rejectPost.id ? data : item));
+      setSelectedPost((current) => (current && current.id === rejectPost.id ? data : current));
       setRejectPost(null);
       setRejectionComment("");
       toast.success("Post rejected and feedback saved");
@@ -142,15 +166,15 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
   };
 
   return (
-    <div className="table-responsive">
+    <div>
       <div className={`d-flex ${title ? "justify-content-between align-items-center" : "justify-content-end"} mb-3 flex-wrap gap-2`}>
-        {title && <div>{title}</div>}
         <div className="input-group" style={{ maxWidth: 320 }}>
-          <span className="input-group-text bg-white"><i className="bi bi-search" aria-hidden="true" /></span>
-          <input type="search" className="form-control" placeholder="Search posts" aria-label="Search posts" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+          <input type="search" className="form-control border-end-0" placeholder="Search posts" aria-label="Search posts" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+          <span className="input-group-text bg-white border-start-0 text-muted"><i className="bi bi-search" aria-hidden="true" /></span>
         </div>
       </div>
-      <table className="lb-ca-table">
+      <div className="table-responsive">
+        <table className="lb-ca-table">
         <thead>
           <tr><th>{sortHeader("Title Name", "title")}</th><th>Image</th><th>{sortHeader("From Date", "fromDate")}</th><th>{sortHeader("Created", "createdAt")}</th><th>{sortHeader("Status", "status")}</th><th>Admin Feedback</th><th>Action</th></tr>
         </thead>
@@ -166,11 +190,12 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
                   <span className="lb-ca-thumb lb-ca-thumb-empty"><i className="bi bi-image"></i></span>
                 )}
               </td>
-              <td className="fw-bold">{post.fromDate || "-"}</td>
-              <td className="fw-bold">{new Date(post.createdAt).toLocaleDateString()}</td>
+              {/* Updated fromDate format */}
+              <td className="fw-bold">{formatDate(post.fromDate)}</td>
+              {/* Updated createdAt format */}
+              <td className="fw-bold">{formatDate(post.createdAt)}</td>
               <td>
-                {isAdmin ? <button type="button" className={`badge rounded-pill border-0 ${post.status === "approved" ? "text-bg-success" : post.status === "rejected" ? "text-bg-danger" : "text-bg-secondary"}`} aria-pressed={post.status === "approved"} title="Toggle approved / pending" onClick={() => handleStatusToggle(post)}><i className={`bi ${post.status === "approved" ? "bi-toggle-on" : "bi-toggle-off"} me-1`} aria-hidden="true" />{post.status ?? "pending"}</button>
-                  : <span className={`badge rounded-pill ${post.status === "approved" ? "text-bg-success" : post.status === "rejected" ? "text-bg-danger" : "text-bg-secondary"}`}>{post.status ?? "pending"}</span>}
+                <span className={`badge rounded-pill ${post.status === "approved" ? "text-bg-success" : post.status === "rejected" ? "text-bg-danger" : "text-bg-secondary"}`}>{post.status ?? "pending"}</span>
               </td>
               <td className="text-break" style={{ maxWidth: 280, whiteSpace: "pre-wrap" }}>{post.rejectionComment || "-"}</td>
               <td className="text-nowrap">
@@ -189,6 +214,7 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
           {loading && <tr><td colSpan={7} className="py-4 text-center"><div className="d-inline-flex flex-column align-items-center" role="status" aria-live="polite"><LoadingIndicator label="Loading posts" compact /></div></td></tr>}
         </tbody>
       </table>
+      </div>
       {totalPages > 1 && (
         <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4">
           <span className="small text-muted" aria-live="polite">
@@ -219,11 +245,19 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
                 <dt className="col-sm-4 text-body-secondary">Contact number</dt><dd className="col-sm-8 mb-2">{selectedPost.contactNo || "-"}</dd>
                 <dt className="col-sm-4 text-body-secondary">Email</dt><dd className="col-sm-8 mb-2 text-break">{selectedPost.email || "-"}</dd>
                 <dt className="col-sm-4 text-body-secondary">Address</dt><dd className="col-sm-8 mb-2">{selectedPost.address || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Available from</dt><dd className="col-sm-8 mb-2">{selectedPost.fromDate || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Banner section</dt><dd className="col-sm-8 mb-2">{selectedPost.banner || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Emotion</dt><dd className="col-sm-8 mb-2">{selectedPost.emotion || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Search group</dt><dd className="col-sm-8 mb-2">{selectedPost.searchGroup || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Search category</dt><dd className="col-sm-8 mb-2">{selectedPost.searchCategory || "-"}</dd>
+                <dt className="col-sm-4 text-body-secondary">Available from</dt><dd className="col-sm-8 mb-2">{formatDate(selectedPost.fromDate)}</dd>
+                <dt className="col-sm-4 text-body-secondary">Banner section</dt><dd className="col-sm-8 mb-2">{selectedPost.banner.name || "-"}</dd>
+              {(() => {
+                const isListingAds = selectedPost.banner.slug === "listing-ads";
+                return isListingAds ? (
+                  <>
+                    <dt className="col-sm-4 text-body-secondary">Emotion</dt>
+                    <dd className="col-sm-8 mb-2">{selectedPost.emotion.name || "-"}</dd>
+                    <dt className="col-sm-4 text-body-secondary">Search group</dt>
+                    <dd className="col-sm-8 mb-2">{selectedPost.searchGroup.name || "-"}</dd>
+                  </>
+                ) : null;
+              })()}
                 <dt className="col-sm-4 text-body-secondary">Tags</dt>
                 <dd className="col-sm-8 mb-2">
                   {Array.isArray(selectedPost.tags) && selectedPost.tags.length > 0
@@ -232,13 +266,43 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
                         .join(", ")
                     : "-"}
                 </dd>
-                <dt className="col-sm-4 text-body-secondary">Created</dt><dd className="col-sm-8 mb-2">{new Date(selectedPost.createdAt).toLocaleString()}</dd>
-                <dt className="col-sm-4 text-body-secondary">Status</dt><dd className="col-sm-8 mb-2">{selectedPost.status ?? "pending"}</dd>
+                <dt className="col-sm-4 text-body-secondary">Created</dt><dd className="col-sm-8 mb-2">{formatDate(selectedPost.createdAt)}</dd>
+                <dt className="col-sm-4 text-body-secondary">Status</dt>
+                <dd className="col-sm-8 mb-2">
+                  <span
+                    className={`badge rounded-pill text-uppercase ${
+                      selectedPost.status === "approved"
+                        ? "text-bg-success"
+                        : selectedPost.status === "rejected"
+                        ? "text-bg-danger"
+                        : "text-bg-secondary"
+                    }`}
+                  >
+                    {selectedPost.status ?? "pending"}
+                  </span>
+                </dd>
                 {selectedPost.rejectionComment && <><dt className="col-sm-4 text-body-secondary">Admin feedback</dt><dd className="col-sm-8 mb-2 text-break">{selectedPost.rejectionComment}</dd></>}
                 <dt className="col-sm-4 text-body-secondary">Description</dt><dd className="col-sm-8 mb-0 text-break" style={{ whiteSpace: "pre-wrap" }}>{descriptionText(selectedPost.description) || "-"}</dd>
               </dl>
             </div>
-            <div className="modal-footer"><button type="button" className="btn btn-secondary" onClick={() => setSelectedPost(null)}>Close</button></div>
+            <div className="modal-footer">
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={`btn me-auto ${selectedPost.status === "approved" ? "btn-outline-secondary" : "btn-success"}`}
+                  disabled={statusUpdating || selectedPost.status === "rejected"}
+                  title={selectedPost.status === "rejected" ? "Rejected posts cannot be toggled" : undefined}
+                  onClick={() => handleStatusToggle(selectedPost)}
+                >
+                  {statusUpdating
+                    ? "Updating..."
+                    : selectedPost.status === "approved"
+                    ? "Move to pending"
+                    : "Approve post"}
+                </button>
+              )}
+              <button type="button" className="btn btn-secondary" onClick={() => setSelectedPost(null)}>Close</button>
+            </div>
           </div>
         </div>
       </div>}

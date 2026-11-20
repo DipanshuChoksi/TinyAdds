@@ -304,6 +304,7 @@ function ListingsContent() {
                     options={cityOptions.map((city) => ({ label: city.name, value: String(city.id) }))}
                     placeholder="All Locations"
                     allowEmpty
+                    searchable
                   />
                 </div>
 

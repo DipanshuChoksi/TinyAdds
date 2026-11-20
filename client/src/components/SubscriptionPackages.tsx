@@ -71,7 +71,7 @@ export default function SubscriptionPackages() {
                         <li key={`${pkg._id}-${featureIndex}`}><i className="bi bi-check2-circle" aria-hidden="true" />{feature}</li>
                       ))}
                     </ul>
-                    <Link href="/register" className={`btn ${pkg.isPopular ? "lb-btn-primary" : "lb-btn-soft"}`}>
+                    <Link href="/contact" className={`btn ${pkg.isPopular ? "lb-btn-primary" : "lb-btn-soft"}`}>
                       Get started <i className="bi bi-arrow-up-right ms-1" aria-hidden="true" />
                     </Link>
                   </article>

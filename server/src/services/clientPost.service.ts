@@ -103,6 +103,9 @@ export class ClientPostService {
           select: "name _id",
           match: { isDisplay: true, isActive: true },
         })
+        .populate("banner", "name _id slug")
+        .populate("emotion", "name _id")
+        .populate("searchGroup", "name _id")
         .sort(buildSort(query))
         .skip((query.page - 1) * query.limit)
         .limit(query.limit)
@@ -450,7 +453,7 @@ export class ClientPostService {
       ClientPost.find(filter)
         .populate("banner", "name _id")
         .populate("emotion", "name _id")
-        .populate("searchGroup", "name _id")
+        .populate("searchGroup", "name slug _id")
         .populate({
           path: "tags",
           select: "name _id",

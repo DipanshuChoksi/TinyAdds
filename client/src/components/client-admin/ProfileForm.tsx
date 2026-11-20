@@ -257,19 +257,109 @@ export default function ProfileForm() {
         )}
       </div>
       <div className="lb-ca-card-body">
-        <table className="lb-ca-form-table">
-          <tbody>
-            <tr><th>First Name :</th><td><input className="form-control lb-ca-input" value={values.firstName} onChange={(e) => set("firstName", e.target.value)} />{err("firstName")}</td></tr>
-            <tr><th>Last Name :</th><td><input className="form-control lb-ca-input" value={values.lastName} onChange={(e) => set("lastName", e.target.value)} /></td></tr>
-            <tr><th>Mobile No :</th><td><input className="form-control lb-ca-input" value={values.mobile} onChange={(e) => set("mobile", e.target.value)} />{err("mobile")}</td></tr>
-            <tr><th>Email ID :</th><td><input type="email" className="form-control lb-ca-input" value={values.email} onChange={(e) => set("email", e.target.value)} />{err("email")}</td></tr>
-            <tr><th>Country :</th><td><Dropdown ariaLabel="Country" value={values.country} onChange={changeCountry} options={countryOptions} /></td></tr>
-            <tr><th>State :</th><td><Dropdown ariaLabel="State" value={values.state} onChange={changeState} options={stateOptions} /></td></tr>
-            <tr><th>City :</th><td><Dropdown ariaLabel="City" value={values.city} onChange={(v) => set("city", v)} options={cityOptions} /></td></tr>
-            <tr><th>Profile Image :</th><td><input type="file" accept="image/*" className="form-control lb-ca-input" onChange={(e) => handleFile(e.target.files?.[0])} /></td></tr>
-          </tbody>
-        </table>
-        <div className="text-end mt-3"><button type="submit" className="btn lb-btn-primary" disabled={saving}>{saving ? "Saving..." : "Submit"}</button></div>
+        <div className="row g-3">
+          <div className="col-md-6">
+            <label className="lb-ca-label">First Name <sup>*</sup></label>
+            <input
+              className="form-control lb-ca-input"
+              placeholder="Enter First Name"
+              value={values.firstName}
+              onChange={(e) => set("firstName", e.target.value)}
+            />
+            {err("firstName")}
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">Last Name</label>
+            <input
+              className="form-control lb-ca-input"
+              placeholder="Enter Last Name"
+              value={values.lastName}
+              onChange={(e) => set("lastName", e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">Mobile No <sup>*</sup></label>
+            <input
+              type="tel"
+              className="form-control lb-ca-input"
+              placeholder="Enter Mobile Number"
+              value={values.mobile}
+              onChange={(e) => set("mobile", e.target.value)}
+            />
+            {err("mobile")}
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">Email ID <sup>*</sup></label>
+            <input
+              type="email"
+              className="form-control lb-ca-input"
+              placeholder="Enter Email Address"
+              value={values.email}
+              onChange={(e) => set("email", e.target.value)}
+            />
+            {err("email")}
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">Country</label>
+            <Dropdown
+              ariaLabel="Country"
+              value={values.country}
+              onChange={changeCountry}
+              options={countryOptions}
+              placeholder="-- Select Country --"
+              searchable
+              allowEmpty
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">State</label>
+            <Dropdown
+              ariaLabel="State"
+              value={values.state}
+              onChange={changeState}
+              options={stateOptions}
+              placeholder="-- Select State --"
+              searchable
+              allowEmpty
+              disabled={!values.country || stateOptions.length === 0}
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">City</label>
+            <Dropdown
+              ariaLabel="City"
+              value={values.city}
+              onChange={(v) => set("city", v)}
+              options={cityOptions}
+              placeholder="-- Select City --"
+              searchable
+              allowEmpty
+              disabled={!values.state || cityOptions.length === 0}
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="lb-ca-label">Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              className="form-control lb-ca-input"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+            />
+          </div>
+        </div>
+
+        <div className="text-end mt-4 pt-2 border-top">
+          <button type="submit" className="btn lb-btn-primary" disabled={saving}>
+            {saving ? "Updating..." : "Update Profile"}
+          </button>
+        </div>
       </div>
     </form>
   );

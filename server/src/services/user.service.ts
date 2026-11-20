@@ -228,9 +228,9 @@ export class UserService {
     const [items, total] = await Promise.all([
       User.find(filter)
         .select("-passwordHash -resetOtpHash -resetOtpExpiresAt -resetOtpVerifiedUntil -resetOtpSentAt -resetOtpAttempts")
-        // .populate("country", "name id")
-        // .populate("state", "name id")
-        // .populate("city", "name id")
+        .populate("country", "name id")
+        .populate("state", "name id")
+        .populate("city", "name id")
         .sort({ createdAt: -1 })
         .skip(pagination.skip)
         .limit(pagination.limit)

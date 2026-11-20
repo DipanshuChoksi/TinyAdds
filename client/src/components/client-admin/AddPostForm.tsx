@@ -132,6 +132,9 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
         setValues({
           ...EMPTY,
           ...data,
+          banner: typeof data.banner === "object" && data.banner !== null ? data.banner._id : String(data.banner || ""),
+          emotion: typeof data.emotion === "object" && data.emotion !== null ? data.emotion._id : String(data.emotion || ""),
+          searchGroup: typeof data.searchGroup === "object" && data.searchGroup !== null ? data.searchGroup._id : String(data.searchGroup || ""),
           tags: normalizedTags,
         });
       }
@@ -172,10 +175,16 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const plainDescription = values.description
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .trim();
     const next: Errors = {
       contactPerson: required("Contact person name")(values.contactPerson),
       contactNo: compose(required("Contact no"), phone)(values.contactNo),
       email: compose(required("Email"), email)(values.email),
+      banner: required("Banner section")(values.banner),
       fromDate: required("Available from date")(values.fromDate),
       title: required("Title name")(values.title),
       file: values.image ? "" : "Please choose an image",
@@ -220,17 +229,17 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
       <div className="lb-ca-card-body">
         {loading && <p className="text-body-secondary">Loading post...</p>}
         <div className="row g-3">
-          <div className="col-md-6"><label className="lb-ca-label">Title</label><input className="form-control lb-ca-input" placeholder="Enter Title Name" value={values.title} onChange={set("title")} />{err("title")}</div>
-          <div className="col-md-6"><label className="lb-ca-label">Person Name</label><input className="form-control lb-ca-input" placeholder="Enter Name" value={values.contactPerson} onChange={set("contactPerson")} />{err("contactPerson")}</div>
-          <div className="col-md-6"><label className="lb-ca-label">Contact No</label><input type="tel" className="form-control lb-ca-input" placeholder="Enter Number" value={values.contactNo} onChange={set("contactNo")} />{err("contactNo")}</div>
-          <div className="col-md-6"><label className="lb-ca-label">Email ID</label><input type="email" className="form-control lb-ca-input" placeholder="Enter Email" value={values.email} onChange={set("email")} />{err("email")}</div>
+          <div className="col-md-6"><label className="lb-ca-label">Title <sup>*</sup></label><input className="form-control lb-ca-input" placeholder="Enter Title Name" value={values.title} onChange={set("title")} />{err("title")}</div>
+          <div className="col-md-6"><label className="lb-ca-label">Person Name<sup>*</sup></label><input className="form-control lb-ca-input" placeholder="Enter Name" value={values.contactPerson} onChange={set("contactPerson")} />{err("contactPerson")}</div>
+          <div className="col-md-6"><label className="lb-ca-label">Contact No<sup>*</sup></label><input type="tel" className="form-control lb-ca-input" placeholder="Enter Number" value={values.contactNo} onChange={set("contactNo")} />{err("contactNo")}</div>
+          <div className="col-md-6"><label className="lb-ca-label">Email ID<sup>*</sup></label><input type="email" className="form-control lb-ca-input" placeholder="Enter Email" value={values.email} onChange={set("email")} />{err("email")}</div>
           {/* <div className="col-md-6"><label className="lb-ca-label">Address</label><textarea rows={1} className="form-control lb-ca-input" placeholder="Enter Address" value={values.address} onChange={set("address")} /></div> */}
           <div className="col-md-6">
-            <label className="lb-ca-label">Banner Section</label>
+            <label className="lb-ca-label">Banner Section <sup>*</sup></label>
             <Dropdown
               ariaLabel="Banner Section"
               value={values.banner}
-              onChange={(v) =>
+              onChange={(v) => {
                 setValues((x) => {
                   const bObj = bannerOptions.find((b) => b.value === v);
                   const bName = (bObj?.label || v || "").trim().toLowerCase();
@@ -241,19 +250,21 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
                     emotion: isListing ? x.emotion : "",
                     searchGroup: isListing ? x.searchGroup : "",
                   };
-                })
-              }
+                });
+                setErrors((current) => ({ ...current, banner: "" }));
+              }}
               options={bannerOptions}
               placeholder="-- Select Banner Section --"
               allowEmpty
             />
+            {err("banner")}
           </div>
           <div className="col-md-6"><label className="lb-ca-label">Available From Date</label><input type="date" className="form-control lb-ca-input" value={values.fromDate || Date.now()} onChange={set("fromDate")} />{err("fromDate")}</div>
           {isListingAds && <div className="col-md-6"><label className="lb-ca-label">Emotion</label><Dropdown ariaLabel="Emotion" value={values.emotion} onChange={(v) => setValues((x) => ({ ...x, emotion: v }))} options={emotionOptions} placeholder="-- Select Emotion --" allowEmpty /></div>}
           {isListingAds && <div className="col-md-6"><label className="lb-ca-label">Search Group</label><Dropdown ariaLabel="Search Group" value={values.searchGroup} onChange={(v) => setValues((x) => ({ ...x, searchGroup: v }))} options={searchGroupOptions} placeholder="-- Select Search Group --" allowEmpty /></div>}
           {/* <div className="col-md-6"><label className="lb-ca-label">Search Category</label><Dropdown ariaLabel="Search Category" value={values.searchCategory} onChange={(v) => setValues((x) => ({ ...x, searchCategory: v }))} options={SEARCH_CATEGORIES} placeholder="-- Select Search Category --" allowEmpty /></div> */}
           <div className="col-md-6">
-            <label className="lb-ca-label">Choose file</label>
+            <label className="lb-ca-label">Choose banner image <sup>*</sup></label>
             <input
               key={fileKey}
               type="file"
@@ -265,7 +276,7 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
           </div>
           <div className="col-md-6">
             <div
-              className="lb-ca-upload position-relative"
+              className= {values.image ? "lb-ca-upload position-relative" : ""}
               style={{ cursor: values.image ? "pointer" : "default" }}
               onClick={() => {
                 if (values.image) {
@@ -279,7 +290,7 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={values.image} alt="Post preview" />
               ) : (
-                <span><i className="bi bi-cloud-arrow-up"></i>UPLOAD IMG</span>
+                null
               )}
             </div>
           </div>
@@ -293,7 +304,13 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
               placeholder="Search or select tags, or type to create new..."
             />
           </div>
-          <div className="col-12"><label className="lb-ca-label">Description</label><RichTextEditor value={values.description} onChange={(html) => setValues((v) => ({ ...v, description: html }))} /></div>
+          <div className="col-12">
+            <label className="lb-ca-label">Description</label>
+            <RichTextEditor
+              value={values.description}
+              onChange={(html) => setValues((v) => ({ ...v, description: html }))}
+            />
+          </div>
         </div>
         <div className="text-end mt-4"><button type="submit" className="btn lb-btn-primary" disabled={saving || loading}>{saving ? "Saving..." : editId ? "Update Post" : "Add Post"}</button></div>
       </div>

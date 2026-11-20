@@ -38,9 +38,11 @@ export default function Footer() {
               support email
             </p>
 
-            <h3 className="lb-footer-mail">
-              info@tinyadds.com
-            </h3>
+            <a href="mailto:operations@amitaujas.com" className="text-decoration-none">
+              <h3 className="lb-footer-mail">
+                operations@amitaujas.com
+              </h3>
+            </a>
           </div>
 
           {/* Essential Links */}
@@ -50,17 +52,17 @@ export default function Footer() {
             <ul className="lb-footer-links">
               {/* <li><Link href="/contact">Company &amp; Contact Info</Link></li> */}
               <li><Link href="/blog">Blog &amp; Articles</Link></li>
-              <li><a href="#">Sitemap</a></li>
-              <li><a href="/terms-and-conditions">Terms of Service</a></li>
+              <li><a href="/terms-and-conditions">Terms & Conditions</a></li>
               <li><a href="/privacy-policy">Privacy Policy</a></li>
+              <li><Link href="/contact">Contact Us</Link></li>
               <li><a href="/faq">FAQ Page</a></li>
               {/* <li><a href="#">Live Chat</a></li>
               <li><a href="#">How to Stay Safe</a></li>
               <li><a href="#">Terms &amp; Conditions</a></li> */}
-              <li><Link href="/contact">Contact Us</Link></li>
+              <li><a href="#">Sitemap</a></li>
             </ul>
           </div>
- 
+
           {/* About */}
           <div className="col-md-6 col-lg-4">
             <p className="lb-footer-about">
@@ -69,12 +71,12 @@ export default function Footer() {
               sell and rent products and services online.
             </p>
 
-            <Link
+            {/* <Link
               href="/contact"
               className="btn btn-light rounded-pill px-4"
             >
               Get It Now
-            </Link>
+            </Link> */}
           </div>
         </div>
 
