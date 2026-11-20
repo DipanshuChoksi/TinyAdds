@@ -45,7 +45,7 @@ export function validateNumericId(id: unknown, paramName = "id"): number {
 
 export function validatePagination(query: { page?: unknown; limit?: unknown }): { page: number; limit: number; skip: number } {
   let page = 1;
-  let limit = 20;
+  let limit = Number.MAX_SAFE_INTEGER;
 
   if (query.page !== undefined) {
     const parsedPage = parseInt(String(query.page), 10);
@@ -58,10 +58,10 @@ export function validatePagination(query: { page?: unknown; limit?: unknown }): 
 
   if (query.limit !== undefined) {
     const parsedLimit = parseInt(String(query.limit), 10);
-    if (!isNaN(parsedLimit) && parsedLimit > 0 && parsedLimit <= 200) {
+    if (!isNaN(parsedLimit) && parsedLimit > 0) {
       limit = parsedLimit;
     } else {
-      throw new BadRequestError("Query parameter 'limit' must be between 1 and 200");
+      throw new BadRequestError("Query parameter 'limit' must be a positive integer");
     }
   }
 

@@ -129,14 +129,14 @@ export default function ListingDetailPage() {
                     className="w-100 h-auto"
                     style={{ objectFit: "contain", maxHeight: 500 }}
                   />
-                  {post.banner && (
+                  {/* {post.banner && (
                     <span
                       className="position-absolute top-0 end-0 m-3 badge bg-dark bg-opacity-75 text-white py-2 px-3"
                       style={{ fontSize: "0.85rem", backdropFilter: "blur(4px)" }}
                     >
                       {post.banner.name}
                     </span>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Key Tags and Badges */}
@@ -239,36 +239,6 @@ export default function ListingDetailPage() {
                       </a>
                     )}
                   </div>
-
-                  <ul className="list-unstyled mb-0 d-flex flex-column gap-3 small border-top pt-3">
-                    {post.address && (
-                      <li className="d-flex align-items-start gap-2">
-                        <i className="bi bi-geo-alt-fill text-primary mt-1" />
-                        <div>
-                          <strong className="d-block text-dark">Location:</strong>
-                          <span className="text-muted">{post.address}</span>
-                        </div>
-                      </li>
-                    )}
-                    {post.contactNo && (
-                      <li className="d-flex align-items-start gap-2">
-                        <i className="bi bi-phone-fill text-primary mt-1" />
-                        <div>
-                          <strong className="d-block text-dark">Phone:</strong>
-                          <span className="text-muted">{post.contactNo}</span>
-                        </div>
-                      </li>
-                    )}
-                    {post.email && (
-                      <li className="d-flex align-items-start gap-2">
-                        <i className="bi bi-envelope-at-fill text-primary mt-1" />
-                        <div>
-                          <strong className="d-block text-dark">Email:</strong>
-                          <span className="text-muted">{post.email}</span>
-                        </div>
-                      </li>
-                    )}
-                  </ul>
                 </div>
 
                 {/* Ad Overview Meta Card */}

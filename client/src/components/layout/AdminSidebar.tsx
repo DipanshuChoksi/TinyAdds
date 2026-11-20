@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import http from '@/lib/http';
+import { useUserStore } from '@/store/userStore';
 
 export interface AdminNavSubItem {
   href: string;
@@ -47,6 +48,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const clearUser = useUserStore((s) => s.clearUser);
   const [loggingOut, setLoggingOut] = useState(false);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
     '/admin/master-item': false, // Keep open by default
@@ -60,6 +62,7 @@ export default function AdminSidebar() {
     } catch {
       // Proceed even if network error
     } finally {
+      clearUser();
       closeOffcanvas();
       window.location.href = '/admin';
     }

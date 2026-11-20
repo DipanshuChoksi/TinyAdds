@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import PageBanner from "@/components/PageBanner";
 import Pagination from "@/components/ui/Pagination";
+import Dropdown from "@/components/ui/Dropdown";
 import { getPublicPosts, type PublicPost } from "@/lib/postApi";
 import { getPublicBannerSections } from "@/lib/bannerSectionApi";
 import { getPublicGroups } from "@/lib/groupApi";
@@ -241,7 +242,7 @@ function ListingsContent() {
                 </div>
 
                 {/* Banner Type Filter */}
-                <div className="mb-3">
+                {/* <div className="mb-3">
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Banner Placement
                   </label>
@@ -259,27 +260,21 @@ function ListingsContent() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
 
                 {/* Search Group Filter */}
                 <div className="mb-3">
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Group
                   </label>
-                  <select
-                    className="form-select"
+                  <Dropdown
+                    ariaLabel="Filter by group"
                     value={group}
-                    onChange={(e) =>
-                      updateParams({ group: e.target.value, page: 1 })
-                    }
-                  >
-                    <option value="">All Groups</option>
-                    {groupOptions.map((opt) => (
-                      <option key={opt.id} value={opt.id}>
-                        {opt.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => updateParams({ group: value || null, page: 1 })}
+                    options={groupOptions.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    placeholder="All Groups"
+                    allowEmpty
+                  />
                 </div>
 
                 {/* Search Category Filter */}
@@ -287,18 +282,14 @@ function ListingsContent() {
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Category
                   </label>
-                  <select
-                    className="form-select"
+                  <Dropdown
+                    ariaLabel="Filter by category"
                     value={category}
-                    onChange={(e) => updateParams({ category: e.target.value, page: 1 })}
-                  >
-                    <option value="">All Categories</option>
-                    {categoryOptions.map((opt) => (
-                      <option key={opt.id} value={opt.id}>
-                        {opt.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => updateParams({ category: value || null, page: 1 })}
+                    options={categoryOptions.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    placeholder="All Categories"
+                    allowEmpty
+                  />
                 </div> */}
 
                 {/* City Filter */}
@@ -306,20 +297,14 @@ function ListingsContent() {
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Location / City
                   </label>
-                  <select
-                    className="form-select"
+                  <Dropdown
+                    ariaLabel="Filter by location or city"
                     value={cityId !== undefined ? String(cityId) : ""}
-                    onChange={(e) =>
-                      updateParams({ cityId: e.target.value || null, page: 1 })
-                    }
-                  >
-                    <option value="">All Locations</option>
-                    {cityOptions.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => updateParams({ cityId: value || null, page: 1 })}
+                    options={cityOptions.map((city) => ({ label: city.name, value: String(city.id) }))}
+                    placeholder="All Locations"
+                    allowEmpty
+                  />
                 </div>
 
                 {/* Emotion Filter */}
@@ -327,20 +312,14 @@ function ListingsContent() {
                   <label className="form-label small fw-semibold text-muted text-uppercase mb-1">
                     Emotion / Vibe
                   </label>
-                  <select
-                    className="form-select"
+                  <Dropdown
+                    ariaLabel="Filter by emotion or vibe"
                     value={emotion}
-                    onChange={(e) =>
-                      updateParams({ emotion: e.target.value, page: 1 })
-                    }
-                  >
-                    <option value="">All Emotions</option>
-                    {emotionOptions.map((opt) => (
-                      <option key={opt.id} value={opt.id}>
-                        {opt.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => updateParams({ emotion: value || null, page: 1 })}
+                    options={emotionOptions.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    placeholder="All Emotions"
+                    allowEmpty
+                  />
                 </div>
 
                 {/* Tags Filter Button & Selected Tag Pills */}
@@ -556,7 +535,7 @@ function ListingsContent() {
                               className="w-100 h-100"
                               style={{ objectFit: "cover" }}
                             />
-                            {bannerName && (
+                            {/* {bannerName && (
                               <span
                                 className="position-absolute top-0 start-0 m-2 badge bg-dark bg-opacity-75 text-white"
                                 style={{
@@ -566,7 +545,7 @@ function ListingsContent() {
                               >
                                 {bannerName}
                               </span>
-                            )}
+                            )} */}
                           </div>
 
                           <div className="lb-card-body d-flex flex-column flex-grow-1">

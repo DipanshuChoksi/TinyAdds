@@ -5,12 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { CLIENT_MENU } from "@/data/clientAdmin";
 import { useConfirm, useToast } from "@/components/ui/UiProvider";
 import http from "@/lib/http";
+import { useUserStore } from "@/store/userStore";
 
 export default function ClientSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const confirm = useConfirm();
   const toast = useToast();
+  const clearUser = useUserStore((s) => s.clearUser);
 
   const handleLogout = async () => {
     const ok = await confirm({
@@ -25,9 +27,12 @@ export default function ClientSidebar() {
     try {
       await http.post("/auth/logout");
       toast.success("Logged out successfully");
-      router.replace("/login");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to log out");
+    } finally {
+      clearUser();
+      router.replace("/login");
+      router.refresh();
     }
   };
 

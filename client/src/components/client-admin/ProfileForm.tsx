@@ -118,7 +118,7 @@ export default function ProfileForm() {
     if (!matchedState) return;
 
     let active = true;
-    getPublicCities(matchedCountry?.id, matchedState.id, 1, 200)
+    getPublicCities(matchedCountry?.id, matchedState.id, 1)
       .then((res) => {
         if (active && res.success && Array.isArray(res.data)) {
           setCityList(res.data);

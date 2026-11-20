@@ -5,9 +5,10 @@ import "../models/State.js";
 import "../models/City.js";
 import { AppError, ConflictError, NotFoundError } from "../utils/errors.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
-import { sendPasswordOtp } from "../utils/email.js";
 import { config } from "../config/index.js";
 import type { ProfileUpdateInput, RegisterUserInput } from "../validators/user.validator.js";
+import { sendEmail } from "../utils/email.js";
+import { cmsService } from "./cms.service.js";
 
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_RESEND_DELAY_MS = 30 * 1000;
@@ -58,16 +59,43 @@ function publicUser(user: {
   };
 }
 
+function renderOtpTemplate(template: string, otp: string): string {
+  const placeholders = [
+    /\{\{\s*(?:otp|code)\s*\}\}/gi,
+    /\{\s*(?:otp|code)\s*\}/gi,
+    /\[\s*(?:otp|code)\s*\]/gi,
+    /%%\s*(?:otp|code)\s*%%/gi,
+  ];
+
+  return placeholders.reduce(
+    (rendered, placeholder) => rendered.replace(placeholder, otp),
+    template,
+  );
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export class UserService {
   async register(input: RegisterUserInput) {
-    const existing = await User.exists({ email: input.email });
+    const existing = await User.exists({ email: input.email, isDisplay: true });
     if (existing) throw new ConflictError("An account with this email already exists");
     const user = await User.create({ ...input, passwordHash: await hashPassword(input.password) });
     return publicUser(user);
   }
 
   async login(email: string, password: string) {
-    const user = await User.findOne({ email }).select("+passwordHash");
+    const user = await User.findOne({ email, isActive: true, isDisplay: true }).select("+passwordHash");
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
       throw new AppError("Email or password is incorrect", 401, "INVALID_CREDENTIALS");
     }
@@ -107,7 +135,33 @@ export class UserService {
     user.resetOtpSentAt = new Date();
     user.resetOtpAttempts = 0;
     await user.save();
-    await sendPasswordOtp(user.email, otp);
+
+    const fallbackText = `Your TinyAdds verification code is ${otp}. It expires in 10 minutes.`;
+    let subject = "TinyAdds password reset code";
+    let html: string | undefined;
+    let text = fallbackText;
+
+    try {
+      const template = await cmsService.getPublicCmsBySlug("reset-password");
+      subject = template.title || subject;
+
+      if (template.content?.trim()) {
+        html = renderOtpTemplate(template.content, otp);
+        if (html === template.content) {
+          html += `<p><strong>Your verification code: ${otp}</strong></p>`;
+        }
+        text = htmlToText(html);
+      }
+    } catch (error) {
+      if (!(error instanceof NotFoundError)) throw error;
+    }
+
+    await sendEmail({
+      to: user.email,
+      subject,
+      text,
+      ...(html ? { html } : {}),
+    });
   }
 
   async verifyPasswordResetOtp(email: string, otp: string): Promise<void> {

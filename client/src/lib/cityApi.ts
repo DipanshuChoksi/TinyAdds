@@ -13,7 +13,7 @@ export async function getPublicCities(
   countryId?: number,
   stateId?: number,
   page = 1,
-  limit = 100,
+  limit = Number.MAX_SAFE_INTEGER,
   showOnHome?: boolean
 ): Promise<ApiResponse<PublicCityResponse[]>> {
   return await http.get<PublicCityResponse[]>('/cities', {
