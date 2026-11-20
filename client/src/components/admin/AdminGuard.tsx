@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
+import Image from "next/image";
 import http from "@/lib/http";
 
 interface Props {
@@ -29,6 +30,7 @@ export default function AdminGuard({ children }: Props) {
   const [authorized, setAuthorized] = useState(false);
   const [checking, setChecking] = useState(true);
   const [serverError, setServerError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -105,10 +107,17 @@ export default function AdminGuard({ children }: Props) {
         <div className="card shadow border-0 p-4 p-md-5" style={{ maxWidth: "440px", width: "100%" }}>
           <div className="text-center mb-4">
             <div
-              className="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3"
-              style={{ width: "64px", height: "64px" }}
+              className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+              style={{ width: "64px", height: "64px", backgroundColor: "#fff" }}
             >
-              <i className="bi bi-shield-lock fs-2"></i>
+              <Image
+                src="/logo.png"
+                alt="TinyAdds"
+                width={56}
+                height={56}
+                className="object-fit-contain"
+                priority
+              />
             </div>
             <h3 className="fw-bold mb-1">Admin Portal</h3>
             <p className="text-muted small mb-0">Enter your credentials to access the admin dashboard</p>
@@ -150,17 +159,28 @@ export default function AdminGuard({ children }: Props) {
               <label className="form-label small fw-semibold text-secondary" htmlFor="admin-password">
                 Password
               </label>
-              <input
-                id="admin-password"
-                type="password"
-                className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                disabled={isSubmitting}
-                {...register("password", {
-                  required: "Password is required",
-                })}
-              />
+              <div className="position-relative">
+                <input
+                  id="admin-password"
+                  type={showPassword ? "text" : "password"}
+                  className={`form-control pe-5 ${errors.password ? "is-invalid" : ""}`}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  disabled={isSubmitting}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
+                />
+                <button
+                  type="button"
+                  className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent text-secondary px-3"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                >
+                  <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true" />
+                </button>
+              </div>
               {errors.password && (
                 <div className="invalid-feedback">{errors.password.message}</div>
               )}
