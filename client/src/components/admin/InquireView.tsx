@@ -1,7 +1,7 @@
 'use client';
 
 import { AdminInquiry } from '@/src/types';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import Pagination from '@/components/ui/Pagination';
 
 interface InquireViewProps {
@@ -12,6 +12,7 @@ interface InquireViewProps {
   onPageChange?: (page: number) => void;
   onStatusChange?: (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => void;
   onDelete?: (id: string) => void;
+  onSearch?: (query: string) => void;
 }
 
 export default function InquireView({
@@ -22,10 +23,21 @@ export default function InquireView({
   onPageChange,
   onStatusChange,
   onDelete,
+  onSearch,
 }: InquireViewProps) {
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInquiry, setSelectedInquiry] = useState<AdminInquiry | null>(null);
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSearch?.(searchTerm);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    onSearch?.('');
+  };
 
   const handleStatusChange = (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
     if (onStatusChange) {
@@ -37,13 +49,7 @@ export default function InquireView({
   };
 
   const filtered = initialInquiries.filter((inq) => {
-    const matchesFilter = filter === 'all' || inq.status === filter;
-    const matchesSearch =
-      inq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (inq.subject && inq.subject.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      inq.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inq.phone.includes(searchTerm);
-    return matchesFilter && matchesSearch;
+    return filter === 'all' || inq.status === filter;
   });
 
   return (
@@ -63,22 +69,37 @@ export default function InquireView({
       {/* Filter / Search Bar */}
       <div className="admin-card mb-4 p-3">
         <div className="row g-3 align-items-center">
-          <div className="col-12 col-md-5">
-            <div className="position-relative">
-              <i
-                className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
-                style={{ color: '#94a3b8' }}
-              />
-              <input
-                type="text"
-                className="form-control admin-search-input ps-5"
-                placeholder="Search by name, subject, or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+          <div className="col-12 col-md-7">
+            <form className="d-flex gap-2" onSubmit={handleSearchSubmit}>
+              <div className="position-relative flex-grow-1">
+                <i
+                  className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                  style={{ color: '#94a3b8' }}
+                />
+                <input
+                  type="text"
+                  className="form-control admin-search-input ps-5"
+                  placeholder="Search by name, subject, or phone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                >
+                  <i className="bi bi-x-lg" />
+                </button>
+              )}
+              <button type="submit" className="btn btn-primary">
+                Search
+              </button>
+            </form>
           </div>
-          <div className="col-12 col-md-7 d-flex justify-content-md-end gap-2 flex-wrap">
+          <div className="col-12 col-md-5 d-flex justify-content-md-end gap-2 flex-wrap">
             {/* {(['all', 'pending', 'in_progress', 'resolved'] as const).map((st) => {
               const label =
                 st === 'all'

@@ -5,6 +5,7 @@ import {
   validateUpdateState,
   validateNumericId,
   validatePagination,
+  validateStateListQuery,
 } from "../validators/state.validator.js";
 import { sendSuccess } from "../utils/response.js";
 
@@ -44,9 +45,8 @@ export class StateController {
    */
   async getAdminStates(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const pagination = validatePagination(req.query);
-      const countryId = req.query.countryId ? validateNumericId(req.query.countryId, "countryId") : undefined;
-      const result = await stateService.getAdminStates(pagination, countryId);
+      const query = validateStateListQuery(req.query);
+      const result = await stateService.getAdminStates(query);
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) {
       next(error);

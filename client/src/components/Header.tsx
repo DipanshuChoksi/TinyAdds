@@ -110,7 +110,7 @@ export default function Header() {
                     </Link>
                   </div>
                   <Link
-                    href="/client-admin"
+                    href="/client-admin/add-post"
                     className="btn lb-btn-primary d-inline-flex align-items-center justify-content-center text-nowrap"
                     onClick={closeDrawer}
                   >

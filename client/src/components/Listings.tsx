@@ -18,7 +18,7 @@ export default function Listings() {
 
   useEffect(() => {
     let active = true;
-    getPublicPosts({ banner: "6af6ec5ada18ee7ad2da4e33", limit: 100 })
+    getPublicPosts({ banner: "listing-ads", limit: 100 }) // Listing ads by slug
       .then((res) => {
         if (!active) return;
         if (res?.success && Array.isArray(res.data) && res.data.length > 0) {

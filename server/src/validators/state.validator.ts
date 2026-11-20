@@ -15,6 +15,50 @@ export interface UpdateStateInput {
   isActive?: boolean;
 }
 
+export interface StateListQuery {
+  page: number;
+  limit: number;
+  skip: number;
+  countryId?: number;
+  search?: string;
+}
+
+const MAX_SEARCH_LENGTH = 100;
+
+export function escapeRegex(input: string): string {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function validateStateListQuery(query: unknown): StateListQuery {
+  const q = (query ?? {}) as Record<string, unknown>;
+  const { page, limit, skip } = validatePagination(q);
+
+  let countryId: number | undefined;
+  if (q.countryId !== undefined && q.countryId !== "" && q.countryId !== "all") {
+    countryId = validateNumericId(q.countryId, "countryId");
+  }
+
+  let search: string | undefined;
+  if (typeof q.search === "string") {
+    const trimmed = q.search.trim();
+    if (trimmed.length > MAX_SEARCH_LENGTH) {
+      throw new BadRequestError(`search must be at most ${MAX_SEARCH_LENGTH} characters`);
+    }
+    if (trimmed.length > 0) {
+      search = escapeRegex(trimmed);
+    }
+  }
+
+  const result: StateListQuery = { page, limit, skip };
+  if (countryId !== undefined) {
+    result.countryId = countryId;
+  }
+  if (search !== undefined) {
+    result.search = search;
+  }
+  return result;
+}
+
 export function validateCreateState(body: unknown): CreateStateInput {
   if (typeof body !== "object" || body === null) {
     throw new BadRequestError("Request body must be a JSON object");

@@ -49,7 +49,8 @@ export class CityController {
       const pagination = validatePagination(req.query);
       const countryId = req.query.countryId ? validateNumericId(req.query.countryId, "countryId") : undefined;
       const stateId = req.query.stateId ? validateNumericId(req.query.stateId, "stateId") : undefined;
-      const result = await cityService.getAdminCities(pagination, countryId, stateId);
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const result = await cityService.getAdminCities(pagination, countryId, stateId, search);
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) {
       next(error);

@@ -23,14 +23,15 @@ export async function getPublicCountryById(id: number): Promise<ApiResponse<Publ
 }
 
 /**
- * Fetch countries for admin panel (list with pagination)
+ * Fetch countries for admin panel (list with pagination + optional search)
  */
 export async function getAdminCountries(
   page = 1,
-  limit = 10
+  limit = 10,
+  search = ''
 ): Promise<{ items: AdminCountryResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminCountryResponse[]>('/admin/countries', {
-    params: { page, limit },
+    params: { page, limit, search: search || undefined },
   });
 
   if (!response.success || !Array.isArray(response.data)) {

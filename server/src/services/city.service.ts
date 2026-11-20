@@ -64,12 +64,13 @@ export class CityService {
   }
 
   /**
-   * Admin list: filters by isDisplay: true (shows active & inactive, optional filters)
+   * Admin list: filters by isDisplay: true (shows active & inactive, optional filters & search)
    */
   async getAdminCities(
     pagination: PaginationParams,
     countryId?: number,
-    stateId?: number
+    stateId?: number,
+    search?: string
   ): Promise<PaginationResult<CityDocument>> {
     const filter: Record<string, unknown> = { isDisplay: true };
     if (countryId !== undefined) {
@@ -77,6 +78,38 @@ export class CityService {
     }
     if (stateId !== undefined) {
       filter.stateId = stateId;
+    }
+
+    if (search && search.trim()) {
+      const trimmedSearch = search.trim();
+      const escaped = trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(escaped, "i");
+
+      // Find matching state IDs and country IDs for cross-relational search
+      const [matchingStates, matchingCountries] = await Promise.all([
+        State.find({ name: regex, isDisplay: true }).select("id").lean(),
+        Country.find({ name: regex, isDisplay: true }).select("id").lean(),
+      ]);
+
+      const stateIds = matchingStates.map((s) => s.id);
+      const countryIds = matchingCountries.map((c) => c.id);
+
+      const orConditions: Array<Record<string, unknown>> = [{ name: regex }];
+
+      const numericId = Number(trimmedSearch);
+      if (!Number.isNaN(numericId)) {
+        orConditions.push({ id: numericId });
+      }
+
+      if (stateIds.length > 0) {
+        orConditions.push({ stateId: { $in: stateIds } });
+      }
+
+      if (countryIds.length > 0) {
+        orConditions.push({ countryId: { $in: countryIds } });
+      }
+
+      filter.$or = orConditions;
     }
 
     const [items, total] = await Promise.all([

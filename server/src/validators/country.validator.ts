@@ -1,5 +1,40 @@
 import { BadRequestError } from "../utils/errors.js";
 
+export interface CountryListQuery {
+  page: number;
+  limit: number;
+  skip: number;
+  search?: string;
+}
+
+const MAX_SEARCH_LENGTH = 100;
+
+export function escapeRegex(input: string): string {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function validateCountryListQuery(query: unknown): CountryListQuery {
+  const q = (query ?? {}) as Record<string, unknown>;
+  const { page, limit, skip } = validatePagination(q);
+
+  let search: string | undefined;
+  if (typeof q.search === "string") {
+    const trimmed = q.search.trim();
+    if (trimmed.length > MAX_SEARCH_LENGTH) {
+      throw new BadRequestError(`search must be at most ${MAX_SEARCH_LENGTH} characters`);
+    }
+    if (trimmed.length > 0) {
+      search = escapeRegex(trimmed);
+    }
+  }
+
+  const result: CountryListQuery = { page, limit, skip };
+  if (search !== undefined) {
+    result.search = search;
+  }
+  return result;
+}
+
 export function validateNumericId(id: unknown, paramName = "id"): number {
   const parsed = parseInt(String(id), 10);
   if (isNaN(parsed) || parsed <= 0) {

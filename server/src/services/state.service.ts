@@ -2,7 +2,7 @@ import { State, type StateDocument } from "../models/State.js";
 import { Country } from "../models/Country.js";
 import { getNextSequence } from "../models/Counter.js";
 import { NotFoundError, ConflictError, BadRequestError } from "../utils/errors.js";
-import type { CreateStateInput, UpdateStateInput } from "../validators/state.validator.js";
+import type { CreateStateInput, StateListQuery, UpdateStateInput } from "../validators/state.validator.js";
 import type { PaginationParams, PaginationResult } from "./country.service.js";
 
 export class StateService {
@@ -57,20 +57,23 @@ export class StateService {
   /**
    * Admin list: filters by isDisplay: true (shows active & inactive, optional countryId)
    */
-  async getAdminStates(
-    pagination: PaginationParams,
-    countryId?: number
-  ): Promise<PaginationResult<StateDocument>> {
+  async getAdminStates(query: StateListQuery): Promise<PaginationResult<StateDocument>> {
     const filter: Record<string, unknown> = { isDisplay: true };
-    if (countryId !== undefined) {
-      filter.countryId = countryId;
+
+    if (query.countryId !== undefined) {
+      filter.countryId = query.countryId;
+    }
+
+    if (query.search) {
+      // query.search is already regex-escaped by the validator
+      filter.name = { $regex: query.search, $options: "i" };
     }
 
     const [items, total] = await Promise.all([
       State.find(filter)
         .sort({ id: 1 })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
+        .skip(query.skip)
+        .limit(query.limit)
         .lean(),
       State.countDocuments(filter),
     ]);
@@ -78,10 +81,10 @@ export class StateService {
     return {
       items: items as unknown as StateDocument[],
       meta: {
-        page: pagination.page,
-        limit: pagination.limit,
+        page: query.page,
+        limit: query.limit,
         total,
-        totalPages: Math.ceil(total / pagination.limit) || 1,
+        totalPages: Math.ceil(total / query.limit) || 1,
       },
     };
   }

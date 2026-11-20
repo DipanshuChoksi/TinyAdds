@@ -211,7 +211,7 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
 
   const selectedBannerObj = bannerOptions.find((b) => b.value === values.banner);
   const selectedBannerName = (selectedBannerObj?.label || values.banner || "").trim().toLowerCase();
-  const isListingAds = selectedBannerName === "listing ads" || values.banner === "6af6ec5ada18ee7ad2da4e33";
+  const isListingAds = selectedBannerName === "listing ads";
 
   const err = (key: keyof Errors) => errors[key] && <small className="lb-ca-err">{errors[key]}</small>;
   return (
@@ -249,8 +249,8 @@ export default function AddPostForm({ mode = "client", postId, onSaved }: Props 
             />
           </div>
           <div className="col-md-6"><label className="lb-ca-label">Available From Date</label><input type="date" className="form-control lb-ca-input" value={values.fromDate || Date.now()} onChange={set("fromDate")} />{err("fromDate")}</div>
-          <div className="col-md-6"><label className="lb-ca-label">Emotion</label><Dropdown ariaLabel="Emotion" value={values.emotion} onChange={(v) => setValues((x) => ({ ...x, emotion: v }))} options={emotionOptions} placeholder="-- Select Emotion --" allowEmpty disabled={!isListingAds} /></div>
-          <div className="col-md-6"><label className="lb-ca-label">Search Group</label><Dropdown ariaLabel="Search Group" value={values.searchGroup} onChange={(v) => setValues((x) => ({ ...x, searchGroup: v }))} options={searchGroupOptions} placeholder="-- Select Search Group --" allowEmpty disabled={!isListingAds} /></div>
+          {isListingAds && <div className="col-md-6"><label className="lb-ca-label">Emotion</label><Dropdown ariaLabel="Emotion" value={values.emotion} onChange={(v) => setValues((x) => ({ ...x, emotion: v }))} options={emotionOptions} placeholder="-- Select Emotion --" allowEmpty /></div>}
+          {isListingAds && <div className="col-md-6"><label className="lb-ca-label">Search Group</label><Dropdown ariaLabel="Search Group" value={values.searchGroup} onChange={(v) => setValues((x) => ({ ...x, searchGroup: v }))} options={searchGroupOptions} placeholder="-- Select Search Group --" allowEmpty /></div>}
           {/* <div className="col-md-6"><label className="lb-ca-label">Search Category</label><Dropdown ariaLabel="Search Category" value={values.searchCategory} onChange={(v) => setValues((x) => ({ ...x, searchCategory: v }))} options={SEARCH_CATEGORIES} placeholder="-- Select Search Category --" allowEmpty /></div> */}
           <div className="col-md-6">
             <label className="lb-ca-label">Choose file</label>

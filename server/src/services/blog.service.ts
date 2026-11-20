@@ -6,6 +6,7 @@ export interface PaginationParams {
   page: number;
   limit: number;
   skip: number;
+  search?: string;
 }
 
 export interface PaginationResult<T> {
@@ -65,7 +66,13 @@ export class BlogService {
    * Admin list: filter by isDisplay: true (shows active & inactive)
    */
   async getAdminBlogs(pagination: PaginationParams): Promise<PaginationResult<BlogDocument>> {
-    const filter = { isDisplay: true };
+    const filter: Record<string, unknown> = { isDisplay: true };
+
+    if (pagination.search?.trim()) {
+      const escapedSearch = pagination.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(escapedSearch, "i");
+      filter.$or = [{ title: regex }, { content: regex }];
+    }
 
     const [items, total] = await Promise.all([
       Blog.find(filter)

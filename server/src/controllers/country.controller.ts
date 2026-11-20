@@ -5,6 +5,7 @@ import {
   validateUpdateCountry,
   validateNumericId,
   validatePagination,
+  validateCountryListQuery,
 } from "../validators/country.validator.js";
 import { sendSuccess } from "../utils/response.js";
 
@@ -41,15 +42,15 @@ export class CountryController {
    * GET /api/admin/countries
    * Admin list of countries (active and inactive)
    */
-  async getAdminCountries(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const pagination = validatePagination(req.query);
-      const result = await countryService.getAdminCountries(pagination);
-      res.status(200).json(sendSuccess(result.items, result.meta));
-    } catch (error) {
-      next(error);
-    }
+async getAdminCountries(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const query = validateCountryListQuery(req.query);
+    const result = await countryService.getAdminCountries(query);
+    res.status(200).json(sendSuccess(result.items, result.meta));
+  } catch (error) {
+    next(error);
   }
+}
 
   /**
    * GET /api/admin/countries/:id

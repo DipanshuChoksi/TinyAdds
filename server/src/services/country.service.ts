@@ -1,7 +1,7 @@
 import { Country, type CountryDocument } from "../models/Country.js";
 import { getNextSequence } from "../models/Counter.js";
 import { NotFoundError, ConflictError } from "../utils/errors.js";
-import type { CreateCountryInput, UpdateCountryInput } from "../validators/country.validator.js";
+import type { CountryListQuery, CreateCountryInput, UpdateCountryInput } from "../validators/country.validator.js";
 
 export interface PaginationParams {
   page: number;
@@ -65,14 +65,18 @@ export class CountryService {
   /**
    * Admin list: filters by isDisplay: true (shows active & inactive)
    */
-  async getAdminCountries(pagination: PaginationParams): Promise<PaginationResult<CountryDocument>> {
-    const filter = { isDisplay: true };
+  async getAdminCountries(query: CountryListQuery): Promise<PaginationResult<CountryDocument>> {
+    const filter: Record<string, unknown> = { isDisplay: true };
+
+    if (query.search) {
+      filter.name = { $regex: query.search, $options: "i" };
+    }
 
     const [items, total] = await Promise.all([
       Country.find(filter)
         .sort({ id: 1 })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
+        .skip(query.skip)
+        .limit(query.limit)
         .lean(),
       Country.countDocuments(filter),
     ]);
@@ -80,10 +84,10 @@ export class CountryService {
     return {
       items: items as unknown as CountryDocument[],
       meta: {
-        page: pagination.page,
-        limit: pagination.limit,
+        page: query.page,
+        limit: query.limit,
         total,
-        totalPages: Math.ceil(total / pagination.limit) || 1,
+        totalPages: Math.ceil(total / query.limit) || 1,
       },
     };
   }

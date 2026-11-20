@@ -32,16 +32,12 @@ export async function getPublicStateById(id: number): Promise<ApiResponse<Public
 export async function getAdminStates(
   countryId?: number,
   page = 1,
-  limit = 10
+  limit = 10,
+  search = ''
 ): Promise<{ items: AdminStateResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
   const response = await http.get<AdminStateResponse[]>('/admin/states', {
-    params: { page, limit, ...(countryId !== undefined ? { countryId } : {}) },
+    params: { countryId, page, limit, search: search || undefined },
   });
-
-  if (!response.success || !Array.isArray(response.data)) {
-    return { items: [], meta: undefined };
-  }
-
   return {
     items: response.data,
     meta: response.meta as { page: number; limit: number; total: number; totalPages: number } | undefined,

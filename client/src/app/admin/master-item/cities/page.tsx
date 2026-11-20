@@ -33,6 +33,16 @@ export default function AdminMasterCitiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Table filters
   const [selectedCountryFilter, setSelectedCountryFilter] = useState<string>('all');
@@ -64,7 +74,7 @@ export default function AdminMasterCitiesPage() {
 
   const watchedCountryId = watch('countryId');
 
-  const loadData = useCallback(async (targetPage = page) => {
+  const loadData = useCallback(async (targetPage = page, targetSearch = debouncedSearch) => {
     try {
       setLoading(true);
       setError(null);
@@ -72,7 +82,7 @@ export default function AdminMasterCitiesPage() {
       const sFilter = selectedStateFilter === 'all' ? undefined : Number(selectedStateFilter);
 
       const [citiesRes, statesData, countriesData] = await Promise.all([
-        getAdminCities(cFilter, sFilter, targetPage, 1),
+        getAdminCities(cFilter, sFilter, targetPage, 10, targetSearch),
         getAdminStatesAll(),
         getAdminCountriesAll(),
       ]);
@@ -91,11 +101,11 @@ export default function AdminMasterCitiesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, selectedCountryFilter, selectedStateFilter]);
+  }, [page, debouncedSearch, selectedCountryFilter, selectedStateFilter]);
 
   useEffect(() => {
-    loadData(page);
-  }, [page, selectedCountryFilter, selectedStateFilter, loadData]);
+    loadData(page, debouncedSearch);
+  }, [page, debouncedSearch, selectedCountryFilter, selectedStateFilter, loadData]);
 
   function getCountryName(cId: number) {
     const c = countries.find((country) => country.id === cId);
@@ -259,7 +269,7 @@ export default function AdminMasterCitiesPage() {
     if (!confirm('Are you sure you want to delete this city?')) return;
     try {
       await deleteAdminCity(id);
-      loadData(page);
+      loadData(page, debouncedSearch);
     } catch (err) {
       console.error('Failed to delete city:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete city');
@@ -270,22 +280,6 @@ export default function AdminMasterCitiesPage() {
   const tableFilterStates = states.filter((s) =>
     selectedCountryFilter === 'all' ? true : s.countryId === Number(selectedCountryFilter)
   );
-
-  const filtered = cities.filter((c) => {
-    const matchesSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      String(c.id).includes(search) ||
-      getStateName(c.stateId).toLowerCase().includes(search.toLowerCase()) ||
-      getCountryName(c.countryId).toLowerCase().includes(search.toLowerCase());
-
-    const matchesCountry =
-      selectedCountryFilter === 'all' || c.countryId === Number(selectedCountryFilter);
-
-    const matchesState =
-      selectedStateFilter === 'all' || c.stateId === Number(selectedStateFilter);
-
-    return matchesSearch && matchesCountry && matchesState;
-  });
 
   return (
     <div>
@@ -316,7 +310,7 @@ export default function AdminMasterCitiesPage() {
               <strong>Server connection issue:</strong> {error}
             </div>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadData(page)}>
+          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadData(page, debouncedSearch)}>
             Retry
           </button>
         </div>
@@ -375,7 +369,7 @@ export default function AdminMasterCitiesPage() {
             </select>
           </div>
           <div className="col-md-2 text-md-end text-muted small">
-            {filtered.length} of {cities.length}
+            Showing {cities.length} of {total}
           </div>
         </div>
       </div>
@@ -404,7 +398,7 @@ export default function AdminMasterCitiesPage() {
                     Loading cities from backend...
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
+              ) : cities.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-5 text-muted">
                     <i className="bi bi-buildings fs-2 d-block mb-2 text-secondary" />
@@ -412,7 +406,7 @@ export default function AdminMasterCitiesPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((c) => (
+                cities.map((c) => (
                   <tr key={c.id}>
                     <td className="ps-4 fw-bold text-secondary">
                       #{c.id}

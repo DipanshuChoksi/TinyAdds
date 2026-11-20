@@ -3,6 +3,8 @@ import { ClientPost, type ClientPostData } from "../models/ClientPost.js";
 import { User } from "../models/User.js";
 import { City } from "../models/City.js";
 import { Group } from "../models/Group.js";
+import { BannerSection } from "../models/BannerSection.js";
+import { Emotion } from "../models/Emotion.js";
 import { Tag } from "../models/Tag.js";
 import { BadRequestError, NotFoundError } from "../utils/errors.js";
 import type { ClientPostInput } from "../validators/post.validator.js";
@@ -327,11 +329,38 @@ export class ClientPostService {
     }
 
     if (query.banner && query.banner.trim()) {
-      conditions.push({ banner: query.banner.trim() });
+      const bannerVal = query.banner.trim();
+      if (Types.ObjectId.isValid(bannerVal)) {
+        conditions.push({ banner: new Types.ObjectId(bannerVal) });
+      } else {
+        const bannerDoc = await BannerSection.findOne({
+          slug: bannerVal.toLowerCase(),
+          isDisplay: true,
+        }).select("_id").lean();
+        if (bannerDoc) {
+          conditions.push({ banner: bannerDoc._id });
+        } else {
+          // If slug does not match any banner section, return empty results
+          conditions.push({ banner: new Types.ObjectId() });
+        }
+      }
     }
 
     if (query.searchGroup && query.searchGroup.trim()) {
-      conditions.push({ searchGroup: query.searchGroup.trim() });
+      const groupVal = query.searchGroup.trim();
+      if (Types.ObjectId.isValid(groupVal)) {
+        conditions.push({ searchGroup: new Types.ObjectId(groupVal) });
+      } else {
+        const groupDoc = await Group.findOne({
+          slug: groupVal.toLowerCase(),
+          isDisplay: true,
+        }).select("_id").lean();
+        if (groupDoc) {
+          conditions.push({ searchGroup: groupDoc._id });
+        } else {
+          conditions.push({ searchGroup: new Types.ObjectId() });
+        }
+      }
     }
 
     if (query.searchCategory && query.searchCategory.trim()) {
@@ -339,7 +368,20 @@ export class ClientPostService {
     }
 
     if (query.emotion && query.emotion.trim()) {
-      conditions.push({ emotion: query.emotion.trim() });
+      const emotionVal = query.emotion.trim();
+      if (Types.ObjectId.isValid(emotionVal)) {
+        conditions.push({ emotion: new Types.ObjectId(emotionVal) });
+      } else {
+        const emotionDoc = await Emotion.findOne({
+          slug: emotionVal.toLowerCase(),
+          isDisplay: true,
+        }).select("_id").lean();
+        if (emotionDoc) {
+          conditions.push({ emotion: emotionDoc._id });
+        } else {
+          conditions.push({ emotion: new Types.ObjectId() });
+        }
+      }
     }
 
     if (query.tags) {

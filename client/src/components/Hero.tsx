@@ -20,14 +20,7 @@ const FALLBACK_SECTION_SLIDES: SectionSlide[] = [
     image: "/home/Banner1.png",
     tag: "Trending Spotlight",
     link: "/listings",
-  },
-  {
-    id: "fb-sec-2",
-    title: "Special Festive Offers & Discounts",
-    image: "/home/Banner2.png",
-    tag: "Exclusive Deals",
-    link: "/listings",
-  },
+  }
 ];
 
 export default function Hero() {
@@ -46,8 +39,8 @@ export default function Hero() {
   useEffect(() => {
     let active = true;
     Promise.all([
-      getPublicPosts({ banner: "6af6ec34da18ee7ad2da4e30", limit: 20 }), //Standy slider
-      getPublicPosts({ banner: "6af6ec4eda18ee7ad2da4e32", limit: 20 }), // Section banner
+      getPublicPosts({ banner: "standy-slider", limit: 20 }), // Standy slider by slug
+      getPublicPosts({ banner: "section-banner", limit: 20 }), // Section banner by slug
     ])
       .then(([standyRes, sectionRes]) => {
         if (!active) return;
@@ -276,7 +269,7 @@ export default function Hero() {
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     key="standy-fallback"
-                    src={standyImage}
+                    src={'/home/Banner2.png'}
                     alt="Featured TinyAdds sale ad"
                   />
                 )}

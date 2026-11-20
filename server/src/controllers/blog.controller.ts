@@ -44,7 +44,11 @@ export class BlogController {
   async getAdminBlogs(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const pagination = validatePagination(req.query);
-      const result = await blogService.getAdminBlogs(pagination);
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const result = await blogService.getAdminBlogs({
+        ...pagination,
+        ...(search ? { search } : {}),
+      });
       res.status(200).json(sendSuccess(result.items, result.meta));
     } catch (error) {
       next(error);

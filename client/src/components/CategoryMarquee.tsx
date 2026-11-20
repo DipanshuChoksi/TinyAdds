@@ -15,7 +15,7 @@ function Group({ items, hidden = false }: { items: Category[]; hidden?: boolean 
       {items.map((c) => (
         <Link
           key={c.id}
-          href={`/listings?group=${encodeURIComponent(c.label)}&page=1`}
+          href={`/listings?group=${c.id}&page=1`}
           className="lb-cat-sm"
           tabIndex={hidden ? -1 : undefined}
           aria-hidden={hidden || undefined}

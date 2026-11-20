@@ -66,7 +66,7 @@ export default function SliderBannerCarousel() {
 
   useEffect(() => {
     let active = true;
-    getPublicPosts({ banner: "6af6ec3eda18ee7ad2da4e31", limit: 20 }) //Slider banner
+    getPublicPosts({ banner: "slider-banner", limit: 20 }) // Slider banner by slug
       .then((res) => {
         if (!active) return;
         if (res?.success && Array.isArray(res.data) && res.data.length > 0) {

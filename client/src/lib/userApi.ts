@@ -36,6 +36,14 @@ export async function getAdminUserById(id: string): Promise<AdminUserResponse> {
 }
 
 /**
+ * Update user status via admin API
+ */
+export async function updateAdminUserStatus(id: string, isActive: boolean): Promise<AdminUserResponse> {
+  const response = await http.patch<AdminUserResponse>(`/admin/users/${id}`, { isActive });
+  return response.data;
+}
+
+/**
  * Soft delete a user via admin API
  */
 export async function deleteAdminUser(id: string): Promise<void> {

@@ -26,12 +26,17 @@ export default function AdminInquirePage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const loadData = useCallback(async (targetPage = page) => {
+  const loadData = useCallback(async (targetPage = page, targetSearch = searchQuery) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await getAdminContacts({ page: targetPage, limit: 10 });
+      const res = await getAdminContacts({
+        page: targetPage,
+        limit: 10,
+        search: targetSearch,
+      });
       setInquiries(res.items.map(mapContactToAdminInquiry));
       if (res.pagination) {
         setPage(res.pagination.page);
@@ -48,11 +53,11 @@ export default function AdminInquirePage() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, searchQuery]);
 
   useEffect(() => {
-    loadData(page);
-  }, [page, loadData]);
+    loadData(page, searchQuery);
+  }, [page, searchQuery, loadData]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -89,6 +94,11 @@ export default function AdminInquirePage() {
     }
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query.trim());
+    setPage(1);
+  };
+
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
@@ -122,6 +132,7 @@ export default function AdminInquirePage() {
       onPageChange={handlePageChange}
       onStatusChange={handleStatusChange}
       onDelete={handleDelete}
+      onSearch={handleSearch}
     />
   );
 }

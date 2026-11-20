@@ -23,6 +23,7 @@ export default function AdminMasterCountryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -40,29 +41,41 @@ export default function AdminMasterCountryPage() {
     },
   });
 
-  const loadCountries = useCallback(async (targetPage = page) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await getAdminCountries(targetPage, 10);
-      setCountries(res.items);
-      if (res.meta) {
-        setPage(res.meta.page);
-        setTotalPages(res.meta.totalPages);
-        setTotal(res.meta.total);
+  const loadCountries = useCallback(
+    async (targetPage: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await getAdminCountries(targetPage, 10, debouncedSearch);
+        setCountries(res.items);
+        if (res.meta) {
+          setTotalPages(res.meta.totalPages);
+          setTotal(res.meta.total);
+        }
+      } catch (err) {
+        console.error('Failed to load countries:', err);
+        setError(err instanceof Error ? err.message : 'Failed to connect to backend');
+        setCountries([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to load countries:', err);
-      setError(err instanceof Error ? err.message : 'Failed to connect to backend');
-      setCountries([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page]);
+    },
+    [debouncedSearch]
+  );
 
+  // Debounce search input; reset to page 1 in the same batch
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Reload on page / search change
   useEffect(() => {
     loadCountries(page);
-  }, [page, loadCountries]);
+  }, [page, debouncedSearch, loadCountries]);
 
   function openCreateModal() {
     setEditingItem(null);
@@ -117,16 +130,16 @@ export default function AdminMasterCountryPage() {
     if (!confirm('Are you sure you want to delete this country?')) return;
     try {
       await deleteAdminCountry(id);
-      loadCountries(page);
+      if (countries.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        loadCountries(page);
+      }
     } catch (err) {
       console.error('Failed to delete country:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete country');
     }
   }
-
-  const filtered = countries.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase()) || String(c.id).includes(search)
-  );
 
   return (
     <div>
@@ -180,7 +193,7 @@ export default function AdminMasterCountryPage() {
             </div>
           </div>
           <div className="col-md-7 text-md-end text-muted small">
-            Showing {filtered.length} of {countries.length} countries
+            Showing {countries.length} of {total} countries
           </div>
         </div>
       </div>
@@ -205,7 +218,7 @@ export default function AdminMasterCountryPage() {
                     Loading countries from backend...
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
+              ) : countries.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="text-center py-5 text-muted">
                     <i className="bi bi-globe-americas fs-2 d-block mb-2 text-secondary" />
@@ -213,14 +226,10 @@ export default function AdminMasterCountryPage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((c) => (
+                countries.map((c) => (
                   <tr key={c.id}>
-                    <td className="ps-4 fw-bold text-secondary">
-                      #{c.id}
-                    </td>
-                    <td className="fw-semibold" style={{ color: '#0f172a' }}>
-                      {c.name}
-                    </td>
+                    <td className="ps-4 fw-bold text-secondary">#{c.id}</td>
+                    <td className="fw-semibold" style={{ color: '#0f172a' }}>{c.name}</td>
                     <td>
                       <button
                         type="button"
@@ -296,9 +305,7 @@ export default function AdminMasterCountryPage() {
                 </div>
                 <div className="modal-body p-4">
                   {formError && (
-                    <div className="alert alert-danger py-2 small mb-3">
-                      {formError}
-                    </div>
+                    <div className="alert alert-danger py-2 small mb-3">{formError}</div>
                   )}
                   <div className="mb-3">
                     <label className="form-label small fw-semibold text-muted">
@@ -315,9 +322,7 @@ export default function AdminMasterCountryPage() {
                       })}
                     />
                     {errors.name && (
-                      <div className="invalid-feedback small">
-                        {errors.name.message}
-                      </div>
+                      <div className="invalid-feedback small">{errors.name.message}</div>
                     )}
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { userService } from "../services/user.service.js";
 import { clearSessionCookie, setSessionCookie } from "../middleware/auth.js";
 import { sendSuccess } from "../utils/response.js";
+import { BadRequestError } from "../utils/errors.js";
 import {
   validateEmail,
   validateLogin,
@@ -95,6 +96,24 @@ export class UserController {
       const id = validateObjectId(req.params.id as string, "id");
       const user = await userService.getUserById(id);
       res.status(200).json(sendSuccess(user));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Admin: Update user status
+   * PATCH /api/admin/users/:id
+   */
+  async updateUserStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = validateObjectId(req.params.id as string, "id");
+      const { isActive } = req.body ?? {};
+      if (typeof isActive !== "boolean") {
+        throw new BadRequestError("'isActive' must be a boolean");
+      }
+      const updatedUser = await userService.updateUserStatus(id, isActive);
+      res.status(200).json(sendSuccess(updatedUser));
     } catch (error) {
       next(error);
     }

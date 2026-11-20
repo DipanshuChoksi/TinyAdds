@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getAdminUsers, deleteAdminUser } from '@/lib/userApi';
+import { getAdminUsers, deleteAdminUser, updateAdminUserStatus } from '@/lib/userApi';
 import type { AdminUserResponse } from '@/src/types/user';
 import Pagination from '@/components/ui/Pagination';
 
@@ -64,6 +64,18 @@ export default function AdminMasterUserPage() {
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to delete user');
+    }
+  };
+
+  const handleToggleStatus = async (user: AdminUserResponse) => {
+    try {
+      const updated = await updateAdminUserStatus(user._id, !user.isActive);
+      setUsers((prev) => prev.map((u) => (u._id === user._id ? { ...u, isActive: updated.isActive } : u)));
+      if (selectedUser?._id === user._id) {
+        setSelectedUser((prev) => (prev ? { ...prev, isActive: updated.isActive } : null));
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update user status');
     }
   };
 
@@ -198,13 +210,17 @@ export default function AdminMasterUserPage() {
                       <td className="small text-secondary">{u.mobile || '—'}</td>
                       <td className="small text-muted">{locationDisplay}</td>
                       <td>
-                        <span
-                          className={`badge rounded-pill px-3 py-1 fw-medium ${
+                        <button
+                          type="button"
+                          className={`badge border-0 rounded-pill px-3 py-1 fw-medium ${
                             u.isActive ? 'admin-badge-active' : 'admin-badge-inactive'
                           }`}
+                          onClick={() => handleToggleStatus(u)}
+                          title="Click to toggle status"
+                          style={{ cursor: 'pointer' }}
                         >
                           {u.isActive ? 'ACTIVE' : 'INACTIVE'}
-                        </span>
+                        </button>
                       </td>
                       <td className="text-end pe-4">
                         <div className="d-inline-flex align-items-center gap-1">
@@ -294,13 +310,17 @@ export default function AdminMasterUserPage() {
                     <h6 className="fw-bold mb-1" style={{ color: '#0f172a' }}>
                       {selectedUser.firstName} {selectedUser.lastName}
                     </h6>
-                    <span
-                      className={`badge rounded-pill px-2.5 py-0.5 small ${
+                    <button
+                      type="button"
+                      className={`badge border-0 rounded-pill px-2.5 py-0.5 small ${
                         selectedUser.isActive ? 'admin-badge-active' : 'admin-badge-inactive'
                       }`}
+                      onClick={() => handleToggleStatus(selectedUser)}
+                      title="Click to toggle status"
+                      style={{ cursor: 'pointer' }}
                     >
                       {selectedUser.isActive ? 'ACTIVE' : 'INACTIVE'}
-                    </span>
+                    </button>
                   </div>
                 </div>
 

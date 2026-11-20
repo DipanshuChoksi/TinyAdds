@@ -28,6 +28,7 @@ export default function AdminMasterStatePage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedCountryFilter, setSelectedCountryFilter] = useState<string>('all');
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -46,34 +47,47 @@ export default function AdminMasterStatePage() {
     },
   });
 
-  const loadData = useCallback(async (targetPage = page) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const cFilter = selectedCountryFilter === 'all' ? undefined : Number(selectedCountryFilter);
-      const [statesRes, countriesData] = await Promise.all([
-        getAdminStates(cFilter, targetPage, 1),
-        getAdminCountriesAll(),
-      ]);
-      setStates(statesRes.items);
-      if (statesRes.meta) {
-        setPage(statesRes.meta.page);
-        setTotalPages(statesRes.meta.totalPages);
-        setTotal(statesRes.meta.total);
+  const loadData = useCallback(
+    async (targetPage: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const cFilter =
+          selectedCountryFilter === 'all' ? undefined : Number(selectedCountryFilter);
+        const [statesRes, countriesData] = await Promise.all([
+          getAdminStates(cFilter, targetPage, 10, debouncedSearch),
+          getAdminCountriesAll(),
+        ]);
+        setStates(statesRes.items);
+        if (statesRes.meta) {
+          setTotalPages(statesRes.meta.totalPages);
+          setTotal(statesRes.meta.total);
+        }
+        setCountries(countriesData);
+      } catch (err) {
+        console.error('Failed to load states data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to connect to backend');
+        setStates([]);
+      } finally {
+        setLoading(false);
       }
-      setCountries(countriesData);
-    } catch (err) {
-      console.error('Failed to load states data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to connect to backend');
-      setStates([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, selectedCountryFilter]);
+    },
+    [selectedCountryFilter, debouncedSearch]
+  );
 
+  // Debounce search input; reset to page 1 in the same batch so we fire one request
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Reload whenever page, filter, or debounced search changes
   useEffect(() => {
     loadData(page);
-  }, [page, selectedCountryFilter, loadData]);
+  }, [page, selectedCountryFilter, debouncedSearch, loadData]);
 
   function getCountryName(cId: number) {
     const c = countries.find((country) => country.id === cId);
@@ -138,32 +152,29 @@ export default function AdminMasterStatePage() {
     if (!confirm('Are you sure you want to delete this state?')) return;
     try {
       await deleteAdminState(id);
-      loadData(page);
+      // If this was the last item on a page past 1, step back one page
+      if (states.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        loadData(page);
+      }
     } catch (err) {
       console.error('Failed to delete state:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete state');
     }
   }
 
-  const filtered = states.filter((s) => {
-    const matchesSearch =
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      String(s.id).includes(search) ||
-      getCountryName(s.countryId).toLowerCase().includes(search.toLowerCase());
-
-    const matchesCountry =
-      selectedCountryFilter === 'all' || s.countryId === Number(selectedCountryFilter);
-
-    return matchesSearch && matchesCountry;
-  });
-
   return (
     <div>
       {/* Header */}
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a' }}>State Master</h1>
-          <p className="text-muted small mb-0">Manage states & provinces linked to parent countries.</p>
+          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a' }}>
+            State Master
+          </h1>
+          <p className="text-muted small mb-0">
+            Manage states & provinces linked to parent countries.
+          </p>
         </div>
         <button
           type="button"
@@ -186,7 +197,11 @@ export default function AdminMasterStatePage() {
               <strong>Server connection issue:</strong> {error}
             </div>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-dark" onClick={() => loadData(page)}>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-dark"
+            onClick={() => loadData(page)}
+          >
             Retry
           </button>
         </div>
@@ -227,7 +242,7 @@ export default function AdminMasterStatePage() {
             </select>
           </div>
           <div className="col-md-3 text-md-end text-muted small">
-            Showing {filtered.length} of {states.length} states
+            Showing {states.length} of {total} states
           </div>
         </div>
       </div>
@@ -238,11 +253,15 @@ export default function AdminMasterStatePage() {
           <table className="table admin-table align-middle">
             <thead>
               <tr>
-                <th className="ps-4" style={{ width: '90px' }}>ID</th>
+                <th className="ps-4" style={{ width: '90px' }}>
+                  ID
+                </th>
                 <th>State Name</th>
                 <th>Country</th>
                 <th>Status</th>
-                <th className="text-end pe-4" style={{ width: '120px' }}>Action</th>
+                <th className="text-end pe-4" style={{ width: '120px' }}>
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -253,7 +272,7 @@ export default function AdminMasterStatePage() {
                     Loading states from backend...
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
+              ) : states.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-5 text-muted">
                     <i className="bi bi-map fs-2 d-block mb-2 text-secondary" />
@@ -261,11 +280,9 @@ export default function AdminMasterStatePage() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((s) => (
+                states.map((s) => (
                   <tr key={s.id}>
-                    <td className="ps-4 fw-bold text-secondary">
-                      #{s.id}
-                    </td>
+                    <td className="ps-4 fw-bold text-secondary">#{s.id}</td>
                     <td className="fw-semibold" style={{ color: '#0f172a' }}>
                       {s.name}
                     </td>
@@ -277,8 +294,9 @@ export default function AdminMasterStatePage() {
                     <td>
                       <button
                         type="button"
-                        className={`badge border-0 rounded-pill px-3 py-1 fw-medium ${s.isActive ? 'admin-badge-active' : 'admin-badge-inactive'
-                          }`}
+                        className={`badge border-0 rounded-pill px-3 py-1 fw-medium ${
+                          s.isActive ? 'admin-badge-active' : 'admin-badge-inactive'
+                        }`}
                         onClick={() => toggleStatus(s)}
                         title="Click to toggle status"
                       >
@@ -335,7 +353,11 @@ export default function AdminMasterStatePage() {
         <div
           className="modal d-block"
           tabIndex={-1}
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(2px)', zIndex: 1050 }}
+          style={{
+            backgroundColor: 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 1050,
+          }}
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
@@ -348,9 +370,7 @@ export default function AdminMasterStatePage() {
                 </div>
                 <div className="modal-body p-4">
                   {formError && (
-                    <div className="alert alert-danger py-2 small mb-3">
-                      {formError}
-                    </div>
+                    <div className="alert alert-danger py-2 small mb-3">{formError}</div>
                   )}
 
                   <div className="mb-3">
@@ -364,7 +384,9 @@ export default function AdminMasterStatePage() {
                         validate: (val) => val !== '' || 'Please select a parent country',
                       })}
                     >
-                      <option value="" disabled>Select a country</option>
+                      <option value="" disabled>
+                        Select a country
+                      </option>
                       {countries.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name} (#{c.id})
@@ -372,9 +394,7 @@ export default function AdminMasterStatePage() {
                       ))}
                     </select>
                     {errors.countryId && (
-                      <div className="invalid-feedback small">
-                        {errors.countryId.message}
-                      </div>
+                      <div className="invalid-feedback small">{errors.countryId.message}</div>
                     )}
                   </div>
 
@@ -393,9 +413,7 @@ export default function AdminMasterStatePage() {
                       })}
                     />
                     {errors.name && (
-                      <div className="invalid-feedback small">
-                        {errors.name.message}
-                      </div>
+                      <div className="invalid-feedback small">{errors.name.message}</div>
                     )}
                   </div>
                 </div>

@@ -17,6 +17,7 @@ interface ManageBlogsViewProps {
   total?: number;
   onPageChange?: (page: number) => void;
   onRefresh?: () => void;
+  onSearch?: (query: string) => void;
 }
 
 const BASE_URL = (process.env.NEXT_PUBLIC_IMAGE_URL || 'http://localhost:5000') + "/";
@@ -29,6 +30,7 @@ export default function ManageBlogsView({
   total = 0,
   onPageChange,
   onRefresh,
+  onSearch,
 }: ManageBlogsViewProps) {
   const [blogs, setBlogs] = useState<AdminBlogResponse[]>(initialBlogs);
   const [search, setSearch] = useState('');
@@ -51,10 +53,6 @@ export default function ManageBlogsView({
   const [isActive, setIsActive] = useState(true);
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const filtered = blogs.filter((b) =>
-    b.title.toLowerCase().includes(search.toLowerCase())
-  );
 
   const handleOpenCreateModal = () => {
     setEditingBlog(null);
@@ -166,6 +164,16 @@ export default function ManageBlogsView({
     }
   };
 
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSearch?.(search);
+  };
+
+  const handleClearSearch = () => {
+    setSearch('');
+    onSearch?.('');
+  };
+
   return (
     <div>
       {/* Header */}
@@ -206,29 +214,34 @@ export default function ManageBlogsView({
 
       {/* Search Bar */}
       <div className="admin-card mb-4 p-3">
-        <div className="position-relative">
-          <i
-            className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
-            style={{ color: '#94a3b8' }}
-          />
-          <input
-            type="text"
-            className="form-control admin-search-input ps-5"
-            placeholder="Search blogs by title..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <form onSubmit={handleSearchSubmit} className="d-flex gap-2 w-100">
+          <div className="position-relative flex-grow-1">
+            <i
+              className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+              style={{ color: '#94a3b8' }}
+            />
+            <input
+              type="text"
+              className="form-control admin-search-input ps-5"
+              placeholder="Search blogs by title or content..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
           {search && (
             <button
               type="button"
-              className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
-              style={{ color: '#94a3b8' }}
-              onClick={() => setSearch('')}
+              className="btn btn-outline-secondary"
+              onClick={handleClearSearch}
+              aria-label="Clear search"
             >
-              <i className="bi bi-x-circle-fill" />
+              <i className="bi bi-x-lg" />
             </button>
           )}
-        </div>
+          <button type="submit" className="btn btn-primary">
+            Search
+          </button>
+        </form>
       </div>
 
       {/* Blogs Table */}
@@ -245,15 +258,15 @@ export default function ManageBlogsView({
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {blogs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-5 text-muted">
                     <i className="bi bi-journal-x fs-2 d-block mb-2 text-secondary" />
-                    No articles found matching search.
+                    No articles found.
                   </td>
                 </tr>
               ) : (
-                filtered.map((blog) => (
+                blogs.map((blog) => (
                   <tr key={blog._id}>
                     <td className="ps-4">
                       <div

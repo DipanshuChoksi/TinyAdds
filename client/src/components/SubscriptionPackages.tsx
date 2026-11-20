@@ -56,7 +56,7 @@ export default function SubscriptionPackages() {
                     {pkg.isPopular && <span className="lb-package-popular">Most popular</span>}
                     <div className="lb-package-topline">
                       <span className="lb-package-icon"><i className="bi bi-layers" aria-hidden="true" /></span>
-                      <span className="lb-package-cycle">{pkg.period === "year" ? "Annual plan" : "Monthly plan"}</span>
+                      {/* <span className="lb-package-cycle">{pkg.period === "year" ? "Annual plan" : "Monthly plan"}</span> */}
                     </div>
                     <h2>{pkg.name}</h2>
                     <p className="lb-package-listing-count">{pkg.listingLimit} ad listings included</p>

@@ -27,11 +27,15 @@ export async function getPublicBlogById(id: string): Promise<ApiResponse<PublicB
  */
 export async function getAdminBlogs(
   page = 1,
-  limit = 10
+  limit = 10,
+  search = ''
 ): Promise<{ items: AdminBlogResponse[]; meta?: { page: number; limit: number; total: number; totalPages: number } }> {
-  const response = await http.get<AdminBlogResponse[]>('/admin/blogs', {
-    params: { page, limit },
-  });
+  const params: { page: number; limit: number; search?: string } = { page, limit };
+  if (search.trim()) {
+    params.search = search.trim();
+  }
+
+  const response = await http.get<AdminBlogResponse[]>('/admin/blogs', { params });
 
   if (!response.success || !Array.isArray(response.data)) {
     return { items: [], meta: undefined };

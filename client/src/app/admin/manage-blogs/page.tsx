@@ -12,33 +12,42 @@ export default function AdminManageBlogsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const loadData = useCallback(async (targetPage = page) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await getAdminBlogs(targetPage, 10);
-      setBlogs(res.items);
-      if (res.meta) {
-        setPage(res.meta.page);
-        setTotalPages(res.meta.totalPages);
-        setTotal(res.meta.total);
+  const loadData = useCallback(
+    async (targetPage = page, targetSearch = searchQuery) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await getAdminBlogs(targetPage, 10, targetSearch);
+        setBlogs(res.items);
+        if (res.meta) {
+          setPage(res.meta.page);
+          setTotalPages(res.meta.totalPages);
+          setTotal(res.meta.total);
+        }
+      } catch (err) {
+        console.error('Failed to load blogs from backend:', err);
+        setError(err instanceof Error ? err.message : 'Failed to connect to backend');
+        setBlogs([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to load blogs from backend:', err);
-      setError(err instanceof Error ? err.message : 'Failed to connect to backend');
-      setBlogs([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page]);
+    },
+    [page, searchQuery]
+  );
 
   useEffect(() => {
-    loadData(page);
-  }, [page, loadData]);
+    loadData(page, searchQuery);
+  }, [page, searchQuery, loadData]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query.trim());
+    setPage(1);
   };
 
   if (loading && blogs.length === 0) {
@@ -76,6 +85,7 @@ export default function AdminManageBlogsPage() {
         total={total}
         onPageChange={handlePageChange}
         onRefresh={() => loadData(page)}
+        onSearch={handleSearch}
       />
     </div>
   );
