@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { submitContact } from "@/lib/contactApi";
 import { useToast } from "@/components/ui/UiProvider";
@@ -10,17 +11,29 @@ interface ContactFormData {
   phone?: string;
   subject: string;
   message: string;
+  captchaAnswer: string;
 }
 
-const IMG = "https://html.aqlova.com/listbnb-prv/listbnb/assets/img/contact";
+const makeCaptcha = () => {
+  const a = Math.floor(Math.random() * 10) + 1;
+  const b = Math.floor(Math.random() * 10) + 1;
+  return { a, b, answer: a + b };
+};
 
 export default function ContactInfo() {
   const toast = useToast();
+  const [captcha, setCaptcha] = useState(makeCaptcha);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const captchaRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
     handleSubmit,
     reset,
+    setError,
+    clearErrors,
+    setFocus,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormData>({
     defaultValues: {
@@ -29,11 +42,45 @@ export default function ContactInfo() {
       phone: "",
       subject: "",
       message: "",
+      captchaAnswer: "",
     },
     mode: "onTouched",
   });
 
+  const captchaField = register("captchaAnswer", {
+    validate: (value) => {
+      // Only validate once the captcha is actually shown
+      if (!showCaptcha) return true;
+      if (!value || !/^\d+$/.test(value)) return "Please solve the captcha";
+      return Number(value) === captcha.answer || "Incorrect answer. Please try again.";
+    },
+  });
+
   const onSubmit = async (data: ContactFormData) => {
+    // Captcha was hidden — validate main fields, reveal captcha, stop.
+    if (!showCaptcha) {
+      const mainFieldsValid = await trigger(["name", "email", "phone", "subject", "message"]);
+      if (!mainFieldsValid) return; // RHF already shows inline errors
+      setShowCaptcha(true);
+      // focus after render
+      requestAnimationFrame(() => setFocus("captchaAnswer"));
+      return;
+    }
+
+    // Captcha is visible — verify it before sending.
+    if (Number(data.captchaAnswer) !== captcha.answer) {
+      setError("captchaAnswer", {
+        type: "manual",
+        message: "Incorrect answer. Please try again.",
+      });
+      setCaptcha(makeCaptcha());
+      reset((prev) => ({ ...prev, captchaAnswer: "" }));
+      requestAnimationFrame(() => setFocus("captchaAnswer"));
+      return;
+    }
+
+    clearErrors("captchaAnswer");
+
     try {
       await submitContact({
         name: data.name.trim(),
@@ -45,12 +92,17 @@ export default function ContactInfo() {
 
       toast.success("Thank you! Your message has been sent successfully.");
       reset();
+      setCaptcha(makeCaptcha());
+      setShowCaptcha(false);
     } catch (err: unknown) {
       const errorMsg =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: unknown }).message)
           : "Failed to send your message. Please try again later.";
       toast.error(errorMsg);
+      setCaptcha(makeCaptcha());
+      reset((prev) => ({ ...prev, captchaAnswer: "" }));
+      requestAnimationFrame(() => setFocus("captchaAnswer"));
     }
   };
 
@@ -215,6 +267,36 @@ export default function ContactInfo() {
                   )}
                 </div>
 
+                {/* Captcha — revealed after first submit attempt */}
+                {showCaptcha && (
+                  <div className="col-12">
+                    <label htmlFor="f-captcha" className="lb-form-label">
+                      Quick check: What is {captcha.a} + {captcha.b}? <span>*</span>
+                    </label>
+                    <input
+                      id="f-captcha"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      className={`form-control lb-form-control ${
+                        errors.captchaAnswer ? "is-invalid" : ""
+                      }`}
+                      placeholder="Enter the answer"
+                      disabled={isSubmitting}
+                      {...captchaField}
+                      ref={(el) => {
+                        captchaField.ref(el);
+                        captchaRef.current = el;
+                      }}
+                    />
+                    {errors.captchaAnswer && (
+                      <div className="invalid-feedback d-block">
+                        {errors.captchaAnswer.message}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Submit button */}
                 <div className="col-12">
                   <button
@@ -224,13 +306,20 @@ export default function ContactInfo() {
                   >
                     {isSubmitting ? (
                       <>
-                        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
                         Sending...
+                      </>
+                    ) : showCaptcha ? (
+                      <>
+                       Send
                       </>
                     ) : (
                       <>
                         Send Message
-                        <i className="bi bi-arrow-right"></i>
                       </>
                     )}
                   </button>
