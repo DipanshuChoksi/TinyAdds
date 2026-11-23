@@ -47,6 +47,7 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
   const [posts, setPosts] = useState<ClientPost[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalPosts, setTotalPosts] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
@@ -74,6 +75,7 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
       if (!active) return;
       setPosts(data);
       setTotalPages(meta?.totalPages ?? 1);
+      setTotalPosts(meta?.total ?? data.length);
     }).catch((error: unknown) => {
       if (active) toast.error(error instanceof Error ? error.message : "Unable to load posts");
     }).finally(() => {
@@ -167,67 +169,203 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
 
   return (
     <div>
-      <div className={`d-flex ${title ? "justify-content-between align-items-center" : "justify-content-end"} mb-3 flex-wrap gap-2`}>
-        <div className="input-group" style={{ maxWidth: 320 }}>
-          <input type="search" className="form-control border-end-0" placeholder="Search posts" aria-label="Search posts" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
-          <span className="input-group-text bg-white border-start-0 text-muted"><i className="bi bi-search" aria-hidden="true" /></span>
-        </div>
-      </div>
-      <div className="table-responsive">
-        <table className="lb-ca-table">
-        <thead>
-          <tr><th>{sortHeader("Title Name", "title")}</th><th>Image</th><th>{sortHeader("From Date", "fromDate")}</th><th>{sortHeader("Created", "createdAt")}</th><th>{sortHeader("Status", "status")}</th><th>Admin Feedback</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-          {posts.map((post) => (
-            <tr key={post.id}>
-              <td className="fw-semibold">{post.title}</td>
-              <td>
-                {post.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={post.image} alt={post.title} className="lb-ca-thumb" loading="lazy" />
-                ) : (
-                  <span className="lb-ca-thumb lb-ca-thumb-empty"><i className="bi bi-image"></i></span>
+      {isAdmin ? (
+        <div className="admin-card mb-4 p-3">
+          <div className="row g-3 align-items-center">
+            <div className="col-12 col-md-6 col-lg-5">
+              <div className="position-relative">
+                <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: "#94a3b8" }} />
+                <input
+                  type="search"
+                  className="form-control admin-search-input ps-5"
+                  placeholder="Search posts..."
+                  aria-label="Search posts"
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
+                    style={{ color: "#94a3b8" }}
+                    onClick={() => setSearchInput("")}
+                    aria-label="Clear search"
+                  >
+                    <i className="bi bi-x-circle-fill" />
+                  </button>
                 )}
-              </td>
-              {/* Updated fromDate format */}
-              <td className="fw-bold">{formatDate(post.fromDate)}</td>
-              {/* Updated createdAt format */}
-              <td className="fw-bold">{formatDate(post.createdAt)}</td>
-              <td>
-                <span className={`badge rounded-pill ${post.status === "approved" ? "text-bg-success" : post.status === "rejected" ? "text-bg-danger" : "text-bg-secondary"}`}>{post.status ?? "pending"}</span>
-              </td>
-              <td className="text-break" style={{ maxWidth: 280, whiteSpace: "pre-wrap" }}>{post.rejectionComment || "-"}</td>
-              <td className="text-nowrap">
-                <button type="button" className="btn btn-sm btn-outline-secondary me-1" title="View post" aria-label={`View ${post.title}`} onClick={() => setSelectedPost(post)}><i className="bi bi-eye" aria-hidden="true" /></button>
-                {isAdmin ? <>
-                  <button type="button" className="btn btn-sm btn-outline-primary me-1" title="Edit post" aria-label={`Edit ${post.title}`} onClick={() => onEdit?.(post)}><i className="bi bi-pencil-square" aria-hidden="true" /></button>
-                  <button type="button" className="btn btn-sm btn-outline-danger" title="Reject post" aria-label={`Reject ${post.title}`} onClick={() => { setRejectPost(post); setRejectionComment(""); }}><i className="bi bi-x-circle" aria-hidden="true" /></button>
-                </> : <>
-                  <Link href={`/client-admin/add-post?edit=${encodeURIComponent(post.id)}`} className="btn btn-sm btn-outline-primary me-1" title="Edit post" aria-label={`Edit ${post.title}`}><i className="bi bi-pencil-square" aria-hidden="true" /></Link>
-                  <button type="button" className="btn btn-sm btn-outline-danger" title="Delete post" aria-label={`Delete ${post.title}`} onClick={() => handleDelete(post)}><i className="bi bi-trash3" aria-hidden="true" /></button>
-                </>}
-              </td>
-            </tr>
-          ))}
-          {!loading && posts.length === 0 && <tr><td colSpan={7} className="py-5">No posts found.</td></tr>}
-          {loading && <tr><td colSpan={7} className="py-4 text-center"><div className="d-inline-flex flex-column align-items-center" role="status" aria-live="polite"><LoadingIndicator label="Loading posts" compact /></div></td></tr>}
-        </tbody>
-      </table>
-      </div>
-      {totalPages > 1 && (
-        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4">
-          <span className="small text-muted" aria-live="polite">
-            Page {page} of {totalPages}
-          </span>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={(p) => setPage(p)}
-            ariaLabel="Post pages"
-          />
+              </div>
+            </div>
+            <div className="col-12 col-md-6 col-lg-7 d-flex justify-content-md-end align-items-center">
+              <span className="badge rounded-pill fw-semibold" style={{ backgroundColor: "#f1f5f9", color: "#475569", fontSize: "0.78rem", padding: "0.4rem 0.75rem" }}>
+                {totalPosts} {totalPosts === 1 ? "Post" : "Posts"}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className={`d-flex ${title ? "justify-content-between align-items-center" : "justify-content-end"} mb-3 flex-wrap gap-2`}>
+          <div className="input-group" style={{ maxWidth: 320 }}>
+            <input type="search" className="form-control border-end-0" placeholder="Search posts" aria-label="Search posts" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+            <span className="input-group-text bg-white border-start-0 text-muted"><i className="bi bi-search" aria-hidden="true" /></span>
+          </div>
         </div>
       )}
+      <div className={isAdmin ? "admin-card overflow-hidden p-0 mb-4" : undefined}>
+        <div className="table-responsive">
+          <table className={isAdmin ? "table admin-table align-middle" : "lb-ca-table"}>
+            <thead>
+              <tr>
+                <th>{sortHeader("Title Name", "title")}</th>
+                <th>Image</th>
+                <th>{sortHeader("From Date", "fromDate")}</th>
+                <th>{sortHeader("Created", "createdAt")}</th>
+                <th>{sortHeader("Status", "status")}</th>
+                <th>Admin Feedback</th>
+                <th className={isAdmin ? "text-end pe-4" : ""} style={isAdmin ? { width: 150 } : undefined}>
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.map((post) => (
+                <tr key={post.id}>
+                  <td className="fw-semibold">{post.title}</td>
+                  <td>
+                    {post.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="lb-ca-thumb"
+                        style={isAdmin ? { width: 56, height: 40, objectFit: "cover" } : undefined}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span
+                        className="lb-ca-thumb lb-ca-thumb-empty"
+                        style={isAdmin ? { width: 56, height: 40 } : undefined}
+                      >
+                        <i className="bi bi-image" />
+                      </span>
+                    )}
+                  </td>
+                  <td className="fw-bold">{formatDate(post.fromDate)}</td>
+                  <td className="fw-bold">{formatDate(post.createdAt)}</td>
+                  <td>
+                    <span
+                      className={`badge rounded-pill ${
+                        post.status === "approved"
+                          ? "text-bg-success"
+                          : post.status === "rejected"
+                            ? "text-bg-danger"
+                            : "text-bg-secondary"
+                      }`}
+                    >
+                      {post.status ?? "pending"}
+                    </span>
+                  </td>
+                  <td className="text-break" style={{ maxWidth: 280, whiteSpace: "pre-wrap" }}>
+                    {post.rejectionComment || "-"}
+                  </td>
+                  <td className={`text-nowrap ${isAdmin ? "text-end pe-4" : ""}`}>
+                    <button
+                      type="button"
+                      className={`btn btn-sm btn-outline-secondary me-1 ${
+                        isAdmin ? "rounded-circle d-inline-flex align-items-center justify-content-center p-0" : ""
+                      }`}
+                      style={isAdmin ? { width: 34, height: 34 } : undefined}
+                      title="View post"
+                      aria-label={`View ${post.title}`}
+                      onClick={() => setSelectedPost(post)}
+                    >
+                      <i className="bi bi-eye" aria-hidden="true" />
+                    </button>
+                    {isAdmin ? (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary me-1 rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                          style={{ width: 34, height: 34 }}
+                          title="Edit post"
+                          aria-label={`Edit ${post.title}`}
+                          onClick={() => onEdit?.(post)}
+                        >
+                          <i className="bi bi-pencil-square" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                          style={{ width: 34, height: 34 }}
+                          title="Reject post"
+                          aria-label={`Reject ${post.title}`}
+                          onClick={() => {
+                            setRejectPost(post);
+                            setRejectionComment("");
+                          }}
+                        >
+                          <i className="bi bi-x-circle" aria-hidden="true" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href={`/client-admin/add-post?edit=${encodeURIComponent(post.id)}`}
+                          className="btn btn-sm btn-outline-primary me-1"
+                          title="Edit post"
+                          aria-label={`Edit ${post.title}`}
+                        >
+                          <i className="bi bi-pencil-square" aria-hidden="true" />
+                        </Link>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          title="Delete post"
+                          aria-label={`Delete ${post.title}`}
+                          onClick={() => handleDelete(post)}
+                        >
+                          <i className="bi bi-trash3" aria-hidden="true" />
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {!loading && posts.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-5 text-center text-muted">No posts found.</td>
+                </tr>
+              )}
+              {loading && (
+                <tr>
+                  <td colSpan={7} className="py-4 text-center">
+                    <div className="d-inline-flex flex-column align-items-center" role="status" aria-live="polite">
+                      <LoadingIndicator label="Loading posts" compact />
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {totalPages > 1 && (
+          <div
+            className={`d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 ${
+              isAdmin ? "p-3 border-top" : "mt-4"
+            }`}
+          >
+            <span className="small text-muted" aria-live="polite">
+              Page {page} of {totalPages}
+            </span>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => setPage(p)}
+              ariaLabel="Post pages"
+            />
+          </div>
+        )}
+      </div>
       {selectedPost && <div className="modal d-block" role="dialog" aria-modal="true" aria-label={`Post details: ${selectedPost.title}`} onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedPost(null); }} style={{ backgroundColor: "rgba(15, 23, 42, 0.45)", zIndex: 1050 }}>
         <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
           <div className="modal-content border-0 shadow rounded-3">

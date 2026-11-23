@@ -42,6 +42,10 @@ export default function ManageBlogsView({
   useEffect(() => {
     setBlogs(initialBlogs);
   }, [initialBlogs]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => onSearch?.(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [onSearch, search]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -137,6 +141,7 @@ export default function ManageBlogsView({
       setActionError(null);
       await deleteAdminBlog(blog._id);
       setBlogs((prev) => prev.filter((b) => b._id !== blog._id));
+      onRefresh?.();
       toast.success('Blog post deleted successfully.');
     } catch (err: unknown) {
       console.error('Failed to delete blog:', err);
@@ -173,6 +178,7 @@ export default function ManageBlogsView({
       }
 
       setShowModal(false);
+      onRefresh?.();
       toast.success(`Blog post ${editingBlog ? 'updated' : 'created'} successfully.`);
     } catch (err: unknown) {
       console.error('Failed to save blog:', err);
@@ -184,14 +190,8 @@ export default function ManageBlogsView({
     }
   };
 
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSearch?.(search);
-  };
-
   const handleClearSearch = () => {
     setSearch('');
-    onSearch?.('');
   };
 
   return (
@@ -232,36 +232,44 @@ export default function ManageBlogsView({
         </div>
       )}
 
-      {/* Search Bar */}
+      {/* Search & Counter Card */}
       <div className="admin-card mb-4 p-3">
-        <form onSubmit={handleSearchSubmit} className="d-flex gap-2 w-100">
-          <div className="position-relative flex-grow-1">
-            <i
-              className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
-              style={{ color: '#94a3b8' }}
-            />
-            <input
-              type="text"
-              className="form-control admin-search-input ps-5"
-              placeholder="Search blogs by title or content..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        <div className="row g-3 align-items-center">
+          <div className="col-12 col-md-6 col-lg-5">
+            <div className="position-relative">
+              <i
+                className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                style={{ color: '#94a3b8' }}
+              />
+              <input
+                type="text"
+                className="form-control admin-search-input ps-5"
+                placeholder="Search blogs by title or content..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
+                  style={{ color: '#94a3b8' }}
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                >
+                  <i className="bi bi-x-circle-fill" />
+                </button>
+              )}
+            </div>
           </div>
-          {search && (
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={handleClearSearch}
-              aria-label="Clear search"
+          <div className="col-12 col-md-6 col-lg-7 d-flex justify-content-md-end align-items-center">
+            <span
+              className="badge rounded-pill fw-semibold"
+              style={{ backgroundColor: '#f1f5f9', color: '#475569', fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
             >
-              <i className="bi bi-x-lg" />
-            </button>
-          )}
-          <button type="submit" className="btn btn-primary">
-            Search
-          </button>
-        </form>
+              {total} {total === 1 ? 'Article' : 'Articles'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Blogs Table */}
@@ -274,7 +282,7 @@ export default function ManageBlogsView({
                 <th>Article Title</th>
                 <th>Status</th>
                 <th>Created Date</th>
-                <th className="text-end pe-4" style={{ width: '160px' }}>Actions</th>
+                <th className="text-end pe-4" style={{ width: '100px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -337,19 +345,21 @@ export default function ManageBlogsView({
                       <div className="d-inline-flex align-items-center justify-content-end gap-1">
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-primary rounded-2 py-1 px-2"
-                          style={{ fontSize: '0.75rem' }}
+                          className="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                          style={{ width: 34, height: 34 }}
                           onClick={() => handleOpenEditModal(blog)}
                           title="Edit article"
+                          aria-label={`Edit ${blog.title}`}
                         >
                           <i className="bi bi-pencil" />
                         </button>
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-danger rounded-2 py-1 px-2"
-                          style={{ fontSize: '0.75rem' }}
+                          className="btn btn-sm btn-outline-danger rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                          style={{ width: 34, height: 34 }}
                           onClick={() => handleDelete(blog)}
                           title="Delete article"
+                          aria-label={`Delete ${blog.title}`}
                         >
                           <i className="bi bi-trash" />
                         </button>

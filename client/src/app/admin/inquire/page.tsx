@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import InquireView from '@/components/admin/InquireView';
-import { getAdminContacts, updateAdminContact, deleteAdminContact } from '@/lib/contactApi';
+import { getAdminContacts } from '@/lib/contactApi';
 import type { AdminContactResponse } from '@/src/types/contact';
 import type { AdminInquiry } from '@/src/types';
-import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 function mapContactToAdminInquiry(contact: AdminContactResponse): AdminInquiry {
   return {
@@ -21,13 +20,12 @@ function mapContactToAdminInquiry(contact: AdminContactResponse): AdminInquiry {
 }
 
 export default function AdminInquirePage() {
-  const confirm = useConfirm();
-  const toast = useToast();
   const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -55,6 +53,7 @@ export default function AdminInquirePage() {
       );
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   }, [page, searchQuery]);
 
@@ -66,53 +65,12 @@ export default function AdminInquirePage() {
     setPage(newPage);
   };
 
-  const handleStatusChange = async (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
-    try {
-      await updateAdminContact(id, { status: newStatus });
-      setInquiries((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
-      );
-      toast.success('Inquiry status updated.');
-    } catch (err: unknown) {
-      toast.error(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : 'Failed to update inquiry status'
-      );
-      loadData();
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    const confirmed = await confirm({
-      title: 'Delete inquiry?',
-      message: 'This inquiry will be permanently deleted.',
-      icon: 'bi-trash3-fill',
-      variant: 'danger',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-    });
-    if (!confirmed) return;
-    try {
-      await deleteAdminContact(id);
-      setInquiries((prev) => prev.filter((item) => item.id !== id));
-      toast.success('Inquiry deleted successfully.');
-    } catch (err: unknown) {
-      toast.error(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : 'Failed to delete inquiry'
-      );
-      loadData();
-    }
-  };
-
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query.trim());
     setPage(1);
-  };
+  }, []);
 
-  if (loading) {
+  if (loading && !hasLoaded) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary" role="status">
@@ -122,30 +80,27 @@ export default function AdminInquirePage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="alert alert-danger d-flex align-items-center justify-content-between p-4 my-4" role="alert">
-        <div>
-          <h5 className="alert-heading mb-1">Failed to load inquiries</h5>
-          <p className="mb-0">{error}</p>
-        </div>
-        <button className="btn btn-outline-danger" onClick={() => loadData(page)}>
-          <i className="bi bi-arrow-clockwise me-1" /> Retry
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <InquireView
-      initialInquiries={inquiries}
-      page={page}
-      totalPages={totalPages}
-      total={total}
-      onPageChange={handlePageChange}
-      onStatusChange={handleStatusChange}
-      onDelete={handleDelete}
-      onSearch={handleSearch}
-    />
+    <div>
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center justify-content-between p-4 my-4" role="alert">
+          <div>
+            <h5 className="alert-heading mb-1">Failed to load inquiries</h5>
+            <p className="mb-0">{error}</p>
+          </div>
+          <button className="btn btn-outline-danger" onClick={() => loadData(page)}>
+            <i className="bi bi-arrow-clockwise me-1" /> Retry
+          </button>
+        </div>
+      )}
+      <InquireView
+        initialInquiries={inquiries}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+      />
+    </div>
   );
 }

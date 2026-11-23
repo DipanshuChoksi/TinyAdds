@@ -29,11 +29,16 @@ export default function PostApprovalView() {
     <div>
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-          <h1 className="h4 fw-bold mb-1">Post Approval</h1>
-          <p className="small text-body-secondary mb-0">Review, approve, or reject client posts.</p>
+          <h1 className="h4 fw-bold mb-1" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>Post Approval</h1>
+          <p className="small mb-0" style={{ color: '#64748b' }}>Review, approve, or reject client posts.</p>
         </div>
-        <button type="button" className="btn btn-dark" onClick={openNewPostForm}>
-          <i className="bi bi-plus-lg me-2" aria-hidden="true" />Add Post
+        <button
+          type="button"
+          className="btn btn-sm d-inline-flex align-items-center gap-2 py-1 px-3 text-white fw-medium rounded-pill shadow-sm"
+          style={{ backgroundColor: 'var(--lb-primary)', fontSize: '0.82rem' }}
+          onClick={openNewPostForm}
+        >
+          <i className="bi bi-plus-lg" aria-hidden="true" />Add Post
         </button>
       </div>
 

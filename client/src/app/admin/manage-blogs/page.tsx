@@ -11,6 +11,7 @@ export default function AdminManageBlogsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -32,6 +33,7 @@ export default function AdminManageBlogsPage() {
         setBlogs([]);
       } finally {
         setLoading(false);
+        setHasLoaded(true);
       }
     },
     [page, searchQuery]
@@ -45,12 +47,12 @@ export default function AdminManageBlogsPage() {
     setPage(newPage);
   };
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query.trim());
     setPage(1);
-  };
+  }, []);
 
-  if (loading && blogs.length === 0) {
+  if (loading && !hasLoaded) {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary mb-3" role="status">

@@ -1,7 +1,7 @@
 'use client';
 
-import { AdminInquiry } from '@/src/types';
-import { useState, type FormEvent } from 'react';
+import type { AdminInquiry } from '@/src/types';
+import { useEffect, useState } from 'react';
 import Pagination from '@/components/ui/Pagination';
 
 interface InquireViewProps {
@@ -10,8 +10,6 @@ interface InquireViewProps {
   totalPages?: number;
   total?: number;
   onPageChange?: (page: number) => void;
-  onStatusChange?: (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => void;
-  onDelete?: (id: string) => void;
   onSearch?: (query: string) => void;
 }
 
@@ -21,36 +19,17 @@ export default function InquireView({
   totalPages = 1,
   total = 0,
   onPageChange,
-  onStatusChange,
-  onDelete,
   onSearch,
 }: InquireViewProps) {
-  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInquiry, setSelectedInquiry] = useState<AdminInquiry | null>(null);
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSearch?.(searchTerm);
-  };
+  useEffect(() => {
+    const timer = window.setTimeout(() => onSearch?.(searchTerm.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [onSearch, searchTerm]);
 
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    onSearch?.('');
-  };
-
-  const handleStatusChange = (id: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
-    if (onStatusChange) {
-      onStatusChange(id, newStatus);
-    }
-    if (selectedInquiry && selectedInquiry.id === id) {
-      setSelectedInquiry((prev) => (prev ? { ...prev, status: newStatus } : null));
-    }
-  };
-
-  const filtered = initialInquiries.filter((inq) => {
-    return filter === 'all' || inq.status === filter;
-  });
+  const filtered = initialInquiries;
 
   return (
     <div>
@@ -61,7 +40,7 @@ export default function InquireView({
             Customer Inquiries
           </h1>
           <p className="small mb-0" style={{ color: '#64748b' }}>
-            View customer requests, inquiries, and update ticket statuses.
+            Review customer requests and view submitted inquiry details.
           </p>
         </div>
       </div>
@@ -69,57 +48,39 @@ export default function InquireView({
       {/* Filter / Search Bar */}
       <div className="admin-card mb-4 p-3">
         <div className="row g-3 align-items-center">
-          <div className="col-12 col-md-7">
-            <form className="d-flex gap-2" onSubmit={handleSearchSubmit}>
-              <div className="position-relative flex-grow-1">
-                <i
-                  className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
-                  style={{ color: '#94a3b8' }}
-                />
-                <input
-                  type="text"
-                  className="form-control admin-search-input ps-5"
-                  placeholder="Search by name, subject, or phone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+          <div className="col-12 col-md-6 col-lg-5">
+            <div className="position-relative">
+              <i
+                className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                style={{ color: '#94a3b8' }}
+              />
+              <input
+                type="text"
+                className="form-control admin-search-input ps-5"
+                placeholder="Search by name, subject, or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               {searchTerm && (
                 <button
                   type="button"
-                  className="btn btn-outline-secondary"
-                  onClick={handleClearSearch}
+                  className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
+                  style={{ color: '#94a3b8' }}
+                  onClick={() => setSearchTerm('')}
                   aria-label="Clear search"
                 >
-                  <i className="bi bi-x-lg" />
+                  <i className="bi bi-x-circle-fill" />
                 </button>
               )}
-              <button type="submit" className="btn btn-primary">
-                Search
-              </button>
-            </form>
+            </div>
           </div>
-          <div className="col-12 col-md-5 d-flex justify-content-md-end gap-2 flex-wrap">
-            {/* {(['all', 'pending', 'in_progress', 'resolved'] as const).map((st) => {
-              const label =
-                st === 'all'
-                  ? 'All Status'
-                  : st === 'in_progress'
-                  ? 'In Progress'
-                  : st.charAt(0).toUpperCase() + st.slice(1);
-              return (
-                <button
-                  key={st}
-                  type="button"
-                  className={`btn btn-sm ${
-                    filter === st ? 'btn-primary' : 'btn-outline-secondary'
-                  }`}
-                  onClick={() => setFilter(st)}
-                >
-                  {label}
-                </button>
-              );
-            })} */}
+          <div className="col-12 col-md-6 col-lg-7 d-flex justify-content-md-end align-items-center">
+            <span
+              className="badge rounded-pill fw-semibold"
+              style={{ backgroundColor: '#f1f5f9', color: '#475569', fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
+            >
+              {total} {total === 1 ? 'Inquiry' : 'Inquiries'}
+            </span>
           </div>
         </div>
       </div>
@@ -134,13 +95,13 @@ export default function InquireView({
                 <th>Subject / Message</th>
                 <th>Date</th>
                 {/* <th>Status</th> */}
-                <th className="text-end pe-4" style={{ width: '160px' }}>Action</th>
+                <th className="text-end pe-4" style={{ width: '100px' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-5 text-muted">
+                  <td colSpan={4} className="text-center py-5 text-muted">
                     <i className="bi bi-inbox fs-2 d-block mb-2 text-secondary" />
                     No customer inquiries found.
                   </td>
@@ -167,53 +128,18 @@ export default function InquireView({
                       </p>
                     </td>
                     <td className="small" style={{ color: '#64748b' }}>{item.date}</td>
-                    {/* <td>
-                      <span
-                        className={
-                          item.status === 'in_progress'
-                            ? 'admin-badge-progress'
-                            : item.status === 'resolved'
-                            ? 'admin-badge-resolved'
-                            : 'admin-badge-pending'
-                        }
-                      >
-                        {item.status === 'in_progress'
-                          ? 'In Progress'
-                          : (item.status || 'pending').charAt(0).toUpperCase() + (item.status || 'pending').slice(1)}
-                      </span>
-                    </td> */}
                     <td className="text-end pe-4">
                       <div className="d-inline-flex align-items-center justify-content-end gap-1">
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-secondary rounded-2 py-1 px-2"
-                          style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                          className="btn btn-sm btn-outline-secondary rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                          style={{ width: 34, height: 34 }}
+                          title="View inquiry"
+                          aria-label={`View inquiry from ${item.name}`}
                           onClick={() => setSelectedInquiry(item)}
                         >
-                          <i className="bi bi-eye me-1" /> View
+                          <i className="bi bi-eye" />
                         </button>
-                        {/* {item.status !== 'resolved' && (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-success rounded-2 py-1 px-2"
-                            style={{ fontSize: '0.75rem' }}
-                            title="Mark Resolved"
-                            onClick={() => handleStatusChange(item.id, 'resolved')}
-                          >
-                            <i className="bi bi-check-lg" />
-                          </button>
-                        )} */}
-                        {/* {onDelete && (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger rounded-2 py-1 px-2"
-                            style={{ fontSize: '0.75rem' }}
-                            title="Delete Inquiry"
-                            onClick={() => onDelete(item.id)}
-                          >
-                            <i className="bi bi-trash" />
-                          </button>
-                        )} */}
                       </div>
                     </td>
                   </tr>
