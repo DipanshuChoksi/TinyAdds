@@ -70,6 +70,7 @@ export interface ClientPost {
   contactNo: string;
   email: string;
   address: string;
+  expiresAt: string;
   banner: { name: string; _id: string; slug?: string };
   emotion: { name: string; _id: string };
   searchGroup: { name: string; slug: string; _id: string };

@@ -128,6 +128,9 @@ export class ClientPostService {
           match: { isDisplay: true, isActive: true },
         })
         .sort(buildSort(query))
+        .populate("banner", "name _id slug")
+        .populate("emotion", "name _id")
+        .populate("searchGroup", "name _id")
         .skip((query.page - 1) * query.limit)
         .limit(query.limit)
         .lean(),

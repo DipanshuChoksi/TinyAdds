@@ -244,8 +244,9 @@ export default function PostTable({ mode = "client", onEdit, title }: Props = {}
                 <dt className="col-sm-4 text-body-secondary">Contact person</dt><dd className="col-sm-8 mb-2">{selectedPost.contactPerson || "-"}</dd>
                 <dt className="col-sm-4 text-body-secondary">Contact number</dt><dd className="col-sm-8 mb-2">{selectedPost.contactNo || "-"}</dd>
                 <dt className="col-sm-4 text-body-secondary">Email</dt><dd className="col-sm-8 mb-2 text-break">{selectedPost.email || "-"}</dd>
-                <dt className="col-sm-4 text-body-secondary">Address</dt><dd className="col-sm-8 mb-2">{selectedPost.address || "-"}</dd>
+                {/* <dt className="col-sm-4 text-body-secondary">Address</dt><dd className="col-sm-8 mb-2">{selectedPost.address || "-"}</dd> */}
                 <dt className="col-sm-4 text-body-secondary">Available from</dt><dd className="col-sm-8 mb-2">{formatDate(selectedPost.fromDate)}</dd>
+                <dt className="col-sm-4 text-body-secondary">Expire on</dt><dd className="col-sm-8 mb-2">{formatDate(selectedPost.expiresAt)}</dd>
                 <dt className="col-sm-4 text-body-secondary">Banner section</dt><dd className="col-sm-8 mb-2">{selectedPost.banner.name || "-"}</dd>
               {(() => {
                 const isListingAds = selectedPost.banner.slug === "listing-ads";

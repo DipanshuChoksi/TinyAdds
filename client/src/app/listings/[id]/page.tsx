@@ -252,12 +252,12 @@ export default function ListingDetailPage() {
                           {post.id.slice(0, 10)}...
                         </td> */}
                       </tr>
-                      {post.banner && (
+                      {/* {post.banner && (
                         <tr>
                           <td className="text-muted py-2">Banner Type:</td>
                           <td className="fw-semibold text-end text-dark py-2">{post.banner.name}</td>
                         </tr>
-                      )}
+                      )} */}
                       {post.searchGroup && (
                         <tr>
                           <td className="text-muted py-2">Group:</td>
