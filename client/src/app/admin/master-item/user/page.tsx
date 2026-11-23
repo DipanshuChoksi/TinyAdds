@@ -4,8 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { getAdminUsers, deleteAdminUser, updateAdminUserStatus } from '@/lib/userApi';
 import type { AdminUserResponse } from '@/src/types/user';
 import Pagination from '@/components/ui/Pagination';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 export default function AdminMasterUserPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [users, setUsers] = useState<AdminUserResponse[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -52,9 +55,15 @@ export default function AdminMasterUserPage() {
   }, [page, search, loadUsers]);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete user "${name}"?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete user?',
+      message: `"${name}" will be permanently deleted.`,
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
 
     try {
       await deleteAdminUser(id);
@@ -62,8 +71,9 @@ export default function AdminMasterUserPage() {
       if (selectedUser?._id === id) {
         setSelectedUser(null);
       }
+      toast.success('User deleted successfully.');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete user');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete user');
     }
   };
 
@@ -74,8 +84,9 @@ export default function AdminMasterUserPage() {
       if (selectedUser?._id === user._id) {
         setSelectedUser((prev) => (prev ? { ...prev, isActive: updated.isActive } : null));
       }
+      toast.success(`User ${updated.isActive ? 'activated' : 'deactivated'} successfully.`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update user status');
+      toast.error(err instanceof Error ? err.message : 'Failed to update user status');
     }
   };
 

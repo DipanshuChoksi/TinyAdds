@@ -10,12 +10,15 @@ import {
 } from '@/lib/countryApi';
 import type { AdminCountryResponse } from '@/src/types/country';
 import Pagination from '@/components/ui/Pagination';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 interface CountryFormValues {
   name: string;
 }
 
 export default function AdminMasterCountryPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [countries, setCountries] = useState<AdminCountryResponse[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -109,10 +112,13 @@ export default function AdminMasterCountryPage() {
         await createAdminCountry(values.name.trim());
         loadCountries(page);
       }
+      toast.success(`Country ${editingItem ? 'updated' : 'created'} successfully.`);
       closeModal();
     } catch (err) {
       console.error('Failed to save country:', err);
-      setFormError(err instanceof Error ? err.message : 'Failed to save country');
+      const message = err instanceof Error ? err.message : 'Failed to save country';
+      setFormError(message);
+      toast.error(message);
     }
   };
 
@@ -120,14 +126,24 @@ export default function AdminMasterCountryPage() {
     try {
       const updated = await updateAdminCountry(country.id, { isActive: !country.isActive });
       setCountries((prev) => prev.map((c) => (c.id === country.id ? updated : c)));
+      toast.success(`Country ${updated.isActive ? 'activated' : 'deactivated'} successfully.`);
     } catch (err) {
       console.error('Failed to toggle status:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update status');
+      toast.error(err instanceof Error ? err.message : 'Failed to update status');
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Are you sure you want to delete this country?')) return;
+    const country = countries.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: 'Delete country?',
+      message: country ? `"${country.name}" will be permanently deleted.` : 'This country will be permanently deleted.',
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
     try {
       await deleteAdminCountry(id);
       if (countries.length === 1 && page > 1) {
@@ -135,9 +151,10 @@ export default function AdminMasterCountryPage() {
       } else {
         loadCountries(page);
       }
+      toast.success('Country deleted successfully.');
     } catch (err) {
       console.error('Failed to delete country:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete country');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete country');
     }
   }
 

@@ -5,6 +5,7 @@ import InquireView from '@/components/admin/InquireView';
 import { getAdminContacts, updateAdminContact, deleteAdminContact } from '@/lib/contactApi';
 import type { AdminContactResponse } from '@/src/types/contact';
 import type { AdminInquiry } from '@/src/types';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 function mapContactToAdminInquiry(contact: AdminContactResponse): AdminInquiry {
   return {
@@ -20,6 +21,8 @@ function mapContactToAdminInquiry(contact: AdminContactResponse): AdminInquiry {
 }
 
 export default function AdminInquirePage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [inquiries, setInquiries] = useState<AdminInquiry[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -69,8 +72,9 @@ export default function AdminInquirePage() {
       setInquiries((prev) =>
         prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
       );
+      toast.success('Inquiry status updated.');
     } catch (err: unknown) {
-      alert(
+      toast.error(
         err && typeof err === 'object' && 'message' in err
           ? String((err as { message: unknown }).message)
           : 'Failed to update inquiry status'
@@ -80,12 +84,21 @@ export default function AdminInquirePage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this inquiry?')) return;
+    const confirmed = await confirm({
+      title: 'Delete inquiry?',
+      message: 'This inquiry will be permanently deleted.',
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
     try {
       await deleteAdminContact(id);
       setInquiries((prev) => prev.filter((item) => item.id !== id));
+      toast.success('Inquiry deleted successfully.');
     } catch (err: unknown) {
-      alert(
+      toast.error(
         err && typeof err === 'object' && 'message' in err
           ? String((err as { message: unknown }).message)
           : 'Failed to delete inquiry'

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import dynamic from 'next/dynamic';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 import {
   getAdminCms,
   createAdminCms,
@@ -33,6 +34,8 @@ interface CmsFormValues {
 }
 
 export default function AdminMasterManageCmsPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [items, setItems] = useState<AdminCmsResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,10 +175,13 @@ export default function AdminMasterManageCmsPage() {
         setItems((prev) => [created, ...prev]);
       }
 
+      toast.success(`CMS page ${editingItem ? 'updated' : 'created'} successfully.`);
       closeModal();
     } catch (err) {
       console.error('Failed to save CMS page:', err);
-      setFormError(err instanceof Error ? err.message : 'Failed to save CMS page');
+      const message = err instanceof Error ? err.message : 'Failed to save CMS page';
+      setFormError(message);
+      toast.error(message);
     }
   };
 
@@ -188,28 +194,38 @@ export default function AdminMasterManageCmsPage() {
 
     try {
       await updateAdminCms(item._id, { isActive: nextStatus });
+      toast.success(`CMS page ${nextStatus ? 'activated' : 'deactivated'} successfully.`);
     } catch (err) {
       console.error('Failed to toggle status:', err);
       // Revert on error
       setItems((prev) =>
         prev.map((i) => (i._id === item._id ? { ...i, isActive: item.isActive } : i))
       );
-      alert(err instanceof Error ? err.message : 'Failed to update status');
+      toast.error(err instanceof Error ? err.message : 'Failed to update status');
     }
   };
 
   const handleDelete = async (item: AdminCmsResponse) => {
-    if (!confirm(`Are you sure you want to delete "${item.title}"?`)) return;
+    const confirmed = await confirm({
+      title: 'Delete CMS page?',
+      message: `"${item.title}" will be permanently deleted.`,
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
 
     const prevItems = items;
     setItems((prev) => prev.filter((i) => i._id !== item._id));
 
     try {
       await deleteAdminCms(item._id);
+      toast.success('CMS page deleted successfully.');
     } catch (err) {
       console.error('Failed to delete CMS page:', err);
       setItems(prevItems);
-      alert(err instanceof Error ? err.message : 'Failed to delete CMS page');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete CMS page');
     }
   };
 
@@ -267,39 +283,57 @@ export default function AdminMasterManageCmsPage() {
         </div>
       )}
 
-      {/* Table Card */}
-      <div className="card border-0 shadow-sm rounded-3 overflow-hidden">
-        <div className="card-header bg-white border-bottom p-3">
-          <div className="row g-3 align-items-center justify-content-between">
-            <div className="col-12 col-md-5">
-              <div className="input-group">
-                <span className="input-group-text bg-light border-end-0 text-muted">
-                  <i className="bi bi-search" />
-                </span>
-                <input
-                  type="text"
-                  className="form-control bg-light border-start-0"
-                  placeholder="Search by title or slug..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="col-auto text-muted small">
-              Total: <strong>{filtered.length}</strong> pages
+      {/* Search & Counter Card */}
+      <div className="admin-card mb-4 p-3">
+        <div className="row g-3 align-items-center">
+          <div className="col-12 col-md-6 col-lg-5">
+            <div className="position-relative">
+              <i
+                className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3"
+                style={{ color: '#94a3b8' }}
+              />
+              <input
+                type="text"
+                className="form-control admin-search-input ps-5"
+                placeholder="Search by title or slug..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-decoration-none"
+                  style={{ color: '#94a3b8' }}
+                  onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                >
+                  <i className="bi bi-x-circle-fill" />
+                </button>
+              )}
             </div>
           </div>
+          <div className="col-12 col-md-6 col-lg-7 d-flex justify-content-md-end align-items-center gap-2">
+            <span
+              className="badge rounded-pill fw-semibold"
+              style={{ backgroundColor: '#f1f5f9', color: '#475569', fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
+            >
+              {filtered.length} {filtered.length === 1 ? 'Page' : 'Pages'}
+            </span>
+          </div>
         </div>
+      </div>
 
+      {/* Table Card */}
+      <div className="card border-0 shadow-sm rounded-3 overflow-hidden">
         <div className="table-responsive">
           <table className="table table-hover align-middle mb-0">
-            <thead className="table-light">
+            <thead className="table">
               <tr className="small text-muted text-uppercase">
-                <th className="ps-4">Title</th>
-                <th>Image</th>
-                <th>Slug</th>
-                <th>Status</th>
-                <th className="text-end pe-4">Actions</th>
+                <th className="ps-4 py-3">Title</th>
+                <th className="py-3">Image</th>
+                <th className="py-3">Slug</th>
+                <th className="py-3">Status</th>
+                <th className="text-end pe-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>

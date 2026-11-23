@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { AdminPackageResponse, CreatePackagePayload, UpdatePackagePayload } from '@/src/types/package';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 interface ManagePackageViewProps {
   initialPackages: AdminPackageResponse[];
@@ -18,6 +19,8 @@ export default function ManagePackageView({
   onToggleStatus,
   onDeletePackage,
 }: ManagePackageViewProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [packages, setPackages] = useState<AdminPackageResponse[]>(initialPackages);
   const [showModal, setShowModal] = useState(false);
   const [editingPkg, setEditingPkg] = useState<AdminPackageResponse | null>(null);
@@ -93,9 +96,12 @@ export default function ManagePackageView({
         setPackages((prev) => [created, ...prev]);
       }
       setShowModal(false);
+      toast.success(`Package ${editingPkg ? 'updated' : 'created'} successfully.`);
     } catch (err: unknown) {
       console.error('Failed to save package:', err);
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to save package');
+      const message = err instanceof Error ? err.message : 'Failed to save package';
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -109,9 +115,10 @@ export default function ManagePackageView({
       setPackages((prev) =>
         prev.map((p) => (p._id === pkg._id ? { ...p, isActive: nextActive } : p))
       );
+      toast.success(`Package ${nextActive ? 'activated' : 'deactivated'} successfully.`);
     } catch (err) {
       console.error('Failed to toggle package status:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update status');
+      toast.error(err instanceof Error ? err.message : 'Failed to update status');
     } finally {
       setActionLoadingId(null);
     }
@@ -119,17 +126,24 @@ export default function ManagePackageView({
 
   const handleDelete = async (pkg: AdminPackageResponse) => {
     if (!onDeletePackage) return;
-    if (!window.confirm(`Are you sure you want to delete package "${pkg.name}"?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete package?',
+      message: `"${pkg.name}" will be permanently deleted.`,
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
 
     setActionLoadingId(pkg._id);
     try {
       await onDeletePackage(pkg._id);
       setPackages((prev) => prev.filter((p) => p._id !== pkg._id));
+      toast.success('Package deleted successfully.');
     } catch (err) {
       console.error('Failed to delete package:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete package');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete package');
     } finally {
       setActionLoadingId(null);
     }

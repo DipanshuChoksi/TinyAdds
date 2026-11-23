@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import type { AdminSearchTerm } from '@/src/types';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 interface ManageSearchViewProps {
   initialSearchTerms: AdminSearchTerm[];
 }
 
 export default function ManageSearchView({ initialSearchTerms }: ManageSearchViewProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [terms, setTerms] = useState<AdminSearchTerm[]>(initialSearchTerms);
   const [filterCity, setFilterCity] = useState('all');
   const [query, setQuery] = useState('');
@@ -28,7 +31,10 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
 
   const handleAddTracked = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newKeyword.trim()) return;
+    if (!newKeyword.trim()) {
+      toast.error('Search term is required.');
+      return;
+    }
 
     const newEntry: AdminSearchTerm = {
       id: `st-${Date.now()}`,
@@ -43,10 +49,23 @@ export default function ManageSearchView({ initialSearchTerms }: ManageSearchVie
     setTerms([newEntry, ...terms]);
     setNewKeyword('');
     setShowAddModal(false);
+    toast.success('Tracked search added successfully.');
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    const term = terms.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: 'Delete tracked search?',
+      message: term ? `"${term.term}" will be removed from tracked searches.` : 'This tracked search will be removed.',
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
+
     setTerms((prev) => prev.filter((t) => t.id !== id));
+    toast.success('Tracked search deleted.');
   };
 
   return (

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { AdminMasterItem, MasterEntityType } from '@/src/types';
 import Pagination from '@/components/ui/Pagination';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 export interface MasterCategoryMeta {
   label: string;
@@ -136,6 +137,8 @@ export default function MasterItemView({
   onToggleStatus,
   onDeleteItem,
 }: MasterItemViewProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [items, setItems] = useState<AdminMasterItem[]>(initialMasterItems);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -243,20 +246,25 @@ export default function MasterItemView({
     if (onToggleStatus) {
       try {
         await onToggleStatus(id, nextStatus);
+        toast.success(`${meta.singular} ${nextStatus === 'active' ? 'activated' : 'deactivated'} successfully.`);
       } catch (err: unknown) {
         console.error('Failed to toggle status:', err);
         // Revert on error
         setItems((prev) =>
           prev.map((i) => (i.id === id ? { ...i, status: item.status } : i))
         );
-        alert(err instanceof Error ? err.message : 'Failed to update status');
+        toast.error(err instanceof Error ? err.message : 'Failed to update status');
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setError(`${meta.singular} name is required.`);
+      toast.error(`${meta.singular} name is required.`);
+      return;
+    }
 
     setError(null);
     setIsSubmitting(true);
@@ -302,16 +310,28 @@ export default function MasterItemView({
         }
       }
 
+      toast.success(`${meta.singular} ${editingItem ? 'updated' : 'created'} successfully.`);
       closeModal();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save item');
+      const message = err instanceof Error ? err.message : 'Failed to save item';
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(`Delete this ${meta.singular.toLowerCase()}?`)) return;
+    const item = items.find((entry) => entry.id === id);
+    const confirmed = await confirm({
+      title: `Delete ${meta.singular.toLowerCase()}?`,
+      message: item ? `"${item.name}" will be permanently deleted.` : 'This item will be permanently deleted.',
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
 
     const prevItems = items;
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -319,11 +339,14 @@ export default function MasterItemView({
     if (onDeleteItem) {
       try {
         await onDeleteItem(id);
+        toast.success(`${meta.singular} deleted successfully.`);
       } catch (err: unknown) {
         console.error('Failed to delete item:', err);
         setItems(prevItems);
-        alert(err instanceof Error ? err.message : 'Failed to delete item');
+        toast.error(err instanceof Error ? err.message : 'Failed to delete item');
       }
+    } else {
+      toast.success(`${meta.singular} deleted successfully.`);
     }
   };
 

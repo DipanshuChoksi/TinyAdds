@@ -12,6 +12,7 @@ import { getAdminCountriesAll } from '@/lib/countryApi';
 import type { AdminStateResponse } from '@/src/types/state';
 import type { AdminCountryResponse } from '@/src/types/country';
 import Pagination from '@/components/ui/Pagination';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 interface StateFormValues {
   name: string;
@@ -19,6 +20,8 @@ interface StateFormValues {
 }
 
 export default function AdminMasterStatePage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [states, setStates] = useState<AdminStateResponse[]>([]);
   const [countries, setCountries] = useState<AdminCountryResponse[]>([]);
   const [page, setPage] = useState(1);
@@ -131,10 +134,13 @@ export default function AdminMasterStatePage() {
         await createAdminState(values.name.trim(), cId);
         loadData(page);
       }
+      toast.success(`State ${editingItem ? 'updated' : 'created'} successfully.`);
       closeModal();
     } catch (err) {
       console.error('Failed to save state:', err);
-      setFormError(err instanceof Error ? err.message : 'Failed to save state');
+      const message = err instanceof Error ? err.message : 'Failed to save state';
+      setFormError(message);
+      toast.error(message);
     }
   };
 
@@ -142,14 +148,24 @@ export default function AdminMasterStatePage() {
     try {
       const updated = await updateAdminState(state.id, { isActive: !state.isActive });
       setStates((prev) => prev.map((s) => (s.id === state.id ? updated : s)));
+      toast.success(`State ${updated.isActive ? 'activated' : 'deactivated'} successfully.`);
     } catch (err) {
       console.error('Failed to toggle status:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update status');
+      toast.error(err instanceof Error ? err.message : 'Failed to update status');
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Are you sure you want to delete this state?')) return;
+    const state = states.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: 'Delete state?',
+      message: state ? `"${state.name}" will be permanently deleted.` : 'This state will be permanently deleted.',
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
     try {
       await deleteAdminState(id);
       // If this was the last item on a page past 1, step back one page
@@ -158,9 +174,10 @@ export default function AdminMasterStatePage() {
       } else {
         loadData(page);
       }
+      toast.success('State deleted successfully.');
     } catch (err) {
       console.error('Failed to delete state:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete state');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete state');
     }
   }
 

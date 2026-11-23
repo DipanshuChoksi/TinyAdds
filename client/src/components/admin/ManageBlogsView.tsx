@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import type { AdminBlogResponse } from '@/src/types/blog';
 import Pagination from '@/components/ui/Pagination';
 import BundledEditor from '@/components/BundledEditor';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 import {
   createAdminBlog,
   updateAdminBlog,
@@ -32,6 +33,8 @@ export default function ManageBlogsView({
   onRefresh,
   onSearch,
 }: ManageBlogsViewProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [blogs, setBlogs] = useState<AdminBlogResponse[]>(initialBlogs);
   const [search, setSearch] = useState('');
 
@@ -110,22 +113,36 @@ export default function ManageBlogsView({
       const newStatus = !blog.isActive;
       const updated = await updateAdminBlog(blog._id, { isActive: newStatus });
       setBlogs((prev) => prev.map((b) => (b._id === blog._id ? updated : b)));
+      toast.success(`Blog ${newStatus ? 'published' : 'unpublished'} successfully.`);
     } catch (err: unknown) {
       console.error('Failed to toggle status:', err);
-      setActionError(err instanceof Error ? err.message : 'Failed to update status');
+      const message = err instanceof Error ? err.message : 'Failed to update status';
+      setActionError(message);
+      toast.error(message);
     }
   };
 
   const handleDelete = async (blog: AdminBlogResponse) => {
-    if (!confirm(`Are you sure you want to delete blog post "${blog.title}"?`)) return;
+    const confirmed = await confirm({
+      title: 'Delete blog post?',
+      message: `"${blog.title}" will be permanently deleted.`,
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
 
     try {
       setActionError(null);
       await deleteAdminBlog(blog._id);
       setBlogs((prev) => prev.filter((b) => b._id !== blog._id));
+      toast.success('Blog post deleted successfully.');
     } catch (err: unknown) {
       console.error('Failed to delete blog:', err);
-      setActionError(err instanceof Error ? err.message : 'Failed to delete blog post');
+      const message = err instanceof Error ? err.message : 'Failed to delete blog post';
+      setActionError(message);
+      toast.error(message);
     }
   };
 
@@ -156,9 +173,12 @@ export default function ManageBlogsView({
       }
 
       setShowModal(false);
+      toast.success(`Blog post ${editingBlog ? 'updated' : 'created'} successfully.`);
     } catch (err: unknown) {
       console.error('Failed to save blog:', err);
-      setActionError(err instanceof Error ? err.message : 'Failed to save blog post');
+      const message = err instanceof Error ? err.message : 'Failed to save blog post';
+      setActionError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

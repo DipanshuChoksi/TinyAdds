@@ -14,6 +14,7 @@ import type { AdminCityResponse } from '@/src/types/city';
 import type { AdminStateResponse } from '@/src/types/state';
 import type { AdminCountryResponse } from '@/src/types/country';
 import Pagination from '@/components/ui/Pagination';
+import { useConfirm, useToast } from '@/components/ui/UiProvider';
 
 interface CityFormValues {
   name: string;
@@ -24,6 +25,8 @@ interface CityFormValues {
 }
 
 export default function AdminMasterCitiesPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [cities, setCities] = useState<AdminCityResponse[]>([]);
   const [states, setStates] = useState<AdminStateResponse[]>([]);
   const [countries, setCountries] = useState<AdminCountryResponse[]>([]);
@@ -248,10 +251,13 @@ export default function AdminMasterCitiesPage() {
         );
         loadData(page);
       }
+      toast.success(`City ${editingItem ? 'updated' : 'created'} successfully.`);
       closeModal();
     } catch (err) {
       console.error('Failed to save city:', err);
-      setFormError(err instanceof Error ? err.message : 'Failed to save city');
+      const message = err instanceof Error ? err.message : 'Failed to save city';
+      setFormError(message);
+      toast.error(message);
     }
   };
 
@@ -259,20 +265,31 @@ export default function AdminMasterCitiesPage() {
     try {
       const updated = await updateAdminCity(city.id, { isActive: !city.isActive });
       setCities((prev) => prev.map((c) => (c.id === city.id ? updated : c)));
+      toast.success(`City ${updated.isActive ? 'activated' : 'deactivated'} successfully.`);
     } catch (err) {
       console.error('Failed to toggle status:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update status');
+      toast.error(err instanceof Error ? err.message : 'Failed to update status');
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Are you sure you want to delete this city?')) return;
+    const city = cities.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: 'Delete city?',
+      message: city ? `"${city.name}" will be permanently deleted.` : 'This city will be permanently deleted.',
+      icon: 'bi-trash3-fill',
+      variant: 'danger',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
     try {
       await deleteAdminCity(id);
       loadData(page, debouncedSearch);
+      toast.success('City deleted successfully.');
     } catch (err) {
       console.error('Failed to delete city:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete city');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete city');
     }
   }
 

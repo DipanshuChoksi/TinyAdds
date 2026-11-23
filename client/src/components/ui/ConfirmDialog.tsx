@@ -36,8 +36,8 @@ export default function ConfirmDialog({ open, title, message, icon = "bi-questio
         <h4 className="lb-ui-confirm-title">{title}</h4>
         {message && <p className="lb-ui-confirm-msg">{message}</p>}
         <div className="lb-ui-confirm-actions">
-          <button type="button" className="lb-ui-btn-cancel" onClick={onCancel}>{cancelText}</button>
-          <button type="button" className="lb-ui-btn-ok" onClick={onConfirm} autoFocus>{confirmText}</button>
+          <button type="button" className="lb-ui-btn-cancel" onClick={onCancel} autoFocus={variant === "danger"}>{cancelText}</button>
+          <button type="button" className="lb-ui-btn-ok" onClick={onConfirm} autoFocus={variant !== "danger"}>{confirmText}</button>
         </div>
       </div>
     </div>

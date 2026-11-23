@@ -75,7 +75,7 @@ export default function UiProvider({ children }: { children: ReactNode }) {
 
         <div className="lb-ui-toasts" aria-live="polite">
           {toasts.map((t) => (
-            <div key={t.id} className={`lb-ui-toast is-${t.type}`} role="status">
+            <div key={t.id} className={`lb-ui-toast is-${t.type}`} role={t.type === "error" ? "alert" : "status"}>
               <i className={`bi ${ICONS[t.type]} lb-ui-toast-ico`}></i>
               <span className="lb-ui-toast-msg">{t.message}</span>
               <button type="button" className="lb-ui-toast-x" onClick={() => remove(t.id)} aria-label="Close"><i className="bi bi-x-lg"></i></button>

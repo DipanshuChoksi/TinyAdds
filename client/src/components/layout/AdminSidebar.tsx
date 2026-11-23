@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import http from '@/lib/http';
 import { useUserStore } from '@/store/userStore';
+import { useConfirm } from '@/components/ui/UiProvider';
 
 export interface AdminNavSubItem {
   href: string;
@@ -49,6 +50,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const clearUser = useUserStore((s) => s.clearUser);
+  const confirm = useConfirm();
   const [loggingOut, setLoggingOut] = useState(false);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
     '/admin/master-item': false, // Keep open by default
@@ -56,6 +58,16 @@ export default function AdminSidebar() {
 
   const handleLogout = async () => {
     if (loggingOut) return;
+    const confirmed = await confirm({
+      title: 'Log out?',
+      message: 'Are you sure you want to log out of the admin panel?',
+      icon: 'bi-box-arrow-right',
+      variant: 'danger',
+      confirmText: 'Log Out',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
+
     setLoggingOut(true);
     try {
       await http.post('/auth/logout');
@@ -111,7 +123,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Nav Menu */}
-      <div className="flex-grow-1 overflow-y-auto overflow-x-hidden pe-1">
+      <div className="admin-sidebar-scroll flex-grow-1 overflow-y-auto overflow-x-hidden pe-1">
         <div
           className="text-uppercase small fw-bold px-2 mb-2"
           style={{ fontSize: '0.68rem', letterSpacing: '0.08em', color: '#94a3b8' }}
