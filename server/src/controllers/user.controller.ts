@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { userService } from "../services/user.service.js";
-import { clearSessionCookie, setSessionCookie } from "../middleware/auth.js";
+import { ADMIN_SESSION_MAX_AGE_SECONDS, clearSessionCookie, setSessionCookie } from "../middleware/auth.js";
 import { sendSuccess } from "../utils/response.js";
 import { BadRequestError } from "../utils/errors.js";
 import {
@@ -28,6 +28,19 @@ export class UserController {
       const input = validateLogin(req.body);
       const user = await userService.login(input.email, input.password);
       setSessionCookie(res, user.id);
+      res.status(200).json(sendSuccess(user));
+    } catch (error) { next(error); }
+  }
+
+  async adminLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = validateLogin(req.body);
+      const user = await userService.login(input.email, input.password);
+      if (!user.isAdmin) {
+        res.status(403).json({ success: false, error: { code: "FORBIDDEN", message: "Access denied: This account does not have admin privileges." } });
+        return;
+      }
+      setSessionCookie(res, user.id, ADMIN_SESSION_MAX_AGE_SECONDS);
       res.status(200).json(sendSuccess(user));
     } catch (error) { next(error); }
   }

@@ -74,7 +74,6 @@ export default function AdminSidebar() {
     } catch {
       // Proceed even if network error
     } finally {
-      clearUser();
       closeOffcanvas();
       window.location.href = '/admin';
     }

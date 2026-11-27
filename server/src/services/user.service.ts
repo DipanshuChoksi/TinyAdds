@@ -41,6 +41,7 @@ function publicUser(user: {
   state?: unknown;
   city?: unknown;
   profileImage: string;
+  userType?: string;
 }) {
   return {
     id: String(user._id),
@@ -55,7 +56,7 @@ function publicUser(user: {
     stateId: user.state && typeof user.state === "object" && "_id" in user.state ? String((user.state as { _id: unknown })._id) : (user.state ? String(user.state) : ""),
     cityId: user.city && typeof user.city === "object" && "_id" in user.city ? String((user.city as { _id: unknown })._id) : (user.city ? String(user.city) : ""),
     profileImage: user.profileImage,
-    isAdmin: config.adminEmails.includes(user.email.toLowerCase()),
+    isAdmin: user.userType === "admin",
   };
 }
 
@@ -124,7 +125,7 @@ export class UserService {
 
   async requestPasswordReset(email: string): Promise<void> {
     const user = await User.findOne({ email }).select("+resetOtpHash +resetOtpExpiresAt +resetOtpSentAt");
-    if (!user) return;
+    if (!user || user.userType === "admin") return;
     if (user.resetOtpSentAt && Date.now() - user.resetOtpSentAt.getTime() < OTP_RESEND_DELAY_MS) {
       throw new AppError("Please wait before requesting another code", 429, "OTP_RATE_LIMITED");
     }
@@ -171,7 +172,7 @@ export class UserService {
     const stored = Buffer.from(storedHash);
     const provided = Buffer.from(providedHash);
     const validHash = stored.length === provided.length && timingSafeEqual(stored, provided);
-    if (!user || !validHash || !user.resetOtpExpiresAt || user.resetOtpExpiresAt.getTime() <= Date.now() || user.resetOtpAttempts >= OTP_MAX_ATTEMPTS) {
+    if (!user || user.userType === "admin" || !validHash || !user.resetOtpExpiresAt || user.resetOtpExpiresAt.getTime() <= Date.now() || user.resetOtpAttempts >= OTP_MAX_ATTEMPTS) {
       if (user) {
         user.resetOtpAttempts += 1;
         await user.save();
@@ -185,6 +186,9 @@ export class UserService {
 
   async resetPassword(email: string, password: string): Promise<void> {
     const user = await User.findOne({ email }).select("+resetOtpVerifiedUntil");
+    if (user?.userType === "admin") {
+      throw new AppError("Admin password cannot be reset via forgot password", 403, "FORBIDDEN");
+    }
     if (!user?.resetOtpVerifiedUntil || user.resetOtpVerifiedUntil.getTime() <= Date.now()) {
       throw new AppError("Verify the email code before resetting your password", 400, "OTP_NOT_VERIFIED");
     }

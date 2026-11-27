@@ -5,6 +5,7 @@ import { User } from "../models/User.js";
 
 export const SESSION_COOKIE = "tinyadds_session";
 const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+export const ADMIN_SESSION_MAX_AGE_SECONDS = 3 * 60 * 60;
 
 function sign(value: string): string {
   return createHmac("sha256", config.sessionSecret).update(value).digest("base64url");
@@ -16,18 +17,18 @@ function getCookie(request: Request, name: string): string | undefined {
   return item?.trim().slice(name.length + 1);
 }
 
-export function createSession(userId: string): string {
-  const payload = Buffer.from(JSON.stringify({ userId, exp: Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_SECONDS })).toString("base64url");
+export function createSession(userId: string, maxAgeSeconds = SESSION_MAX_AGE_SECONDS): string {
+  const payload = Buffer.from(JSON.stringify({ userId, exp: Math.floor(Date.now() / 1000) + maxAgeSeconds })).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }
 
-export function setSessionCookie(response: Response, userId: string): void {
-  response.cookie(SESSION_COOKIE, createSession(userId), {
+export function setSessionCookie(response: Response, userId: string, maxAgeSeconds = SESSION_MAX_AGE_SECONDS): void {
+  response.cookie(SESSION_COOKIE, createSession(userId, maxAgeSeconds), {
     httpOnly: true,
     secure: config.nodeEnv === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS * 1000,
+    maxAge: maxAgeSeconds * 1000,
   });
 }
 
@@ -70,8 +71,8 @@ export function requireAuth(request: Request, response: Response, next: NextFunc
 
 export async function requireAdmin(request: Request, response: Response, next: NextFunction): Promise<void> {
   try {
-    const user = await User.findById(request.userId).select("email").lean();
-    if (!user || !config.adminEmails.includes(user.email.toLowerCase())) {
+    const user = await User.findById(request.userId).select("userType").lean();
+    if (!user || user.userType !== "admin") {
       response.status(403).json({ success: false, error: { code: "FORBIDDEN", message: "Admin access is required" } });
       return;
     }

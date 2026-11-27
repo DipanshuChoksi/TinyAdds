@@ -13,7 +13,6 @@ interface Config {
   smtpUser: string;
   smtpPassword: string;
   emailFrom: string;
-  adminEmails: string[];
 }
 
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/tinyadds";
@@ -37,6 +36,5 @@ export const config: Config = {
   smtpUser: process.env.SMTP_USER || "",
   smtpPassword: process.env.SMTP_PASSWORD || "",
   emailFrom: process.env.EMAIL_FROM || "",
-  adminEmails: (process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean),
 };
 

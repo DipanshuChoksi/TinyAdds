@@ -6,6 +6,7 @@ const userSchema = new Schema(
     lastName: { type: String, required: [true, "Last name is required"], trim: true, maxlength: [80, "Last name cannot exceed 80 characters"] },
     email: { type: String, required: [true, "Email is required"], unique: true, lowercase: true, trim: true, maxlength: [254, "Email cannot exceed 254 characters"] },
     mobile: { type: String, required: [true, "Mobile number is required"], trim: true, maxlength: [20, "Mobile number cannot exceed 20 characters"] },
+    userType: { type: String, enum: ["user", "admin"], default: "user", index: true },
 
     country: { type: Schema.Types.ObjectId, ref: "Country", default: null },
     state: { type: Schema.Types.ObjectId, ref: "State", default: null },

@@ -6,6 +6,7 @@ import { requireAuth } from "../middleware/auth.js";
 const router = Router();
 router.post("/register", (req, res, next) => userController.register(req, res, next));
 router.post("/login", (req, res, next) => userController.login(req, res, next));
+router.post("/admin/login", (req, res, next) => userController.adminLogin(req, res, next));
 router.post("/logout", (req, res) => userController.logout(req, res));
 router.post("/forgot-password", (req, res, next) => userController.requestPasswordReset(req, res, next));
 router.post("/verify-otp", (req, res, next) => userController.verifyPasswordResetOtp(req, res, next));

@@ -1,20 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import http from "@/lib/http";
 
 interface Props {
   children: ReactNode;
-}
-
-interface UserProfile {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  isAdmin?: boolean;
 }
 
 interface LoginResponse {
@@ -28,7 +20,6 @@ interface LoginFormValues {
 
 export default function AdminGuard({ children }: Props) {
   const [authorized, setAuthorized] = useState(false);
-  const [checking, setChecking] = useState(true);
   const [serverError, setServerError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -43,34 +34,10 @@ export default function AdminGuard({ children }: Props) {
     },
   });
 
-  // Check if user already has an active session on reload/initial mount
-  useEffect(() => {
-    let active = true;
-
-    http
-      .get<UserProfile>("/auth/me")
-      .then(({ data }) => {
-        if (!active) return;
-        if (data?.isAdmin) {
-          setAuthorized(true);
-        }
-      })
-      .catch(() => {
-        // Not logged in or session invalid; stay on login form
-      })
-      .finally(() => {
-        if (active) setChecking(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
   const onSubmit = async (values: LoginFormValues) => {
     setServerError("");
     try {
-      const response = await http.post<LoginResponse>("/auth/login", {
+      const response = await http.post<LoginResponse>("/auth/admin/login", {
         email: values.email.trim(),
         password: values.password,
       });
@@ -91,15 +58,6 @@ export default function AdminGuard({ children }: Props) {
       }
     }
   };
-
-  if (checking) {
-    return (
-      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
-        <div className="spinner-border text-primary me-2" role="status" />
-        <span className="text-secondary fw-medium">Verifying session...</span>
-      </div>
-    );
-  }
 
   if (!authorized) {
     return (

@@ -79,17 +79,7 @@ export default function LoginForm() {
           error={errors.password}
           onChange={setPassword}
         />
-        <div className="d-lg-flex justify-content-between align-items-center mb-4">
-          <div className="form-check m-0 mb-2 mb-lg-0">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="remember"
-            />
-            <label className="form-check-label" htmlFor="remember">
-              Remember me
-            </label>
-          </div>
+        <div className="d-lg-flex justify-content-end align-items-center mb-4">
           <Link href="/forgot-password" className="lb-link">
             Forgot Password?
           </Link>
