@@ -204,13 +204,17 @@ export class UserService {
   /**
    * Admin: List users with pagination and search
    */
-  async getAdminUsers(pagination: { page: number; limit: number; skip: number }, search?: string) {
+  async getAdminUsers(pagination: { page: number; limit: number; skip: number }, search?: string, userType?: "user" | "admin") {
     const filter: Record<string, unknown> = {
       $or: [
         { isDisplay: true },
         { isDisplay: { $exists: false } },
       ],
     };
+
+    if (userType) {
+      filter.userType = userType;
+    }
 
     if (search && search.trim()) {
       const regex = new RegExp(search.trim(), "i");
@@ -258,6 +262,20 @@ export class UserService {
         totalPages: Math.ceil(total / pagination.limit) || 1,
       },
     };
+  }
+
+  /**
+   * Admin: Create a new admin user
+   */
+  async createAdminUser(input: RegisterUserInput) {
+    const existing = await User.exists({ email: input.email, isDisplay: true });
+    if (existing) throw new ConflictError("An account with this email already exists");
+    const user = await User.create({
+      ...input,
+      userType: "admin",
+      passwordHash: await hashPassword(input.password),
+    });
+    return publicUser(user);
   }
 
   /**

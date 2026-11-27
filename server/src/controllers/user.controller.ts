@@ -93,8 +93,23 @@ export class UserController {
     try {
       const pagination = validatePagination(req.query);
       const search = typeof req.query.search === "string" ? req.query.search : undefined;
-      const result = await userService.getAdminUsers(pagination, search);
+      const userType = req.query.userType === "admin" || req.query.userType === "user" ? req.query.userType : undefined;
+      const result = await userService.getAdminUsers(pagination, search, userType);
       res.status(200).json(sendSuccess(result.items, result.meta));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Admin: Create admin user
+   * POST /api/admin/users
+   */
+  async createAdminUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = validateRegistration(req.body);
+      const user = await userService.createAdminUser(input);
+      res.status(201).json(sendSuccess(user));
     } catch (error) {
       next(error);
     }

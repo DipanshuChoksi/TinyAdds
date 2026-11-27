@@ -40,6 +40,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
       { href: '/admin/master-item/tags', label: 'Tags' },
       // { href: '/admin/master-item/success-stories', label: 'Success Stories' },
       { href: '/admin/master-item/user', label: 'User' },
+      { href: '/admin/master-item/admin-users', label: 'Admin Users' },
       { href: '/admin/master-item/country', label: 'Country' },
       { href: '/admin/master-item/state', label: 'State' },
       { href: '/admin/master-item/cities', label: 'City' },
