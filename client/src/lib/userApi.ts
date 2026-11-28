@@ -48,8 +48,9 @@ export async function updateAdminUserStatus(id: string, isActive: boolean): Prom
 /**
  * Soft delete a user via admin API
  */
-export async function deleteAdminUser(id: string): Promise<void> {
-  await http.delete(`/admin/users/${id}`);
+export async function deleteAdminUser(id: string): Promise<{ selfDeleted?: boolean }> {
+  const response = await http.delete<{ selfDeleted?: boolean }>(`/admin/users/${id}`);
+  return response.data ?? {};
 }
 
 /**
@@ -63,5 +64,21 @@ export async function createAdminUser(payload: {
   password: string;
 }): Promise<AdminUserResponse> {
   const response = await http.post<AdminUserResponse>('/admin/users', payload);
+  return response.data;
+}
+
+/**
+ * Update an admin user's details via admin API (no password)
+ */
+export async function updateAdminUser(
+  id: string,
+  payload: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    mobile: string;
+  }
+): Promise<AdminUserResponse> {
+  const response = await http.put<AdminUserResponse>(`/admin/users/${id}`, payload);
   return response.data;
 }

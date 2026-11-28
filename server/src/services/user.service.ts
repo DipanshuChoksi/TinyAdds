@@ -113,7 +113,7 @@ export class UserService {
   }
 
   async updateProfile(userId: string, input: ProfileUpdateInput) {
-    const duplicate = await User.exists({ email: input.email, _id: { $ne: userId } });
+    const duplicate = await User.exists({ email: input.email, _id: { $ne: userId }, isDisplay: true });
     if (duplicate) throw new ConflictError("An account with this email already exists");
     const user = await User.findByIdAndUpdate(userId, { $set: input }, { new: true, runValidators: true })
       .populate("country", "name id")
@@ -279,6 +279,24 @@ export class UserService {
   }
 
   /**
+   * Admin: Update admin user details (no password)
+   */
+  async updateAdminUser(
+    id: string,
+    input: { firstName: string; lastName: string; email: string; mobile: string }
+  ) {
+    const duplicate = await User.exists({ email: input.email, _id: { $ne: id }, isDisplay: true });
+    if (duplicate) throw new ConflictError("An account with this email already exists");
+    const user = await User.findOneAndUpdate(
+      { _id: id, isDisplay: true },
+      { $set: input },
+      { new: true, runValidators: true }
+    );
+    if (!user) throw new NotFoundError("User not found");
+    return publicUser(user);
+  }
+
+  /**
    * Admin: Get user by ID
    */
   async getUserById(id: string) {
@@ -305,14 +323,26 @@ export class UserService {
    * Admin: Soft delete user
    */
   async softDeleteUser(id: string): Promise<void> {
-    const user = await User.findOneAndUpdate(
+    const existing = await User.findOne({ _id: id, isDisplay: true }).select("userType").lean();
+    if (!existing) {
+      throw new NotFoundError(`User with id '${id}' not found`);
+    }
+
+    if (existing.userType === "admin") {
+      const remainingAdmins = await User.countDocuments({
+        userType: "admin",
+        isDisplay: true,
+        _id: { $ne: id },
+      });
+      if (remainingAdmins === 0) {
+        throw new AppError("At least one admin user must remain", 400, "LAST_ADMIN");
+      }
+    }
+
+    await User.updateOne(
       { _id: id, isDisplay: true },
       { $set: { isDisplay: false, deletedAt: new Date() } }
     );
-
-    if (!user) {
-      throw new NotFoundError(`User with id '${id}' not found`);
-    }
   }
 
   /**

@@ -4,7 +4,7 @@ const userSchema = new Schema(
   {
     firstName: { type: String, required: [true, "First name is required"], trim: true, maxlength: [80, "First name cannot exceed 80 characters"] },
     lastName: { type: String, required: [true, "Last name is required"], trim: true, maxlength: [80, "Last name cannot exceed 80 characters"] },
-    email: { type: String, required: [true, "Email is required"], unique: true, lowercase: true, trim: true, maxlength: [254, "Email cannot exceed 254 characters"] },
+    email: { type: String, required: [true, "Email is required"], lowercase: true, trim: true, maxlength: [254, "Email cannot exceed 254 characters"] },
     mobile: { type: String, required: [true, "Mobile number is required"], trim: true, maxlength: [20, "Mobile number cannot exceed 20 characters"] },
     userType: { type: String, enum: ["user", "admin"], default: "user", index: true },
 
@@ -41,7 +41,7 @@ const userSchema = new Schema(
 
 // Compound indexes
 userSchema.index({ isDisplay: 1, isActive: 1 });
-userSchema.index({ isDisplay: 1, email: 1 });
+userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { isDisplay: true } });
 userSchema.index({ isDisplay: 1, firstName: 1, lastName: 1 });
 
 export type UserSchemaType = InferSchemaType<typeof userSchema>;

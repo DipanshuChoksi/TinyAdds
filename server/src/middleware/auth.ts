@@ -5,7 +5,7 @@ import { User } from "../models/User.js";
 
 export const SESSION_COOKIE = "tinyadds_session";
 const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
-export const ADMIN_SESSION_MAX_AGE_SECONDS = 3 * 60 * 60;
+export const ADMIN_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 function sign(value: string): string {
   return createHmac("sha256", config.sessionSecret).update(value).digest("base64url");

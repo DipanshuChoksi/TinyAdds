@@ -130,6 +130,32 @@ export class UserController {
   }
 
   /**
+   * Admin: Update admin user details
+   * PUT /api/admin/users/:id
+   */
+  async updateAdminUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = validateObjectId(req.params.id as string, "id");
+      const parsed = validateProfileUpdate({
+        ...(req.body ?? {}),
+        country: null,
+        state: null,
+        city: null,
+        profileImage: "",
+      });
+      const updatedUser = await userService.updateAdminUser(id, {
+        firstName: parsed.firstName,
+        lastName: parsed.lastName,
+        email: parsed.email,
+        mobile: parsed.mobile,
+      });
+      res.status(200).json(sendSuccess(updatedUser));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Admin: Update user status
    * PATCH /api/admin/users/:id
    */
@@ -155,7 +181,11 @@ export class UserController {
     try {
       const id = validateObjectId(req.params.id as string, "id");
       await userService.softDeleteUser(id);
-      res.status(200).json(sendSuccess({ message: "User deleted successfully" }));
+      const selfDeleted = id === req.userId;
+      if (selfDeleted) {
+        clearSessionCookie(res);
+      }
+      res.status(200).json(sendSuccess({ message: "User deleted successfully", selfDeleted }));
     } catch (error) {
       next(error);
     }

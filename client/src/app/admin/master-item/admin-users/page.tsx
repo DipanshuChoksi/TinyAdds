@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, type FormEvent } from 'react';
-import { getAdminUsers, deleteAdminUser, updateAdminUserStatus, createAdminUser } from '@/lib/userApi';
+import { getAdminUsers, deleteAdminUser, updateAdminUserStatus, createAdminUser, updateAdminUser } from '@/lib/userApi';
 import type { AdminUserResponse } from '@/src/types/user';
 import Pagination from '@/components/ui/Pagination';
 import { useConfirm, useToast } from '@/components/ui/UiProvider';
@@ -32,12 +32,48 @@ export default function AdminMasterAdminUsersPage() {
   const [creating, setCreating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Edit Admin Modal State
+  const [editingUser, setEditingUser] = useState<AdminUserResponse | null>(null);
+  const [editForm, setEditForm] = useState({ firstName: '', lastName: '', email: '', mobile: '' });
+  const [updating, setUpdating] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchInput.trim());
       setPage(1);
     }, 250);
-    return () => clearTimeout(timer);
+    const openEditModal = (user: AdminUserResponse) => {
+    setEditingUser(user);
+    setEditForm({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      mobile: user.mobile,
+    });
+  };
+
+  const handleUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setUpdating(true);
+    try {
+      await updateAdminUser(editingUser._id, {
+        firstName: editForm.firstName.trim(),
+        lastName: editForm.lastName.trim(),
+        email: editForm.email.trim(),
+        mobile: editForm.mobile.trim(),
+      });
+      toast.success('Admin user updated');
+      setEditingUser(null);
+      await loadUsers(page, search);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update admin user');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  return () => clearTimeout(timer);
   }, [searchInput]);
 
   const loadUsers = useCallback(async (targetPage = page, searchTerm = search) => {
@@ -85,8 +121,12 @@ export default function AdminMasterAdminUsersPage() {
     if (!confirmed) return;
 
     try {
-      await deleteAdminUser(id);
+      const res = await deleteAdminUser(id);
       toast.success('Admin user deleted');
+      if (res?.selfDeleted) {
+        window.location.href = '/admin';
+        return;
+      }
       await loadUsers(page, search);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to delete admin user');
@@ -112,6 +152,37 @@ export default function AdminMasterAdminUsersPage() {
       toast.error(err instanceof Error ? err.message : 'Failed to create admin user');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const openEditModal = (user: AdminUserResponse) => {
+    setEditingUser(user);
+    setEditForm({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      mobile: user.mobile,
+    });
+  };
+
+  const handleUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setUpdating(true);
+    try {
+      await updateAdminUser(editingUser._id, {
+        firstName: editForm.firstName.trim(),
+        lastName: editForm.lastName.trim(),
+        email: editForm.email.trim(),
+        mobile: editForm.mobile.trim(),
+      });
+      toast.success('Admin user updated');
+      setEditingUser(null);
+      await loadUsers(page, search);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update admin user');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -192,7 +263,38 @@ export default function AdminMasterAdminUsersPage() {
               ) : (
                 users.map((user) => {
                   const fullName = `${user.firstName} ${user.lastName}`.trim();
-                  return (
+                  const openEditModal = (user: AdminUserResponse) => {
+    setEditingUser(user);
+    setEditForm({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      mobile: user.mobile,
+    });
+  };
+
+  const handleUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setUpdating(true);
+    try {
+      await updateAdminUser(editingUser._id, {
+        firstName: editForm.firstName.trim(),
+        lastName: editForm.lastName.trim(),
+        email: editForm.email.trim(),
+        mobile: editForm.mobile.trim(),
+      });
+      toast.success('Admin user updated');
+      setEditingUser(null);
+      await loadUsers(page, search);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update admin user');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  return (
                     <tr key={user._id}>
                       <td className="fw-medium">{fullName}</td>
                       <td>{user.email}</td>
@@ -216,14 +318,24 @@ export default function AdminMasterAdminUsersPage() {
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
                       </td>
                       <td className="text-end">
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(user._id, fullName)}
-                          title="Delete admin user"
-                        >
-                          <i className="bi bi-trash" />
-                        </button>
+                        <div className="d-inline-flex gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => openEditModal(user)}
+                            title="Edit admin user"
+                          >
+                            <i className="bi bi-pencil" />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleDelete(user._id, fullName)}
+                            title="Delete admin user"
+                          >
+                            <i className="bi bi-trash" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -335,6 +447,87 @@ export default function AdminMasterAdminUsersPage() {
                   </button>
                   <button type="submit" className="btn btn-primary" disabled={creating}>
                     {creating ? 'Creating...' : 'Create Admin'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingUser && (
+        <div className="modal d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow">
+              <div className="modal-header">
+                <h5 className="modal-title fw-bold">Edit Admin User</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setEditingUser(null)}
+                  disabled={updating}
+                />
+              </div>
+              <form onSubmit={handleUpdate}>
+                <div className="modal-body">
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">First Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        required
+                        maxLength={80}
+                        value={editForm.firstName}
+                        onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium">Last Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        required
+                        maxLength={80}
+                        value={editForm.lastName}
+                        onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-medium">Email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        required
+                        maxLength={254}
+                        value={editForm.email}
+                        onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-medium">Mobile</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        required
+                        maxLength={20}
+                        value={editForm.mobile}
+                        onChange={(e) => setEditForm((f) => ({ ...f, mobile: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-light"
+                    onClick={() => setEditingUser(null)}
+                    disabled={updating}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={updating}>
+                    {updating ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </form>
